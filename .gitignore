@@ -1,0 +1,12 @@
+# REMOVE WORDPRESS INSTALLATION FILES AND HTACCESS
+wp-admin/
+wp-includes/
+wp-content/
+.htaccess
+/*.php
+!wp-config.php
+
+# REMOVE ALL SCRIPTS AND STYLES FILES BUT MINIFIEDS
+*.js
+!*.min.js
+*/sass

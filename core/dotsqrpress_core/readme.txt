@@ -1,5 +1,4 @@
-DOTSQRPRESS
-===========
+=== DOTSQRPRESS ===
 Contributors: gallettigr
 Donate link: http://dotsqr.co/donate
 Tags: dotsqrpress, extended wordpress, security, customized
@@ -11,6 +10,9 @@ License URI: http://opensource.org/licenses/MIT
 
 
 == Description ==
+
+DOTSQRPRESS INITIALIZATION FILE
+================================
 
 This is a small script I developed to make your WordPress installation completely compatible with the themes developed and distributed by DOTSQR. I developend and use it for my projects. It's very simple to install, configure and get it running.
 

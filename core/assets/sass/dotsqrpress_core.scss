@@ -1,0 +1,196 @@
+// SQR LOGO
+@import "logo";
+
+// LOGIN THEMING
+$blue-bg: #0094FF;
+$green-bg: #4DBD15;
+$orange-bg: #FF6800;
+$purple-bg: #BA15BD;
+$mobile: "(max-width: 400px)";
+
+body.login {
+	background: lighten(#ccc, 30%);
+	font-family: 'Lato', Helvetica, sans-serif;
+	font-weight: 300;
+	&.blue {
+		background: $blue-bg;
+	}
+	&.orange {
+		background: $orange-bg;
+	}
+	&.green {
+		background: $green-bg;
+	}
+	&.purple {
+		background: $purple-bg;
+	}
+	a {
+		color: #fff;
+		&:hover {
+			text-decoration: none;
+		}
+	}
+	p {
+		color: white;
+	}
+}
+
+#login {
+	margin: 2rem auto 2rem;
+	padding: 5rem 4rem;
+	display: block;
+	width: 40rem;
+	background: transparent;
+	@media #{$mobile} {
+		width: 90%;
+	}
+	h1 {
+		font-size: 3rem;
+		font-weight: 300;
+		color: white;
+		margin-bottom: 2rem;
+		text-transform: lowercase;
+		text-align: center;
+	}
+	label {
+		width: 100%;
+		display: block;
+		&.green {
+			color: $green-bg;
+		}
+		&.blue {
+			color: $blue-bg;
+		}
+		&.purple {
+			color: $purple-bg;
+		}
+		&.orange {
+			color: $orange-bg;
+		}
+	}
+	input {
+		width: 100%;
+		display: block;
+		appearance: none;
+		&:focus {
+			outline: none;
+		}
+	}
+	input[type=text], input[type=password] {
+		border: none;
+		background: rgba(#000, 0.1);
+		appearance: none;
+		padding: .8rem 1rem;
+		box-shadow: 0 0.3rem 0 0 rgba(#000, 0.03);
+		color: rgba(#fff, 0.9);
+		font-weight: 300;
+	}
+	.button {
+		border: 0.2rem solid $blue-bg;
+		background-color: transparent;
+		color: white;
+		border-radius: 0;
+		font-weight: 300;
+		text-transform: uppercase;
+		text-align: center;
+		padding: .4rem .8rem;
+		&:hover {
+			font-weight: 300;
+			color: white;
+		}
+		@each $color in "blue" $blue-bg, "orange" $orange-bg, "green" $green-bg, "purple" $purple-bg {
+			&.#{nth($color, 1)} {
+				border-color: darken(nth($color, 2), 10%);
+				color: darken(nth($color, 2), 10%);
+				&:hover {
+					background-color: darken(nth($color, 2), 10%);
+					color: white;
+				}
+			}
+		}
+	}
+}
+
+#nav {
+	display: block;
+	position: relative;
+	a {
+		display: block;
+		padding: .3rem .5rem;
+		background-color: #fff;
+		background-color: rgba(#333, 0.4);
+		color: rgba(#fff, 0.4);
+		margin: 0 0 10px;
+	}
+}
+
+#login_error {
+	background: #fff;
+	background: rgba(#fff, 0.4);
+	padding: 1rem 1rem 1rem 2rem;
+	border-left: red 1rem solid;
+	margin-bottom: 1rem;
+	color: #333;
+	font-size: 1.2rem;
+	&.hello {
+		border-left-color: darken($blue-bg, 20%);
+	}
+	strong {
+		text-transform: uppercase;
+		font-size: 1.1rem;
+		color: red;
+		&.hello {
+			color: darken($blue-bg, 20%);
+		}
+	}
+	a {
+		color: red;
+		&:hover {
+			border-bottom: 0.1rem dotted rgba(red, 0.5);
+		}
+	}
+}
+
+::-webkit-input-placeholder {
+	font-weight: 300;
+	color: rgba(#fff, 0.4);
+}
+
+:-moz-placeholder {
+	/* Firefox 18- */
+	font-weight: 300;
+	color: rgba(#fff, 0.4);
+}
+
+::-moz-placeholder {
+	/* Firefox 19+ */
+	font-weight: 300;
+	color: rgba(#fff, 0.4);
+}
+
+:-ms-input-placeholder {
+	font-weight: 300;
+	color: rgba(#fff, 0.4);
+}
+
+.credits, .logo {
+	display: block;
+	width: 35rem;
+	margin: auto;
+	color: #fff;
+	@media #{$mobile} {
+		width: 80%;
+	}
+}
+
+.credits {
+	text-align: center;
+	margin-bottom: .8rem;
+	a:hover {
+		border-bottom: 0.1rem dotted rgba(#fff, 0.5);
+	}
+}
+
+.forgetmenot {
+	display: none;
+}
