@@ -15,34 +15,115 @@ Textdomain: dotsqrpress_core
 Domain Path: /languages/
 */
 
-# INIT & DEFINITIONS
+# DOTSQRPRESS DEFINITIONS
 $get_theme_name = explode('/themes/', get_template_directory());
 define('CORE_ASSET', '/core/assets/'); // MODIFY ONLY IF YOU RENAMED THE DOTSQRPRESS CORE AND CORE ASSETS FOLDER
 define('DOTSQRPRESS_CONTENTS', 'wp-content' ); // CHANGE ONLY IF YOU DEFINED A DIFFERENT FOLDER FOR CONTENTS
 define('THEME_NAME', next($get_theme_name));
 define('THEME_PATH', DOTSQRPRESS_CONTENTS . '/themes/' . THEME_NAME);
-add_action('init', 'dotsqrpress_locale');
-function dotsqrpress_locale()
-{
-    $domain = 'dotsqrpress_core';
-    $locale = apply_filters( 'plugin_locale', get_locale(), $domain );
-if ( $loaded = load_textdomain( $domain, trailingslashit( WP_LANG_DIR ) . $domain . '/' . $domain . '-' . $locale . '.mo' ) ) {
+
+# DOTSQRPRESS INIT
+add_action('init', 'dotsqrpress_init', 10);
+function dotsqrpress_init() {
+	// INIT START
+	// LOAD DOTSQRPRESS CORE LOCALE
+  $core_domain = 'dotsqrpress_core';
+  $core_locale = apply_filters( 'plugin_locale', get_locale(), $core_domain );
+	if ( $loaded = load_textdomain( $core_domain, trailingslashit( WP_LANG_DIR ) . $core_domain . '/' . $core_domain . '-' . $core_locale . '.mo' ) ) {
+  	return $loaded;
+  } else {
+    load_plugin_textdomain( $core_domain, FALSE, basename( dirname( __FILE__ ) ) . '/languages/' );
+  }
+  // CREATE DEFAULT LANDING PAGES AFTER FRONT END USER SUCCESSFUL LOGIN (WELCOME PAGE) AND LOGOUT (GOODBYE PAGE)
+	if(get_page_by_title( 'welcome' ) == NULL) {
+		dotsqrpress_create_page('welcome', 'Welcome', '<h1>Welcome to ' . get_bloginfo('name'));
+	}
+	if(get_page_by_title( 'goodbye') == NULL) {
+		dotsqrpress_create_page('goodbye', 'Goodbye', '<h1>See you soon!</h1>');
+	}
+	// RESTRICT ACCESS TO WORDPRESS WP-LOGIN AND WP-ADMIN TO NOT-ADMIN USERS. LOGOUT USERS WHO VISIT 'LOGOUT' PAGE
+  if( (strpos(strtolower($_SERVER['REQUEST_URI']),'wp-login.php') !== false) && $_SERVER['REQUEST_METHOD'] != "POST")
+  {
+    wp_redirect(get_option('siteurl').'/404');
+    exit;
+    }
+  else if( (strpos(strtolower($_SERVER['REQUEST_URI']),'logout') !== false))
+  {
+    wp_logout();
+    wp_redirect(get_option('siteurl').'/goodbye');
+    exit;
+  }
+  else if( (strpos(strtolower($_SERVER['REQUEST_URI']),'wp-admin') !== false) && !is_user_logged_in())
+  {
+    wp_redirect(get_option('siteurl').'/404');
+    exit;
+  }
+  // CLEAN UP WP HEADER TAGS AND IMPROVE WP SEO
+  remove_action('wp_head', 'feed_links', 2);
+  remove_action('wp_head', 'feed_links_extra', 3);
+  remove_action('wp_head', 'rsd_link');
+  remove_action('wp_head', 'wlwmanifest_link');
+  remove_action('wp_head', 'adjacent_posts_rel_link_wp_head', 10, 0);
+  remove_action('wp_head', 'wp_generator');
+  remove_action('wp_head', 'wp_shortlink_wp_head', 10, 0);
+  global $wp_widget_factory;
+  if( isset( $wp_widget_factory->widgets['WP_Widget_Recent_Comments'] ) ) {
+		remove_action( 'wp_head', array( $wp_widget_factory->widgets['WP_Widget_Recent_Comments'], 'recent_comments_style' ) );
+	}
+  add_filter('use_default_gallery_style', '__return_null');
+  add_filter('the_generator', '__return_false');
+  if (!class_exists('WPSEO_Frontend')) {
+	  remove_action('wp_head', 'rel_canonical');
+	  add_action('wp_head', 'dotsqrpress_canonical_urls');
+  }
+  // ADDS DOTSQRPRESS REWRITE RULES. RENAMES URLS FOR LOGIN, REGISTER, THEME 'ASSETS' FOLDER AND WP-INCLUDES.
+  add_rewrite_rule( 'login/?$', 'wp-login.php', 'top' );
+  add_rewrite_rule( 'register/?$', 'wp-login.php?action=register', 'top' );
+  add_rewrite_rule( 'retrieve/?$', 'wp-login.php?action=lostpassword', 'top' );
+  add_rewrite_rule( 'views/(.*)', THEME_PATH . '/assets/$1', 'top' );
+  add_rewrite_rule( 'plugins/(.*)', '/wp-includes/$1', 'top' );
+
+	// INIT END
+}
+# DEFAULT DOTSQRPRESS PAGES SETTINGS
+function dotsqrpress_create_page($name, $title, $content) {
+	$dotsqrpress_page = array(
+		'post_title'    => $title,
+		'post_content'  => $content,
+		'post_status'   => 'publish',
+		'post_author'   => 1,
+		'post_type'     => 'page',
+		//'page_template' => 'notice.php', // IT'S RECOMMENDED TO CREATE A TEMPLATE FOR BOTH THIS PAGES
+		'post_name'     => $name
+	);
+	wp_insert_post( $dotsqrpress_page );
+}
+
+# CANONICAL URLS TO HEADER IF NOT USING WPSEO
+function dotsqrpress_canonical_urls() {
+  global $wp_the_query;
+  if (!is_singular()) {
+  return;
+  }
+  if (!$id = $wp_the_query->get_queried_object_id()) {
+  return;
+  }
+  $link = get_permalink($id);
+  echo "\t<link rel=\"canonical\" href=\"$link\">\n";
+}
+
+# DOTSQRPRESS THEME LOCALE DEFAULTS. JUST USE YOUR THEME NAME AS DOMAIN PATH
+function dotsqrpress_themes_setup(){
+  if ( $loaded = load_theme_textdomain( THEME_NAME, trailingslashit( WP_LANG_DIR ) . THEME_NAME ) ) {
+    return $loaded;
+  } elseif ( $loaded = load_theme_textdomain( THEME_NAME, get_stylesheet_directory() . '/languages' )) {
     return $loaded;
   } else {
-    load_plugin_textdomain( $domain, FALSE, basename( dirname( __FILE__ ) ) . '/languages/' );
+    load_theme_textdomain( THEME_NAME, get_template_directory() . '/languages' );
   }
 }
 add_action('after_setup_theme', 'dotsqrpress_themes_setup');
-function dotsqrpress_themes_setup(){
-  $domain = 'dotsqrpress';
-  if ( $loaded = load_theme_textdomain( $domain, trailingslashit( WP_LANG_DIR ) . $domain ) ) {
-    return $loaded;
-  } elseif ( $loaded = load_theme_textdomain( $domain, get_stylesheet_directory() . '/languages' )) {
-    return $loaded;
-  } else {
-    load_theme_textdomain( $domain, get_template_directory() . '/languages' );
-  }
-}
+
 
 # UPDATE PROD SITE URL
 if (defined('PROD_URL')) {
@@ -50,20 +131,7 @@ if (defined('PROD_URL')) {
 	update_option('home',PROD_URL);
 }
 
-# HTACCESS REWRITE RULES. RENAMES WP-ADMIN, THEME ASSETS, SIGNUP, LOGIN, LOST PASSWORD.
-# IF YOU EDIT IT, REMEMBER TO FLUSH WP REWRITE RULES UPDATING THE PERMALINK SETTINGS.
-add_action('generate_rewrite_rules', 'dotsqrpress_rewrite_rules');
-function dotsqrpress_rewrite_rules() {
-	global $wp_rewrite;
-  add_rewrite_rule( 'login/?$', 'wp-login.php', 'top' );
-  add_rewrite_rule( 'register/?$', 'wp-login.php?action=register', 'top' );
-  add_rewrite_rule( 'retrieve/?$', 'wp-login.php?action=lostpassword', 'top' );
-  add_rewrite_rule( 'views/(.*)', THEME_PATH . '/assets/$1', 'top' );
-  add_rewrite_rule( 'plugins/(.*)', '/wp-includes/$1', 'top' );
-  $wp_rewrite->non_wp_rules = $wp_rewrite->non_wp_rules;
-}
-
-# HTACCESS CUSTOM RULES
+# HTACCESS CUSTOM RULES. YOU CAN ADD EXTRAS IF YOU KNOW WHAT YOU'RE DOING.
 function dotsqrpress_custom_rules( $rules )
 {
 $my_content = <<<EOD
@@ -101,28 +169,6 @@ EOD;
     return $my_content . $rules;
 }
 add_filter('mod_rewrite_rules', 'dotsqrpress_custom_rules');
-
-# REDIRECT USERS WHO TRY TO DIRECTLY ACCESS WP-LOGIN AND WP-ADMIN.
-# ADDED REDIRECT TO GOODBYE PAGE INSTEAD OF LOGOUT PAGE.
-add_action('init', 'dotsqrpress_wp_block');
-function dotsqrpress_wp_block() {
-  if( (strpos(strtolower($_SERVER['REQUEST_URI']),'wp-login.php') !== false) && $_SERVER['REQUEST_METHOD'] != "POST")
-  {
-    wp_redirect(get_option('siteurl').'/404');
-    exit;
-    }
-  else if( (strpos(strtolower($_SERVER['REQUEST_URI']),'logout') !== false))
-  {
-    wp_logout();
-    wp_redirect(get_option('siteurl').'/goodbye');
-    exit;
-  }
-  else if( (strpos(strtolower($_SERVER['REQUEST_URI']),'wp-admin') !== false) && !is_user_logged_in())
-  {
-    wp_redirect(get_option('siteurl').'/404');
-    exit;
-  }
-}
 
 # REDIRECT USERS AFTER SUCCESSFUL LOGIN. IF ADMIN TO BACKEND; IF USER TO WELCOME PAGE.
 add_filter( 'login_redirect', 'dotsqrpress_login_redirect', 10, 3 );
@@ -166,39 +212,6 @@ function dotsqrpress_remove_ver_src( $src ) {
     return str_replace('wp-includes','plugins',$src);
 }
 
-# CLEANUP WP HEAD
-function dotsqrpress_head_cleaning() {
-  remove_action('wp_head', 'feed_links', 2);
-  remove_action('wp_head', 'feed_links_extra', 3);
-  remove_action('wp_head', 'rsd_link');
-  remove_action('wp_head', 'wlwmanifest_link');
-  remove_action('wp_head', 'adjacent_posts_rel_link_wp_head', 10, 0);
-  remove_action('wp_head', 'wp_generator');
-  remove_action('wp_head', 'wp_shortlink_wp_head', 10, 0);
-  global $wp_widget_factory;
-  remove_action('wp_head', array($wp_widget_factory->widgets['WP_Widget_Recent_Comments'], 'recent_comments_style'));
-  add_filter('use_default_gallery_style', '__return_null');
-  if (!class_exists('WPSEO_Frontend')) {
-  remove_action('wp_head', 'rel_canonical');
-  add_action('wp_head', 'dotsqrpress_canonical');
-  }
-}
-
-# CANONICAL URLS TO HEADER
-function dotsqrpress_canonical() {
-  global $wp_the_query;
-  if (!is_singular()) {
-  return;
-  }
-  if (!$id = $wp_the_query->get_queried_object_id()) {
-  return;
-  }
-  $link = get_permalink($id);
-  echo "\t<link rel=\"canonical\" href=\"$link\">\n";
-}
-add_action('init', 'dotsqrpress_head_cleaning');
-add_filter('the_generator', '__return_false');
-
 # STOP REDIRECTING TO SIMILAR URL
 add_filter('redirect_canonical', 'dotsqrpress_no_similar_url');
 function dotsqrpress_no_similar_url($url) {
@@ -209,7 +222,7 @@ function dotsqrpress_no_similar_url($url) {
 }
 
 # DOTSQRPRESS LOGIN STYLING. REMOVES DEFAULT WP CSS WHICH IS FORCED INTO HEADER, ADDS DOTSQRPRESS CSS.
-remove_filter('wp_admin_css', $tag, 99999);
+remove_filter('wp_admin_css', 'login', 99999);
 add_filter('wp_admin_css', 'dotsqrpress_default_styles', 99999);
 function dotsqrpress_default_styles($force_echo) {
     return false;
@@ -240,13 +253,6 @@ function dotsqrpress_disable_login_errors(){
   return '<strong>Login Error.</strong>';
 }
 add_filter( 'login_errors', 'dotsqrpress_disable_login_errors' );
-
-# CHANGE DEFAULT PERMALINK STRUCTURE
-function dotsqrpress_permalink_structure() {
-    global $wp_rewrite;
-    $wp_rewrite->set_permalink_structure( '/%category%/%postname%/' );
-}
-add_action( 'init', 'dotsqrpress_permalink_structure' );
 
 # CUSTOM ROBOTS.TXT
 add_filter( 'robots_txt', 'dotsqrpress_robots', 10, 2 );
@@ -390,10 +396,6 @@ function dotsqrpress_request_filter($query_vars) {
   return $query_vars;
 }
 add_filter('request', 'dotsqrpress_request_filter');
-function dotsqrpress_search_form() {
-  locate_template('/layouts/searchform.php', true, true);
-}
-add_filter('get_search_form', 'dotsqrpress_get_search_form');
 
 # DOTSQRPRESS DEFAULT MENU NAV WALKER.
 class DOTSQRPRESS_Nav_Walker extends Walker_Nav_Menu {
@@ -434,6 +436,9 @@ class DOTSQRPRESS_Nav_Walker extends Walker_Nav_Menu {
     parent::display_element($element, $children_elements, $max_depth, $depth, $args, $output);
   }
 }
+function is_it_empty($val) {
+    return empty($val);
+}
 function dotsqrpress_nav_menu_css_class($classes, $item) {
   $slug = sanitize_title($item->title);
   $classes = preg_replace('/(current(-menu-|[-_]page[-_])(item|parent|ancestor))/', 'active', $classes);
@@ -441,7 +446,7 @@ function dotsqrpress_nav_menu_css_class($classes, $item) {
   $classes[] = 'menu-' . $slug;
   $classes = array_unique($classes);
 
-  return array_filter($classes, 'is_element_empty');
+  return array_filter($classes, 'is_it_empty');
 }
 add_filter('nav_menu_css_class', 'dotsqrpress_nav_menu_css_class', 10, 2);
 add_filter('nav_menu_item_id', '__return_null');
@@ -493,34 +498,13 @@ add_filter( 'option_uploads_use_yearmonth_folders', '__return_false', 100 );
 # DISABLE HTML COMMENTS
 add_filter( 'pre_comment_content', 'wp_specialchars' );
 
-# CREATE DEFAULT PAGES WELCOME AND GOODBYE
-add_action('init','dotsqrpress_check_if_page');
-function dotsqrpress_check_if_page(){
-	if(get_page_by_title( 'welcome' ) == NULL) {
-		dotsqrpress_create_page('welcome', 'Welcome', '<h1>Welcome to ' . get_bloginfo('name'));
-	}
-	if(get_page_by_title( 'goodbye') == NULL) {
-		dotsqrpress_create_page('goodbye', 'Goodbye', '<h1>See you soon!</h1>');
-	}
-}
-function dotsqrpress_create_page($name, $title, $content) {
-	$dotsqrpress_page = array(
-		'post_title'    => $title,
-		'post_content'  => $content,
-		'post_status'   => 'publish',
-		'post_author'   => 1,
-		'post_type'     => 'page',
-		'page_template' => 'notice.php',
-		'post_name'     => $name
-	);
-	wp_insert_post( $dotsqrpress_page );
-}
-
 #DISABLE AUTOSAVE
-add_action( 'wp_print_scripts', 'dotsqrpress_disable_autosave' );
+add_action( 'admin_init', 'dotsqrpress_disable_autosave' );
 function dotsqrpress_disable_autosave(){
     wp_deregister_script('autosave');
 }
+# DISABLE ADMIN BAR FOR ALL USERS
+show_admin_bar(false);
 
 # DOTSQRPRESS DEFAULT EXCERPT LENGHT & ELLIPSES
 function dotsqrpress_excerpet_lenght($length) {
@@ -631,7 +615,7 @@ add_action('widgets_init', 'dotsqrpress_remove_default_widgets', 1);
 
 # REMOVE 'PRIVATE:' PREFIX FROM HIDDEN PAGES
 function dotsqrpress_private_pages($title) {
-	$title = attribute_escape($title);
+	$title = esc_attr($title);
 	$findthese = array(
 	    '#Protected:#',
 	    '#Private:#',
@@ -677,16 +661,20 @@ function dotsqrpress_custom_admin_ui() {
 	if($current_user->user_login !== MAIN_USER && defined('MAIN_USER')) {
 		remove_action( 'admin_notices', 'update_nag');
 		remove_action( 'init', 'wp_version_check');
-		remove_action('load-update-core.php','wp_update_plugins');
+		remove_menu_page('ot-settings');
 		add_filter( 'pre_option_update_core', '__return_null' );
 		add_filter('pre_site_transient_update_core','__return_null');
 		add_filter('pre_site_transient_update_plugins','__return_null');
 		add_filter('pre_site_transient_update_themes','__return_null');
-		remove_menu_page('ot-settings');
-		apply_filters( 'ot_theme_options_parent_slug', 'dotsqrpress_options', 999);
-		apply_filters( 'ot_theme_options_position', 6, 999);
+		remove_action('load-update-core.php','wp_update_plugins');
+		add_filter( 'ot_show_new_layout', '__return_false', 9999 );
 	}
 }
+# MAKE SURE TO DISABLE WP AUTOMATIC UPDATES. YOU CAN MANUALLY UPDATE IT IF YOU ARE MAIN_USER.
+add_filter( 'automatic_updater_disabled', '__return_true' );
+add_filter( 'auto_update_theme', '__return_false' );
+add_filter( 'auto_update_plugin', '__return_false' );
+add_filter( 'auto_core_update_send_email', '__return_false' );
 
 # RESTRICT ADMIN MENU. SHOW ALL FIELDS ONLY TO WEBMASTER, AS DEFINED IN WP-CONFIG.
 function dotsqrpress_restrict_admin()
@@ -729,14 +717,33 @@ add_action('pre_user_query','dotsqrpress_hide_webmaster');
 
 #####################
 # FLUSH REWRITE RULES ON THEME CHANGE AND ON DOTSQRPRESS ACTIVATION/DEACTIVATION
+
+function dotsqrpress_activation() {
+	if ( ! get_option( 'dotsqrpress_activation_flag' ) ) {
+  	add_option( 'dotsqrpress_activation_flag', true );
+  }
+
+	global $wp_rewrite;
+	$wp_rewrite->non_wp_rules = $wp_rewrite->non_wp_rules;
+  $wp_rewrite->set_permalink_structure( '/%category%/%postname%/' );
+	$wp_rewrite->flush_rules();
+}
+register_activation_hook( __FILE__, 'dotsqrpress_activation' );
+
+function dotsqrpress_flush_rules_check() {
+    if ( get_option( 'dotsqrpress_activation_flag' ) ) {
+        global $wp_rewrite;
+        $wp_rewrite->non_wp_rules = $wp_rewrite->non_wp_rules;
+        $wp_rewrite->flush_rules();
+        delete_option( 'dotsqrpress_activation_flag' );
+    }
+}
+add_action( 'init', 'dotsqrpress_flush_rules_check', 20 );
+
 add_action( 'after_switch_theme', 'dotsqrpress_flush_ontheme' );
 function dotsqrpress_flush_ontheme() {
 	global $wp_rewrite;
-	$wp_rewrite->flush_rules();
-}
-add_action( 'muplugins_loaded', 'dotsqrpress_core_plugin_loaded' );
-function dotsqrpress_core_plugin_loaded() {
-	global $wp_rewrite;
+	$wp_rewrite->non_wp_rules = $wp_rewrite->non_wp_rules;
 	$wp_rewrite->flush_rules();
 }
 

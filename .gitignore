@@ -5,6 +5,7 @@ wp-content/
 .htaccess
 /*.php
 !wp-config.php
+license.txt
 
 # REMOVE ALL SCRIPTS AND STYLES FILES BUT MINIFIEDS
 *.js
