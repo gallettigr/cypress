@@ -94,6 +94,21 @@
 				color: white;
 			}
 		}
+		#wp-toolbar {
+			.dotsqrpress-adminbar-icon {
+				.ab-icon:before {
+					content: '\f319';
+					top: 3px;
+				}
+			}
+			.dotsqrpress-logout {
+				float: right;
+				.ab-icon:before {
+					content: '\f112';
+					top: 3px;
+				}
+			}
+		}
 	}
 }
 

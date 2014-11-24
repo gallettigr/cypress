@@ -7,7 +7,7 @@
 Plugin Name: DOTSQRPress Login Filter
 Contributors: @gallettigr
 Plugin URI: http://dotsqr.co
-Description: Extended security plugin for DOTSQRPress to filter and block login attempts. Increases WP security.
+Description: Extended security plugin for DOTSQRPress to filter and block login tries. Increases WP security.
 Author: @gallettigr
 Version: 1.2
 Author URI: http://www.twitter.com/gallettigr
@@ -63,7 +63,7 @@ function dotsqrpress_login_filter_plugin_setup() {
 	add_filter('wp_authenticate_user', 'dotsqrpress_login_filter_wp_authenticate_user', 99999, 2);
 	add_filter('shake_error_codes', 'dotsqrpress_login_filter_failure_shake');
 	add_action('login_head', 'dotsqrpress_login_filter_add_error_message');
-	add_action('login_errors', 'dotsqrpress_login_filter_fixup_error_messages');
+	//add_action('login_errors', 'dotsqrpress_login_filter_fixup_error_messages');
 	add_action('admin_menu', 'dotsqrpress_login_filter_admin_menu');
 	add_action('wp_authenticate', 'dotsqrpress_login_filter_track_credentials', 10, 2);
 }
@@ -142,7 +142,7 @@ function dotsqrpress_login_filter_failed_cookie_hash($cookie_elements) {
 	dotsqrpress_login_filter_clear_auth_cookie();
 
 	extract($cookie_elements, EXTR_OVERWRITE);
-	$user = get_userdatabylogin($username);
+	$user = get_user_by('login', $username);
 	if (!$user) {
 		dotsqrpress_login_filter_failed($username);
 		return;
@@ -314,20 +314,20 @@ function dotsqrpress_login_filter_notify_email($user) {
 	$blogname = is_dotsqrpress_login_filter_multisite() ? get_site_option('site_name') : get_option('blogname');
 
 	if ($whitelisted) {
-		$subject = sprintf(__("[%s] Failed login attempts from whitelisted IP"
+		$subject = sprintf(__("[%s] Failed login tries from whitelisted IP"
 				      , 'dotsqrpress_core')
 				   , $blogname);
 	} else {
-		$subject = sprintf(__("[%s] Too many failed login attempts"
+		$subject = sprintf(__("[%s] Too many failed login tries"
 				      , 'dotsqrpress_core')
 				   , $blogname);
 	}
 
-	$message = sprintf(__("%d failed login attempts (%d lockout(s)) from IP: %s"
+	$message = sprintf(__("%d failed login tries (%d lockout(s)) from IP: %s"
 			      , 'dotsqrpress_core') . "\r\n\r\n"
 			   , $count, $lockouts, $ip);
 	if ($user != '') {
-		$message .= sprintf(__("Last user attempted: %s", 'dotsqrpress_core')
+		$message .= sprintf(__("Last user tried: %s", 'dotsqrpress_core')
 				    . "\r\n\r\n" , $user);
 	}
 	if ($whitelisted) {
@@ -386,7 +386,7 @@ function dotsqrpress_login_filter_notify($user) {
 function dotsqrpress_login_filter_error_msg() {
 	$ip = dotsqrpress_login_filter_get_address();
 	$lockouts = get_option('dotsqrpress_login_filter_lockouts');
-	$msg = __('<strong>ERROR</strong>: Too many failed login attempts.', 'dotsqrpress_core') . ' ';
+	$msg = __('<strong>ERROR</strong>: Too many failed login tries.', 'dotsqrpress_core') . ' ';
 
 	if (!is_array($lockouts) || !isset($lockouts[$ip]) || time() >= $lockouts[$ip]) {
 		/* Huh? No timeout active? */
@@ -420,7 +420,7 @@ function dotsqrpress_login_filter_retries_remaining_msg() {
 		return '';
 	}
 	$remaining = max((dotsqrpress_login_filter_option('allowed_retries') - ($retries[$ip] % dotsqrpress_login_filter_option('allowed_retries'))), 0);
-	return sprintf(_n("<strong>%d</strong> attempt remaining.", "<strong>%d</strong> attempts remaining.", $remaining, 'dotsqrpress_core'), $remaining);
+	return sprintf(_n("<strong>%d</strong> more try remaining.", "<strong>%d</strong> more tries remaining.", $remaining, 'dotsqrpress_core'), $remaining);
 }
 
 function dotsqrpress_login_filter_get_message() {
@@ -436,7 +436,6 @@ function dotsqrpress_login_filter_get_message() {
 
 function should_dotsqrpress_login_filter_show_msg() {
 	if (isset($_GET['key'])) {
-		/* reset password */
 		return false;
 	}
 
@@ -632,7 +631,7 @@ function dotsqrpress_login_filter_option_page()	{
 		wp_die('Sorry, but you do not have permissions to change settings.');
 	}
 	if (count($_POST) > 0) {
-		check_admin_referer('limit-login-attempts-options');
+		check_admin_referer('dotsqrpress-login-filter-options');
 	}
 	if (isset($_POST['clear_log'])) {
 		delete_option('dotsqrpress_login_filter_logged');
@@ -702,9 +701,9 @@ function dotsqrpress_login_filter_option_page()	{
 
 	$client_type_warning = '';
 	if ($client_type != $client_type_guess) {
-		$faq = 'http://wordpress.org/extend/plugins/limit-login-attempts/faq/';
+		$faq = 'http://github.com/gallettigr/dotsqrpress';
 
-		$client_type_warning = '<br /><br />' . sprintf(__('<strong>Current setting appears to be invalid</strong>. Please make sure it is correct. Further information can be found <a href="%s" title="FAQ">here</a>','dotsqrpress_core'), $faq);
+		$client_type_warning = '<br /><br />' . sprintf(__('<strong>Current setting appears to be invalid</strong>. Please make sure it is correct. For further informations and issues please visit <a href="%s" title="DOTSQRPRESS on GitHub">project page</a>','dotsqrpress_core'), $faq);
 	}
 
 	$v = explode(',', dotsqrpress_login_filter_option('lockout_notify'));
@@ -714,8 +713,8 @@ function dotsqrpress_login_filter_option_page()	{
 	<div class="wrap">
 	  <h2><?php echo __('Limit Login Attempts Settings','dotsqrpress_core'); ?></h2>
 	  <h3><?php echo __('Statistics','dotsqrpress_core'); ?></h3>
-	  <form action="options-general.php?page=limit-login-attempts" method="post">
-		<?php wp_nonce_field('limit-login-attempts-options'); ?>
+	  <form action="options-general.php?page=dotsqrpress-login-filter" method="post">
+		<?php wp_nonce_field('dotsqrpress-login-filter-options'); ?>
 	    <table class="form-table">
 		  <tr>
 			<th scope="row" valign="top"><?php echo __('Total lockouts','dotsqrpress_core'); ?></th>
@@ -738,8 +737,8 @@ function dotsqrpress_login_filter_option_page()	{
 		</table>
 	  </form>
 	  <h3><?php echo __('Options','dotsqrpress_core'); ?></h3>
-	  <form action="options-general.php?page=limit-login-attempts" method="post">
-		<?php wp_nonce_field('limit-login-attempts-options'); ?>
+	  <form action="options-general.php?page=dotsqrpress-login-filter" method="post">
+		<?php wp_nonce_field('dotsqrpress-login-filter-options'); ?>
 	    <table class="form-table">
 		  <tr>
 			<th scope="row" valign="top"><?php echo __('Lockout','dotsqrpress_core'); ?></th>
@@ -791,8 +790,8 @@ function dotsqrpress_login_filter_option_page()	{
 		if (is_array($log) && count($log) > 0) {
 	  ?>
 	  <h3><?php echo __('Lockout log','dotsqrpress_core'); ?></h3>
-	  <form action="options-general.php?page=limit-login-attempts" method="post">
-		<?php wp_nonce_field('limit-login-attempts-options'); ?>
+	  <form action="options-general.php?page=dotsqrpress-login-filter" method="post">
+		<?php wp_nonce_field('dotsqrpress-login-filter-options'); ?>
 		<input type="hidden" value="true" name="clear_log" />
 		<p class="submit">
 		  <input name="submit" value="<?php echo __('Clear Log','dotsqrpress_core'); ?>" type="submit" />
