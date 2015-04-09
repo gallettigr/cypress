@@ -20,7 +20,7 @@ if ( getenv('ENV') ) {
 /**
  * Define app constants.
  */
-define('WP_PATH', ROOT_PATH . '/' . getenv('WP_DIR'));
+define('WP_PATH', FP_PATH . '/' . getenv('WP_DIR'));
 define('WP_URL', WP_SITEURL);
 define('APP_PATH', FP_PATH . '/' . getenv('APP_DIR'));
 define('APP_URL', WP_HOME . '/' . FP_DIR . '/' . getenv('APP_DIR'));
@@ -30,10 +30,7 @@ define('WP_CONTENT_URL', APP_URL);
 define('WPMU_PLUGIN_DIR', FP_PATH . '/core');
 define('WPMU_PLUGIN_URL', WP_HOME . '/' . FP_DIR . '/core');
 
-if (!defined('ABSPATH')) {
-  define('ABSPATH', WP_PATH);
-}
-
+define('WP_USE_THEMES', true);
 
 /**
  * Load WordPress configuration.
