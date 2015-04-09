@@ -1,13 +1,13 @@
 <?php
 /**
- * @package DOTSQRPress
+ * @package MelaPress
  * @version 1.0
  */
 /*
-Plugin Name: DOTSQRPress Loader
+Plugin Name: MelaPress
 Contributors: @gallettigr
-Plugin URI: http://dotsqr.co
-Description: Setup plugin for DOTSQRPress.
+Plugin URI: http://www.melacommunication.com
+Description: Setup plugin for MelaPress.
 Author: @gallettigr
 Version: 1.0
 Author URI: http://www.twitter.com/gallettigr
@@ -45,7 +45,7 @@ function dotsqrpress_option_check($options,$key) {
 
 # MAIN LOADER. REQUIRES DOTSQRPRESS PLUGINS. YOU CAN ADD YOURS HERE IF YOU KNOW WHAT YOU'RE DOING.
 # PLEASE WAIT UNTIL WORDPRESS HAS BEEN CORRECTLY INSTALLED BEFORE UNCOMMENTING AND INCLUDING DOTSQRPRESS INIT FILE.
-include WPMU_PLUGIN_DIR.'/dotsqrpress_core/dotsqrpress.php';
-include WPMU_PLUGIN_DIR.'/dotsqrpress_core/init.php';
-include WPMU_PLUGIN_DIR.'/dotsqrpress_core/login-filter.php';
+include WPMU_PLUGIN_DIR.'/melapress/dotsqrpress.php';
+include WPMU_PLUGIN_DIR.'/melapress/init.php';
+//include WPMU_PLUGIN_DIR.'/melapress/login-filter.php';
 ?>
