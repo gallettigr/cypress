@@ -21,9 +21,12 @@ if ( getenv('ENV') ) {
  * Define app constants.
  */
 define('WP_PATH', FP_PATH . '/' . getenv('WP_DIR'));
+define('WP_RPATH', FP_DIR . '/' . WP_DIR);
 define('WP_URL', WP_SITEURL);
 define('APP_PATH', FP_PATH . '/' . getenv('APP_DIR'));
+define('APP_RPATH', FP_DIR . '/' . getenv('APP_DIR'));
 define('APP_URL', WP_HOME . '/' . FP_DIR . '/' . getenv('APP_DIR'));
+
 
 define('WP_CONTENT_DIR', APP_PATH);
 define('WP_CONTENT_URL', APP_URL);
