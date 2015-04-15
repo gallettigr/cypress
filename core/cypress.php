@@ -72,6 +72,12 @@ class Cypress {
       $append = "\n<IfModule mod_deflate.c>\nAddOutputFilterByType DEFLATE text/plain\nAddOutputFilterByType DEFLATE text/html\nAddOutputFilterByType DEFLATE text/xml\nAddOutputFilterByType DEFLATE text/css\nAddOutputFilterByType DEFLATE application/xml\nAddOutputFilterByType DEFLATE application/xhtml+xml\nAddOutputFilterByType DEFLATE application/rss+xml\nAddOutputFilterByType DEFLATE application/javascript\nAddOutputFilterByType DEFLATE application/x-javascript\nAddOutputFilterByType DEFLATE application/x-httpd-php\nAddOutputFilterByType DEFLATE application/x-httpd-fastphp\nAddOutputFilterByType DEFLATE image/svg+xml\nBrowserMatch ^Mozilla/4 gzip-only-text/html\nBrowserMatch ^Mozilla/4\.0[678] no-gzip\nBrowserMatch \bMSI[E] !no-gzip !gzip-only-text/html\nHeader append Vary User-Agent env=!dont-vary\n</IfModule>\n";
         return $rules . $append;
     });
+
+    if (APP_ENV == 'production')
+      add_filter( 'mod_rewrite_rules', function($rules) {
+        $append = "\n".'ExpiresActive Off'."\n".'ExpiresByType image/gif "access plus 30 days"'."\n".'ExpiresByType image/jpeg "access plus 30 days"'."\n".'ExpiresByType image/png "access plus 30 days"'."\n".'ExpiresByType text/css "access plus 1 week"'."\n".'ExpiresByType text/javascript "access plus 1 week"';
+        return $rules . $append;
+      });
   }
 
   /*
@@ -97,6 +103,7 @@ class Cypress {
     remove_action('wp_head', 'wp_shortlink_wp_head');
     remove_action('wp_head', 'rel_canonical');
 
+    add_filter( 'show_recent_comments_widget_style', '__return_false' );
     add_filter('wp_headers', function($headers) { unset($headers['X-Pingback']); return $headers; });
     add_filter('xmlrpc_methods', function($methods) { unset( $methods['pingback.ping'] ); return $methods; });
 
@@ -157,25 +164,11 @@ class Cypress {
       endif;
     }, 10, 3);
 
-    add_filter('logout_url', function($url, $redirect){
-      return '/logout';
-    }, 10, 2);
-
-    add_filter('login_url', function($url, $redirect){
-      return '/login';
-    }, 10, 2);
-
-    add_filter('lostpassword_url', function($url){
-      return '/retrieve';
-    });
-
-    add_filter('lostpassword_url', function($url){
-      return '/retrieve';
-    });
-
-    add_filter('login_errors', function(){
-      return __('Login error. Try again.', 'cypress');
-    });
+    add_filter('logout_url', function($url, $redirect){ return '/logout'; }, 10, 2);
+    add_filter('login_url', function($url, $redirect){ return '/login'; }, 10, 2);
+    add_filter('lostpassword_url', function($url){ return '/retrieve'; });
+    add_filter('lostpassword_url', function($url){ return '/retrieve'; });
+    add_filter('login_errors', function(){ return __('Login error. Try again.', 'cypress'); });
   }
 
   public function structure() {

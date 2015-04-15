@@ -1,6 +1,6 @@
-=== Framepress ===
+=== Cypress ===
 Contributors: gallettigr
-Tags: wordpress stack,framework,framepress,framer
+Tags: wordpress stack,framework,cypress
 Requires at least: 4.0
 Tested up to: 4.1.1
 Stable tag: master
