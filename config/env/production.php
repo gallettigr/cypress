@@ -65,7 +65,7 @@ define('CONCATENATE_SCRIPTS', true);
 define('DISABLE_WP_CRON', true);
 
 /**
- * Framepress production constants.
+ * Cypress production constants.
  */
 define('GTM', 'GTM-X00XXX');
 define('DEVELOPER', 'gallettigr');

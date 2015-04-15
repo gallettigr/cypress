@@ -20,7 +20,7 @@ $table_prefix  = 'app_';
 /**
  * Host and URL constants.
  */
-define('WP_SITEURL', 'http://' . $_SERVER['SERVER_NAME'] . '/' . FP_DIR . '/' . getenv('WP_DIR'));
+define('WP_SITEURL', 'http://' . $_SERVER['SERVER_NAME'] . '/' . CP_DIR . '/' . getenv('WP_DIR'));
 define('WP_HOME', 'http://' . $_SERVER['SERVER_NAME']);
 
 /**
@@ -34,7 +34,7 @@ define('SAVEQUERIES', true);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 ini_set('log_errors', 1);
-ini_set('error_log', FP_PATH . '/.logs/error_log.log');
+ini_set('error_log', CP_PATH . '/.logs/error_log.log');
 
 /**
  * Salt keys. Generate from {@link https://api.wordpress.org/secret-key/1.1/salt/ }
@@ -57,7 +57,7 @@ define('WP_CACHE', false);
 define('FS_METHOD', 'direct');
 
 /**
- * Framepress production constants.
+ * Cypress production constants.
  */
 define('GTM', 'GTM-X00XXX');
 define('DEVELOPER', 'gallettigr');

@@ -1,13 +1,13 @@
 <?php
 /**
- * Framepress loader.
+ * Cypress loader.
  * @author gallettigr
  * @version 0.8
  * @date    2015-04-09
  */
 
 /**
- * Require composer vendors. Install them first using PHP Composer from the Framepress folder.
+ * Require composer vendors. Install them first using PHP Composer from the Cypress folder.
  */
 require_once 'vendor/autoload.php';
 
@@ -23,8 +23,8 @@ Dotenv::required(array('DB_NAME', 'DB_USER', 'DB_PASSWORD'));
  * Define app constants.
  */
 define('ROOT_PATH', dirname(__DIR__));
-define('FP_PATH', __DIR__ );
-define('FP_DIR', basename(FP_PATH));
+define('CP_PATH', __DIR__ );
+define('CP_DIR', basename(CP_PATH));
 if ( getenv('WP_DIR') ) {
   define('WP_DIR', getenv('WP_DIR'));
 }

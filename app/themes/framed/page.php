@@ -18,7 +18,7 @@ get_header(); ?>
       $.ajax({
          data: {
           action: 'redirect',
-          ajax: 'framepress'
+          ajax: 'cypress'
         },
          type: 'post',
          success: function(output) {

@@ -1,20 +1,20 @@
 <?php
 /**
- * Framepress core plugin 'Framer'.
- * @package Framepress
+ * Cypress core and WordPress mu-plugin.
+ * @package Cypress
  * @author gallettigr
  * @version 0.8
  * @date    2015-04-09
- * Plugin Name: Framer
+ * Plugin Name: Cypress
  * Contributors: gallettigr
- * Plugin URI: http://github.com/gallettigr/framepress
- * Description: Best frame for your WordPress master piece.
+ * Plugin URI: http://github.com/gallettigr/cypress
+ * Description: Less mess for WordPress.
  * Author: gallettigr
  * Version: 0.8
  * Author URI: http://twitter.com/gallettigr
- * Textdomain: framepress
+ * Textdomain: cypress
  */
-namespace Framepress;
+namespace Cypress;
 use \DateTime;
 
 if( !is_blog_installed() ) {
@@ -22,11 +22,11 @@ if( !is_blog_installed() ) {
   return;
 }
 
-class Framer {
+class Cypress {
 
   public function __construct() {
     add_action( 'muplugins_loaded', array( $this, 'loaded' ) );
-    add_action( 'wp_loaded', array( $this, 'secured' ) );
+    add_action( 'wp_loaded', array( $this, 'security' ) );
     add_action( 'after_setup_theme', array( $this, 'cleanup' ) );
     add_action( 'plugins_loaded', array( $this, 'apis' ) );
     add_action( 'generate_rewrite_rules', array( $this, 'apache' ) );
@@ -43,10 +43,10 @@ class Framer {
   }
 
   /*
-  Setup Framepress textdomain, load default themes from 'WP' folder, hides site from search engines if environment is not 'production', defines custom constants.
+  Setup Cypress textdomain, load default themes from 'WP' folder, hides site from search engines if environment is not 'production', defines custom constants.
    */
   public function loaded() {
-    load_muplugin_textdomain( 'framepress', basename( dirname(__FILE__) ) . '/languages' );
+    load_muplugin_textdomain( 'cypress', basename( dirname(__FILE__) ) . '/languages' );
     if (!defined('WP_DEFAULT_THEME'))
       register_theme_directory(ABSPATH . 'wp-content/themes');
 
@@ -80,7 +80,7 @@ class Framer {
   public function apis() {
     add_filter( 'xmlrpc_enabled', '__return_false' );
     add_action( 'xmlrpc_call', function() {
-      wp_die( 'XMLRPC disabled by Framepress.', array( 'response' => 403 ) );
+      wp_die( 'XMLRPC disabled by Cypress.', array( 'response' => 403 ) );
     });
   }
 
@@ -129,14 +129,14 @@ class Framer {
   /*
   Improve WordPress default security. Mask default login and prevent access to unauthorized users.
    */
-  public function secured() {
+  public function security() {
     $redirect_404 =  home_url( '/404' ); $uri = strtolower($_SERVER['REQUEST_URI']);
     if( !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' ) :
         return;
     elseif( preg_match( '#wp-admin#', $uri ) && !current_user_can('manage_options') ) :
         wp_redirect( $redirect_404 );
         exit;
-    elseif( preg_match( '#wp-login#', $uri ) ) :
+    elseif( preg_match( '#wp-login#', $uri ) && $_SERVER['REQUEST_METHOD'] !== "POST") :
         wp_redirect( $redirect_404 );
         exit;
     elseif( $uri == '/logout' ) :
@@ -174,7 +174,7 @@ class Framer {
     });
 
     add_filter('login_errors', function(){
-      return __('Login error. Try again.', 'framepress');
+      return __('Login error. Try again.', 'cypress');
     });
   }
 
@@ -196,20 +196,14 @@ class Framer {
     });
 
     add_filter('wp_nav_menu_args', function($args){
-      $menu = array(
-        'container' => false,
-        'items_wrap' => '<ul id="%1$s" class="%2$s">%3$s</ul>',
-        'depth' => 3,
-        'walker' => new Cypress_Menu(),
-        'fallback_cb' => 'wp_page_menu'
-        );
+      $menu = array( 'container' => false, 'items_wrap' => '<ul id="%1$s" class="%2$s">%3$s</ul>', 'depth' => 3, 'walker' => new Cypress_Menu(), 'fallback_cb' => 'wp_page_menu' );
       return array_merge($args, $menu);
     });
 
   }
 
   public function ajax() {
-    if( isset($_POST['action']) && !empty($_POST['action']) && isset($_POST['ajax']) && $_POST['ajax'] == 'framepress' ) :
+    if( isset($_POST['action']) && !empty($_POST['action']) && isset($_POST['ajax']) && $_POST['ajax'] == 'cypress' ) :
       $action = $_POST['action'];
       do_action( 'ajax_' . $action );
     endif;
@@ -234,20 +228,23 @@ class Framer {
   }
 }
 
-$Framer_Functions = new Framer();
+$Cypress_Functions = new Cypress();
 
 
 class Cypress_Menu extends \Walker_Nav_Menu {
 
-  public function start_lvl(&$output, $depth = 0, $args = array()) {
-    $indent = str_repeat('\t', $depth);
+  public function start_lvl( &$output, $depth = 0, $args = array() ) {
     if( $depth == 0 )
       $output .= '<ul class="dropdown-menu" role="menu">';
     if( $depth > 0 )
       $output .= '<ul class="dropdown-submenu">';
   }
 
-  function start_el(&$output, $item, $depth = 0, $args = array(), $id = 0) {
+  public function end_lvl( &$output, $depth = 0, $args = array() ) {
+    $output .= '</ul>';
+  }
+
+  public function start_el(&$output, $item, $depth = 0, $args = array(), $id = 0) {
     $indent = ($depth) ? str_repeat("\t", $depth) : '';
     $classes = [];
     $classes[] = 'item';
@@ -272,6 +269,7 @@ class Cypress_Menu extends \Walker_Nav_Menu {
       $atts['class'] = 'dropdown-toggle';
       $atts['data-toggle'] = 'dropdown';
       $atts['role'] = 'button';
+      $atts['aria-haspopup'] = 'true';
       $atts['aria-expanded'] = 'false';
     endif;
     $attributes = '';
@@ -282,9 +280,13 @@ class Cypress_Menu extends \Walker_Nav_Menu {
     $item_html .= '<a' . $attributes . '>' . $item->title;
 
     if ( preg_grep('#has-children#', $item->classes) && $depth == 0 )
-      $item_html .= '<span class="caret"></span>';
-    $item_html .= '</a></li>';
+      $item_html .= ' <span class="caret"></span>';
+    $item_html .= '</a>';
     $output .= $item_html;
+  }
+
+  public function end_el( &$output, $item, $depth = 0, $args = array() ) {
+    $output .= '</li>';
   }
 }
 ?>

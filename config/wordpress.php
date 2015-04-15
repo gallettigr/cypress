@@ -1,6 +1,6 @@
 <?php
 /**
- * Framepress WP configuration.
+ * Cypress WP configuration.
  * @author gallettigr
  * @version 0.8
  * @date    2015-04-09
@@ -18,7 +18,7 @@ define('FS_CHMOD_FILE', ( 0644 & ~ umask() ));
 define('EMPTY_TRASH_DAYS', 10);
 
 /**
- * Framepress constants.
+ * Cypress constants.
  */
 define('THEME_COLOR', '#C12431');
 

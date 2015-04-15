@@ -1,4 +1,4 @@
-FRAMEPRESS
+Cypress -- Less mess for WordPress.
 ===========
 Contributors: gallettigr
 Requires at least: 3.8.0
