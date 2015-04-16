@@ -73,6 +73,8 @@ function materialwp_setup() {
 endif; // materialwp_setup
 add_action( 'after_setup_theme', 'materialwp_setup' );
 
+
+
 /**
  * Register widget area.
  *
@@ -122,7 +124,7 @@ function materialwp_scripts() {
 add_action( 'wp_enqueue_scripts', 'materialwp_scripts' );
 
 function redirect_home() {
-  echo json_encode(array('data' => 'Hello world, this is me.'));
+  echo json_encode(array('data' => home_url()));
   exit;
 }
 add_action('ajax_redirect', 'redirect_home');

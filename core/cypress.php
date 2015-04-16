@@ -88,6 +88,7 @@ class Cypress {
     add_action( 'xmlrpc_call', function() {
       wp_die( 'XMLRPC disabled by Cypress.', array( 'response' => 403 ) );
     });
+    add_filter('xmlrpc_methods', function($methods) { unset( $methods['pingback.ping'] ); unset( $methods['pingback.extensions.getPingbacks'] ); unset( $methods['wp.getUsersBlogs'] ); return $methods; });
   }
 
   /*
@@ -102,10 +103,10 @@ class Cypress {
     remove_action('wp_head', 'wp_generator');
     remove_action('wp_head', 'wp_shortlink_wp_head');
     remove_action('wp_head', 'rel_canonical');
+    add_filter('the_generator', '__return_false');
 
     add_filter( 'show_recent_comments_widget_style', '__return_false' );
     add_filter('wp_headers', function($headers) { unset($headers['X-Pingback']); return $headers; });
-    add_filter('xmlrpc_methods', function($methods) { unset( $methods['pingback.ping'] ); return $methods; });
 
     add_action('wp_head', function(){
       global $wp_the_query;
@@ -123,14 +124,54 @@ class Cypress {
         endif;
       endif;
     });
-    add_filter('style_loader_src', function($src) {
-      $src = remove_query_arg( array('ver','version'), $src );
-      return $src;
+
+    add_filter('style_loader_src', function($src) { $src = remove_query_arg( array('ver','version'), $src ); return $src; });
+    add_filter('script_loader_src', function($src){ $src = remove_query_arg( array('ver','version'), $src ); return $src; });
+
+    add_filter('body_class', function($class) {
+      global $post;
+      $class = [];
+      if( is_page() && !is_front_page() ) : $class[] = 'page';
+        elseif( is_single() ) : $class[] = 'single';
+        elseif( is_front_page() ) : $class[] = 'home';
+        elseif( is_archive() ) : $class[] = 'archive';
+        elseif ( is_search() ) : $class[] = 'search';
+        else: $class[] = get_post_type();
+      endif;
+      if( !is_front_page() ) $class[] = $post->post_name;
+      if( is_page() && $post->post_parent ) :
+        $parents = get_post_ancestors( $post );
+        $i = 0; foreach ($parents as $parent ) {
+          if($i == 0) $class[] = 'parent-' . get_post($parent)->post_name;
+          $i++;
+        }
+      endif;
+      return $class;
     });
-    add_filter('script_loader_src', function($src){
-      $src = remove_query_arg( array('ver','version'), $src );
-      return $src;
+
+    add_filter('body_class', function($class) {
+      global $is_lynx, $is_gecko, $is_IE, $is_opera, $is_NS4, $is_safari, $is_chrome, $is_iphone;
+      if($is_lynx) $class[] = 'lynx';
+      elseif($is_gecko) $class[] = 'gecko';
+      elseif($is_opera) $class[] = 'opera';
+      elseif($is_NS4) $class[] = 'ns4';
+      elseif($is_safari) $class[] = 'safari';
+      elseif($is_chrome) $class[] = 'chrome';
+      elseif($is_IE) $class[] = 'ie';
+      else $class[] = 'unknown';
+
+      if($is_iphone) $class[] = 'iphone';
+      return $class;
     });
+
+    add_filter('style_loader_tag', function($tag) {
+      preg_match_all("!<link rel='stylesheet'\s?(id='[^']+')?\s+href='(.*)' type='text/css' media='(.*)' />!", $tag, $matches);
+      $media = $matches[3][0] === 'print' ? ' media="print"' : '';
+      return '<link rel="stylesheet" href="' . $matches[2][0] . '"' . $media . '>' . "\n";
+    });
+
+    show_admin_bar(false);
+
   }
 
   /*
@@ -164,11 +205,13 @@ class Cypress {
       endif;
     }, 10, 3);
 
-    add_filter('logout_url', function($url, $redirect){ return '/logout'; }, 10, 2);
-    add_filter('login_url', function($url, $redirect){ return '/login'; }, 10, 2);
-    add_filter('lostpassword_url', function($url){ return '/retrieve'; });
-    add_filter('lostpassword_url', function($url){ return '/retrieve'; });
     add_filter('login_errors', function(){ return __('Login error. Try again.', 'cypress'); });
+    if( file_exists(ROOT_PATH . '/.htaccess' ) ) :
+      add_filter('logout_url', function($url, $redirect){ return home_url('/logout'); }, 10, 2);
+      add_filter('login_url', function($url, $redirect){ return home_url('/login'); }, 10, 2);
+      add_filter('lostpassword_url', function($url){ return home_url('/retrieve'); });
+      add_filter('lostpassword_url', function($url){ return home_url('/retrieve'); });
+    endif;
   }
 
   public function structure() {
@@ -207,12 +250,36 @@ class Cypress {
     remove_meta_box( 'dashboard_primary', 'dashboard', 'normal' );
     remove_meta_box( 'dashboard_secondary', 'dashboard', 'normal' );
     remove_meta_box( 'dashboard_incoming_links', 'dashboard', 'normal' );
-    remove_meta_box( 'dashboard_quick_press', 'dashboard', 'side' );
-    remove_meta_box( 'dashboard_recent_drafts', 'dashboard', 'side' );
-    remove_meta_box( 'dashboard_recent_comments', 'dashboard', 'normal' );
-    remove_meta_box( 'dashboard_right_now', 'dashboard', 'normal' );
-    remove_meta_box( 'dashboard_activity', 'dashboard', 'normal');
     remove_action( 'welcome_panel', 'wp_welcome_panel' );
+    //remove_meta_box( 'dashboard_quick_press', 'dashboard', 'side' );
+    //remove_meta_box( 'dashboard_recent_drafts', 'dashboard', 'side' );
+    //remove_meta_box( 'dashboard_recent_comments', 'dashboard', 'normal' );
+    //remove_meta_box( 'dashboard_right_now', 'dashboard', 'normal' );
+    //remove_meta_box( 'dashboard_activity', 'dashboard', 'normal');
+
+    add_action( 'admin_head', function() { echo '<meta name="robots" content="noindex, nofollow">'; });
+    add_filter( 'admin_title', function($wordpress, $title){ return $title . ' | Cypress';}, 10, 2);
+
+    remove_meta_box( 'authordiv','page','normal' );
+    remove_meta_box( 'commentstatusdiv','page','normal' );
+    remove_meta_box( 'commentstatusdiv','post','normal' );
+    remove_meta_box( 'trackbacksdiv','post','normal' );
+    // remove_meta_box( 'postcustom','post','normal' );
+    // remove_meta_box( 'postexcerpt','post','normal' );
+    // remove_meta_box( 'authordiv','post','normal' );
+    // remove_meta_box( 'postcustom','page','normal' );
+    // remove_meta_box( 'postexcerpt','page','normal' );
+    // remove_meta_box( 'trackbacksdiv','page','normal' );
+
+    add_filter ('admin_footer_text', '__return_empty_string');
+    add_filter ('update_footer', function(){ return base64_decode('RW5oYW5jZWQgd2l0aCA8c3BhbiBjbGFzcz0iZGFzaGljb25zIGRhc2hpY29ucy1oZWFydCI+PC9zcGFuPiBieSA8c3Ryb25nPkN5cHJlc3M8L3N0cm9uZz4='); });
+
+    add_filter( 'automatic_updater_disabled', '__return_true' );
+    add_filter( 'auto_update_theme', '__return_false' );
+    add_filter( 'auto_update_plugin', '__return_false' );
+    add_filter( 'auto_core_update_send_email', '__return_false' );
+
+    add_action( 'after_switch_theme', function(){ flush_rewrite_rules(true); });
   }
 
   public function define_constant( $constant, $value ) {
@@ -221,7 +288,7 @@ class Cypress {
   }
 }
 
-$Cypress_Functions = new Cypress();
+$Cypress = new Cypress();
 
 
 class Cypress_Menu extends \Walker_Nav_Menu {
