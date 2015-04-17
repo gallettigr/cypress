@@ -370,67 +370,6 @@ define('THEME_NAME', next($get_theme_name));
 define('THEME_PATH', DOTSQRPRESS_CONTENTS . '/themes/' . THEME_NAME);
 
 
-# DOTSQRPRESS INIT
-add_action('init', 'dotsqrpress_init', 1);
-function dotsqrpress_init() {
-  // INIT START
-  // LOAD DOTSQRPRESS CORE LOCALE
-  $core_domain = 'dotsqrpress_core';
-  $core_locale = apply_filters( 'plugin_locale', get_locale(), $core_domain );
-  if ( $loaded = load_textdomain( $core_domain, trailingslashit( WP_LANG_DIR ) . $core_domain . '/' . $core_domain . '-' . $core_locale . '.mo' ) ) {
-    return $loaded;
-  } else {
-    load_plugin_textdomain( $core_domain, FALSE, basename( dirname( __FILE__ ) ) . '/languages/' );
-  }
-  // RESTRICT ACCESS TO WORDPRESS WP-LOGIN AND WP-ADMIN TO NOT-ADMIN USERS. LOGOUT USERS WHO VISIT 'LOGOUT' PAGE
-  if( (strpos(strtolower($_SERVER['REQUEST_URI']),'wp-login.php') !== false) && !isset($_REQUEST['action']) && (strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest')) {
-    wp_redirect(get_option('siteurl').'/404');
-    exit;
-  }
-  else if( (strpos(strtolower($_SERVER['REQUEST_URI']),'logout') !== false)) {
-    wp_logout();
-    wp_redirect(get_option('siteurl').'/goodbye');
-    exit;
-  }
-  else if( (strpos(strtolower($_SERVER['REQUEST_URI']),'wp-admin') !== false) && !current_user_can('manage_options') && (strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest')) {
-    wp_redirect(get_option('siteurl').'/404');
-    exit;
-  }
-
-  // CLEAN UP WP HEADER TAGS AND IMPROVE WP SEO
-  remove_action('wp_head', 'feed_links', 2);
-  remove_action('wp_head', 'feed_links_extra', 3);
-  remove_action('wp_head', 'rsd_link');
-  remove_action('wp_head', 'wlwmanifest_link');
-  remove_action('wp_head', 'adjacent_posts_rel_link_wp_head', 10, 0);
-  remove_action('wp_head', 'wp_generator');
-  remove_action('wp_head', 'wp_shortlink_wp_head', 10, 0);
-  global $wp_widget_factory;
-  if( isset( $wp_widget_factory->widgets['WP_Widget_Recent_Comments'] ) ) {
-    remove_action( 'wp_head', array( $wp_widget_factory->widgets['WP_Widget_Recent_Comments'], 'recent_comments_style' ) );
-  }
-  add_filter('use_default_gallery_style', '__return_null');
-  add_filter('the_generator', '__return_false');
-  if (!class_exists('WPSEO_Frontend')) {
-   remove_action('wp_head', 'rel_canonical');
-   add_action('wp_head', 'dotsqrpress_canonical_urls');
- }
-  // ADDS DOTSQRPRESS REWRITE RULES. RENAMES URLS FOR LOGIN, REGISTER, THEME 'ASSETS' FOLDER AND WP-INCLUDES.
- add_rewrite_rule( 'login/?$', 'wp-login.php', 'top' );
- add_rewrite_rule( 'register/?$', 'wp-login.php?action=register', 'top' );
- add_rewrite_rule( 'retrieve/?$', 'wp-login.php?action=lostpassword', 'top' );
- add_rewrite_rule( 'api/auth/?$', 'wp-login.php?action=oauth1_authorize', 'top' );
- add_rewrite_rule( 'views/(.*)', THEME_PATH . '/assets/$1', 'top' );
- add_rewrite_rule( 'vendors/(.*)', 'wp-includes/$1', 'top' );
- add_rewrite_rule( 'lib/(.*)', DOTSQRPRESS_CONTENTS . '/plugins/$1', 'top' );
- add_rewrite_rule( 'ui/(.*)', THEME_PATH, 'top' );
- // ADDS AJAX LOGIN & SIGNUP FOR UNLOGGED USERS
- if (!is_user_logged_in()) {
-    add_action('init', 'ajax_auth_init');
- }
-  // INIT END
-}
-
 # LOAD OPTION-TREE FRAMEWORK AND SETTINGS, VISIT GITHUB REPO FOR MORE INFO (github.com/valendesigns/option-tree)
 include( 'option-tree/ot-loader.php' );
 
@@ -442,32 +381,6 @@ remove_action( 'wp_head', 'json_output_link_wp_head', 10 );
 
 # LOAD METABOXES
 include( 'metabox/meta-box.php' );
-
-
-# CANONICAL URLS TO HEADER IF NOT USING WPSEO
-function dotsqrpress_canonical_urls() {
-  global $wp_the_query;
-  if (!is_singular()) {
-    return;
-  }
-  if (!$id = $wp_the_query->get_queried_object_id()) {
-    return;
-  }
-  $link = get_permalink($id);
-  echo "\t<link rel=\"canonical\" href=\"$link\">\n";
-}
-
-# DOTSQRPRESS THEME LOCALE DEFAULTS. JUST REMEMBER TO USE YOUR THEME NAME AS DOMAIN PATH
-function dotsqrpress_themes_setup(){
-  if ( $loaded = load_theme_textdomain( THEME_NAME, trailingslashit( WP_LANG_DIR ) . THEME_NAME ) ) {
-    return $loaded;
-  } elseif ( $loaded = load_theme_textdomain( THEME_NAME, get_stylesheet_directory() . '/languages' )) {
-    return $loaded;
-  } else {
-    load_theme_textdomain( THEME_NAME, get_template_directory() . '/languages' );
-  }
-}
-add_action('after_setup_theme', 'dotsqrpress_themes_setup');
 
 
 # UPDATE PROD SITE URL
@@ -546,67 +459,6 @@ return $my_content . $rules;
 }
 //add_filter('mod_rewrite_rules', 'dotsqrpress_custom_rules');
 
-# REDIRECT USERS AFTER SUCCESSFUL LOGIN. IF ADMIN TO BACKEND; IF USER TO WELCOME PAGE.
-add_filter( 'login_redirect', 'dotsqrpress_login_redirect', 10, 3 );
-function dotsqrpress_login_redirect( $redirect_to, $request, $user ) {
-  global $user;
-  if ( isset( $user->roles ) && is_array( $user->roles ) ) {
-    if ( in_array( 'administrator', $user->roles ) ) {
-      return admin_url();
-    } else {
-      return 'welcome';
-    }
-  } else {
-    return 'welcome';
-  }
-}
-# LETS USERS USE BOTH USERNAME OR EMAIL TO LOGIN
-add_filter('authenticate', 'dotsqrpress_allow_email_login', 20, 3);
-function dotsqrpress_allow_email_login( $user, $username, $password ) {
-  if ( is_email( $username ) ) {
-    $user = get_user_by_email( $username );
-    if ( $user ) $username = $user->user_login;
-  }
-  return wp_authenticate_username_password( null, $username, $password );
-}
-
-# CHANGE DEFAULT WP LOGOUT URL. MAKE SURE TO MATCH INIT AND HTACCESS SETTINGS.
-add_filter('logout_url', 'dotsqrpress_logout_url', 10, 2);
-function dotsqrpress_logout_url($logout_url, $redirect)
-{
-  return "/logout";
-}
-add_filter( 'login_url', 'dotsqrpress_login_url', 10, 2 );
-function dotsqrpress_login_url( $login_url, $redirect ) {
-  return "/login";
-}
-add_filter('register','dotsqrpress_register_url');
-function dotsqrpress_register_url($url){
-  return str_replace(site_url('wp-login.php?action=register', 'login'),site_url('register', 'login'),$url);
-}
-add_filter('lostpassword_url','dotsqrpress_retrievepass_url');
-function dotsqrpress_retrievepass_url($url){
- return '/retrieve';
-}
-
-# REMOVE FILE VERSION FROM ALL CSS AND JS, ALSO WP-INCLUDE
-add_filter( 'style_loader_src', 'dotsqrpress_remove_ver_src', 9999 );
-add_filter( 'script_loader_src', 'dotsqrpress_remove_ver_src', 9999 );
-function dotsqrpress_remove_ver_src( $src ) {
-  $src = remove_query_arg( array('ver','version'), $src );
-  return $src;
-}
-
-add_filter( 'style_loader_src', 'dotsqrpress_pretty_urls', 9999 );
-add_filter( 'script_loader_src', 'dotsqrpress_pretty_urls', 9999 );
-add_filter( 'attachment_link', 'dotsqrpress_pretty_urls', 9999 );
-function dotsqrpress_pretty_urls( $src ) {
-  $src = str_replace('wp-includes','vendors',$src);
-  $src = str_replace(THEME_PATH,'ui',$src);
-  $src = str_replace(DOTSQRPRESS_CONTENTS . '/plugins','lib',$src);
-  return $src;
-}
-
 
 # STOP REDIRECTING TO SIMILAR URL
 add_filter('redirect_canonical', 'dotsqrpress_no_similar_url');
@@ -660,61 +512,6 @@ function dotsqrpress_robots( $output, $public ) {
   return $output;
 }
 
-# CLEAN STYLES LINKS
-function dotsqrpress_clean_style($input) {
-  preg_match_all("!<link rel='stylesheet'\s?(id='[^']+')?\s+href='(.*)' type='text/css' media='(.*)' />!", $input, $matches);
-  $media = $matches[3][0] === 'print' ? ' media="print"' : '';
-  return '<link rel="stylesheet" href="' . $matches[2][0] . '"' . $media . '>' . "\n";
-}
-add_filter('style_loader_tag', 'dotsqrpress_clean_style');
-
-# CLEAN SCRIPT TAGS AND MAKE THEM DEFER OR ASYNC
-function dotsqrpress_scripts_tags ($url) {
-  $clean_url = str_replace(array('?defer', '?async'),'',$url);
-  if (strpos( $url, '.js?defer' )) {
-    return "$clean_url' defer='defer";
-  } elseif (strpos( $url, '.js?async' )) {
-    return "$clean_url' defer='defer' async='async";
-  } else {
-    return $url;
-  }
-}
-add_filter( 'clean_url', 'dotsqrpress_scripts_tags', 11, 1 );
-
-# REMOVE BODYCLASS, ADD PAGESLUG CLASS
-function dotsqrpress_body_class($classes) {
-  if (is_single() || is_page() && !is_front_page()) {
-    $classes[] = basename(get_permalink());
-  }
-  $parent_page_class = 'parent-pageid-' . get_post_ancestors( get_the_ID() )[0];
-  $home_id_class = 'page-id-' . get_the_ID();
-  $page_id_class = 'postid-' . get_the_ID();
-  $template_name_class = basename(get_page_template(), '.php');
-  $remove_classes = array('page-template-default', 'page-child', 'page-parent', $parent_page_class, $home_id_class, $page_id_class, $template_name_class);
-  $classes = array_diff($classes, $remove_classes);
-
-  return $classes;
-}
-add_filter('body_class', 'dotsqrpress_body_class');
-
-# ADD PARENT PAGE CLASS TO CURRENT PAGE BODY
-function dotsqrpress_parentpage_body_class($classes) {
-  global $wpdb, $post;
-  $query = new WP_Query();
-  $all_pages = $query->query(array('post_type' => 'page'));
-  if (is_page()) {
-    if ($post->post_parent) {
-      $parent  = end(get_post_ancestors($current_page_id));
-      $post_data = get_post($parent, ARRAY_A);
-      $classes[] = 'parent-' . $post_data['post_name'];
-    } elseif (get_page_children(get_the_ID(), $all_pages)) {
-      $classes[] = 'parent-page';
-    }
-  }
-  return $classes;
-}
-add_filter('body_class','dotsqrpress_parentpage_body_class');
-
 # REMOVE DEFAULT CONTACT FIELDS, REPLACE WITH USEFUL ONES
 function dotsqrpress_useful_user_fields( $user_fields ) {
   unset($user_fields['aim']);
@@ -763,99 +560,6 @@ function dotsqrpress_profile() {
 }
 add_action('wp_head','dotsqrpress_profile', 1);
 
-# CHECKS BROWSERS AND ADDS DEVICE AND BROWSER CLASSES TO BODY
-add_filter('body_class','dotsqrpress_device_class');
-add_filter('body_class','dotsqrpress_browser_class');
-function dotsqrpress_device_class($classes) {
-  global $is_mobile, $is_ios, $is_android, $is_bbos, $is_windows, $is_iphone, $is_ipad;
-  $agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
-  if (empty($agent)) {
-    return;
-  }
-  $mobile_devices = array(
-    'is_iphone' => 'iphone',
-    'is_ipad' => 'ipad',
-    'is_kindle' => 'kindle'
-    );
-  $mobile_oss = array(
-    'is_ios' => 'ip(hone|ad|od)',
-    'is_android' => 'android',
-    'is_webos' => '(web|hpw)os',
-    'is_palmos' => 'palm(\s?os|source)',
-    'is_windows' => 'windows (phone|ce)',
-    'is_symbian' => 'symbian(\s?os|)|symbos',
-    'is_bbos' => 'blackberry(.*?version\/\d+|\d+\/\d+)',
-    'is_bada' => 'bada',
-    'is_mac' => 'macintosh'
-    );
-  $mobile_browsers = array(
-    'is_opera_mobile' => 'opera (mobi|mini)',
-    'is_webkit_mobile' => '(android|nokia|webos|hpwos|blackberry).*?webkit|webkit.*?(mobile|kindle|bolt|skyfire|dolfin|iris)', // Webkit mobile
-    'is_firefox_mobile' => 'fennec',
-    'is_ie_mobile' => 'iemobile|windows ce',
-    'is_netfront' => 'netfront|kindle|psp|blazer|jasmine',
-    'is_uc_browser' => 'ucweb'
-    );
-  $groups = array($mobile_devices, $mobile_oss, $mobile_browsers);
-  foreach ($groups as $group) {
-    foreach ($group as $name => $regex) {
-      if (preg_match('/'.$regex.'/i', $agent)) {
-        global $$name;
-        $is_mobile = $$name = true;
-        break;
-      }
-    }
-  }
-  if ($is_mobile === false) {
-    $regex = 'nokia|motorola|sony|ericsson|lge?(-|;|\/|\s)|htc|samsung|asus|mobile|phone|tablet|pocket|wap|wireless|up\.browser|up\.link|j2me|midp|cldc|kddi|mmp|obigo|novarra|teleca|openwave|uzardweb|pre\/|hiptop|avantgo|plucker|xiino|elaine|vodafone|sprint|o2';
-    $accept = isset($_SERVER['HTTP_ACCEPT']) ? $_SERVER['HTTP_ACCEPT'] : '';
-    if (false !== strpos($accept,'text/vnd.wap.wml')
-      || false !== strpos($accept,'application/vnd.wap.xhtml+xml')
-      || isset($_SERVER['HTTP_X_WAP_PROFILE'])
-      || isset($_SERVER['HTTP_PROFILE'])
-      || preg_match('/'.$regex.'/i', $agent)
-      ) {
-      $is_mobile = true;
-    }
-  }
-  // OS
-  if     ($is_ios)     $classes[] = 'ios';
-  elseif ($is_android) $classes[] = 'android';
-  elseif ($is_bbos)    $classes[] = 'blackberry';
-  elseif ($is_windows) $classes[] = 'windows';
-  elseif ($is_mac)     $classes[] = 'mac';
-
-  // DEVICE
-  if     ($is_iphone) $classes[] = 'iphone';
-  elseif ($is_ipad)   $classes[] = 'ipad';
-
-  // MOBILE OR DESKTOP
-  if     ($is_mobile)  $classes[] = 'mobile';
-  elseif (!$is_mobile) $classes[] = 'desktop';
-
-
-  return $classes;
-}
-function dotsqrpress_browser_class($classes) {
-  global $is_lynx, $is_gecko, $is_IE, $is_opera, $is_NS4, $is_safari, $is_chrome;
-  if($is_lynx) $classes[] = 'lynx';
-  elseif($is_gecko) $classes[] = 'gecko';
-  elseif($is_opera) $classes[] = 'opera';
-  elseif($is_NS4) $classes[] = 'ns4';
-  elseif($is_safari) $classes[] = 'safari';
-  elseif($is_chrome) $classes[] = 'chrome';
-  elseif($is_IE) $classes[] = 'ie';
-  else $classes[] = 'unknown';
-  return $classes;
-}
-# ADD SCREEN ORIENTATION BODY CLASS
-function dotsqrpress_orientation_class() {
-  ?>
-  <script async type="text/javascript">function orient(){var n=$(window).height(),o=$(window).width(),a="";if(o>n){var a="landscape";return a}var a="portrait";return a}var $=jQuery;$(window).load(function(){$("body").addClass(orient())}),$(window).resize(function(){$("body").removeClass("portrait landscape").addClass(orient())}),$(window).on("orientationchange",function(){$("body").removeClass("portrait landscape").addClass(orient())});</script>
-  <?php
-}
-add_action('wp_footer', 'dotsqrpress_orientation_class');
-
 # HIDE DEFAULT DASHBOARD WIDGETS
 function dotsqrpress_hide_dashboard_widgets() {
   remove_meta_box( 'dashboard_plugins', 'dashboard', 'normal' );
@@ -871,75 +575,6 @@ function dotsqrpress_hide_dashboard_widgets() {
 }
 add_action('admin_init', 'dotsqrpress_hide_dashboard_widgets');
 
-# REWRITE SEARCH URLS AND CUSTOM SEARCH FORM. MAKE SURE TO ENABLE CUSTOM PERMALINK STRUCTURE.
-function dotsqrpress_search_redirect() {
-  global $wp_rewrite;
-  if (!isset($wp_rewrite) || !is_object($wp_rewrite) || !$wp_rewrite->using_permalinks()) {
-    return;
-  }
-  $search_base = $wp_rewrite->search_base;
-  if (is_search() && !is_admin() && strpos($_SERVER['REQUEST_URI'], "/{$search_base}/") === false) {
-    wp_redirect(home_url("/{$search_base}/" . urlencode(get_query_var('s'))));
-    exit();
-  }
-}
-add_action('template_redirect', 'dotsqrpress_search_redirect');
-function dotsqrpress_request_filter($query_vars) {
-  if (isset($_GET['s']) && empty($_GET['s'])) {
-    $query_vars['s'] = ' ';
-  }
-  return $query_vars;
-}
-add_filter('request', 'dotsqrpress_request_filter');
-
-# MELAPRESS DEFAULT MENU NAV WALKER.
-class MelaPress_Walker extends Walker_Nav_Menu {
-
-  function start_lvl(&$output, $depth = 0, $args = array()) {
-    $output .= "\n<ul class=\"dropdown-menu\">\n";
-  }
-
-  function display_element($element, &$children_elements, $max_depth, $depth = 0, $args, &$output) {
-    $element->is_dropdown = !empty($children_elements[$element->ID]);
-    if ($element->is_dropdown) {
-      if ($depth === 0) {
-        $element->classes[] = 'dropdown';
-      } elseif ($depth === 1) {
-        $element->classes[] = 'dropdown-submenu';
-      }
-    }
-    parent::display_element($element, $children_elements, $max_depth, $depth, $args, $output);
-  }
-}
-
-# CUSTOM WALKER SETTINGS. DEPTH 3, NO CONTAINER, SIMPLIFIED WRAPPER.
-function dotsqrpress_nav_menu_args($args = '') {
-  $dotsqrpress_nav_menu_args['container'] = false;
-  if (!$args['items_wrap']) {
-    $dotsqrpress_nav_menu_args['items_wrap'] = '<ul class="%2$s">%3$s</ul>';
-    $dotsqrpress_nav_menu_args['depth'] = 3;
-  }
-  if (!$args['walker']) {
-    $dotsqrpress_nav_menu_args['walker'] = new MelaPress_Walker();
-  }
-  return array_merge($args, $dotsqrpress_nav_menu_args);
-}
-
-add_filter('wp_nav_menu_args', 'dotsqrpress_nav_menu_args');
-function is_it_empty($val) {
-  return empty($val);
-}
-function dotsqrpress_nav_menu_css_class($classes, $item) {
-  $slug = sanitize_title($item->title);
-  $classes = preg_replace('/(current(-menu-|[-_]page[-_]|_page_)(item|parent|ancestor))/', 'active', $classes);
-  $classes = preg_replace('/^((menu|page)[-_\w+]+)+/', '', $classes);
-  $classes[] = 'item-' . $slug;
-  $classes = array_unique($classes);
-
-  return array_filter($classes);
-}
-add_filter('nav_menu_css_class', 'dotsqrpress_nav_menu_css_class', 10, 2);
-add_filter('nav_menu_item_id', '__return_null');
 
 # ADMIN STYLING
 add_action('admin_head', 'dotsqrpress_admin_style');
@@ -1028,21 +663,6 @@ function swappyt_avatar ($avatar) {
   return $avatar_url;
 }
 
-# ADD ANALYTICS ON ALL SITE IF DEFINED IN DOTSQRPRESS CONF FILE
-function dotsqrpress_analytics() {
-  ?>
-  <noscript><iframe src="//www.googletagmanager.com/ns.html?id=<?php echo GTM; ?>"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <script async type="text/javascript">(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-  })(window,document,'script','dataLayer','<?php echo GTM; ?>');</script>
-  <?php
-}
-if (defined('GTM')) {
-  add_action('wp_footer', 'dotsqrpress_analytics');
-}
 
 # RESIZE UPLOADED IMAGES ACCORDING TO WP LARGE SIZE SET IN WP SETTINGS. THIS AVOIDS UPLOADING VERY BIG FILES.
 function dotsqrpress_replace_big_images($image_data) {
@@ -1276,73 +896,6 @@ function dotsqrpress_restrict_admin()
     die();
   }
 
-  function auth_retrieve($user_login) {
-    global $wpdb, $wp_hasher;
-    $user_login = sanitize_text_field($user_login);
-
-    if ( empty( $user_login) ) {
-        return false;
-        echo json_encode(array('loggedin'=>false, 'message'=>__('Password e utente non corrispondono.')));
-    } else if ( strpos( $user_login, '@' ) ) {
-        $user_data = get_user_by( 'email', trim( $user_login ) );
-        if ( empty( $user_data ) )
-          return false;
-          echo json_encode(array('loggedin'=>false, 'message'=>__('Email non valida.')));
-    } else {
-        $login = trim($user_login);
-        $user_data = get_user_by('login', $login);
-    }
-    do_action('lostpassword_post');
-
-    if ( !$user_data ) {
-      return false;
-      echo json_encode(array('loggedin'=>false, 'message'=>__('Utente non esistente.')));
-    }
-
-    $user_login = $user_data->user_login;
-    $user_email = $user_data->user_email;
-
-    do_action('retrieve_password', $user_login);
-    $allow = apply_filters('allow_password_reset', true, $user_data->ID);
-
-    if ( ! $allow ) {
-      return false;
-    } else if ( is_wp_error($allow) ) {
-      echo json_encode(array('loggedin'=>false, 'message'=>__('Il processo non è andato a buon fine.')));
-      return false;
-    }
-
-    $key = wp_generate_password( 20, false );
-    do_action( 'retrieve_password_key', $user_login, $key );
-
-    if ( empty( $wp_hasher ) ) {
-        require_once ABSPATH . 'wp-includes/class-phpass.php';
-        $wp_hasher = new PasswordHash( 8, true );
-    }
-    $hashed = $wp_hasher->HashPassword( $key );
-    $wpdb->update( $wpdb->users, array( 'user_activation_key' => $hashed ), array( 'user_login' => $user_login ) );
-
-    $message = __('Someone requested that the password be reset for the following account:') . "\r\n\r\n";
-    $message .= network_home_url( '/' ) . "\r\n\r\n";
-    $message .= sprintf(__('Username: %s'), $user_login) . "\r\n\r\n";
-    $message .= __('If this was a mistake, just ignore this email and nothing will happen.') . "\r\n\r\n";
-    $message .= __('To reset your password, visit the following address:') . "\r\n\r\n";
-    $message .= '<' . network_site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user_login), 'login') . ">\r\n";
-
-    if ( is_multisite() ) {
-      $blogname = $GLOBALS['current_site']->site_name;
-    } else {
-      $blogname = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
-    }
-    $title = sprintf( __('[%s] Password Reset'), $blogname );
-    $title = apply_filters('retrieve_password_title', $title);
-    $message = apply_filters('retrieve_password_message', $message, $key);
-    if ( $message && !wp_mail($user_email, $title, $message) ) {
-      echo json_encode(array('loggedin'=>false, 'message'=>__('The e-mail could not be sent. Contact the site administrators.')));
-    } else {
-      echo json_encode(array('loggedin'=>false, 'message'=>__('We successfully sent you an email with a link to reset your password.')));
-    }
-  }
 
 # ADD WEB APP CAPABILITIES FOR IOS7. ADD 'MINIMAL-UI' TO VIEWPORT META.
   function dotsqrpress_ios_webapp() {

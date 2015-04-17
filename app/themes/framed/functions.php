@@ -31,7 +31,6 @@ function materialwp_setup() {
 	load_theme_textdomain( 'materialwp', get_template_directory() . '/languages' );
 
 	// Add default posts and comments RSS feed links to head.
-	add_theme_support( 'automatic-feed-links' );
 
 	//Suport for WordPress 4.1+ to display titles
 	add_theme_support( 'title-tag' );
@@ -105,17 +104,17 @@ function materialwp_scripts() {
 
 	wp_enqueue_style( 'materialwp-style', get_stylesheet_uri() );
 
-	wp_enqueue_script( 'bootstrap-js', get_template_directory_uri() . '/js/bootstrap.min.js', array('jquery'), '3.3.1', true );
+	wp_enqueue_script( 'bootstrap-js', get_template_directory_uri() . '/js/bootstrap.min.js', array('jquery'), null, true );
 
-	wp_enqueue_script( 'ripples-js', get_template_directory_uri() . '/js/ripples.min.js', array('jquery'), '', true );
+	wp_enqueue_script( 'ripples-js', get_template_directory_uri() . '/js/ripples.min.js', array('jquery'), null, true );
 
-	wp_enqueue_script( 'material-js', get_template_directory_uri() . '/js/material.min.js', array('jquery'), '', true );
+	wp_enqueue_script( 'material-js', get_template_directory_uri() . '/js/material.min.js?defer', array('jquery'), null, true );
 
-	wp_enqueue_script( 'materialwp-navigation', get_template_directory_uri() . '/js/navigation.js', array(), '20120206', true );
+	wp_enqueue_script( 'materialwp-navigation', get_template_directory_uri() . '/js/navigation.js?async', array(), null, true );
 
-	wp_enqueue_script( 'materialwp-skip-link-focus-fix', get_template_directory_uri() . '/js/skip-link-focus-fix.js', array(), '20130115', true );
+	wp_enqueue_script( 'materialwp-skip-link-focus-fix', get_template_directory_uri() . '/js/skip-link-focus-fix.js', array(), null, true );
 
-	wp_enqueue_script( 'main-js', get_template_directory_uri() . '/js/main.js', array('jquery'), '', true );
+	wp_enqueue_script( 'main-js', get_template_directory_uri() . '/js/main.js', array('jquery'), null, true );
 
 	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
 		wp_enqueue_script( 'comment-reply' );
@@ -130,16 +129,31 @@ function redirect_home() {
 add_action('ajax_redirect', 'redirect_home');
 
 
-function remove_x_pingback($headers) {
-    unset($headers['X-Pingback']);
-    return $headers;
+# CLEANUP THUMBNAILS ATTRIBUTES AND MAKE THEM USEFUL. TURNS IMG TITLE INTO CLEAN CSS CLASS.
+function clean_class($dsp_class)
+{
+  $src = 'àáâãäçèéêëìíîïñòóôõöøùúûüýÿßÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝ';
+  $rep = 'aaaaaceeeeiiiinoooooouuuuyysAAAAACEEEEIIIINOOOOOOUUUUY';
+  $dsp_class = strtr(utf8_decode($dsp_class), utf8_decode($src), $rep);
+  $dsp_class = strtolower($dsp_class);
+  $dsp_class = preg_replace("/[^a-z0-9\s._-]/", "", $dsp_class);
+  $dsp_class = preg_replace("/[\s._-]+/", " ", $dsp_class);
+  $dsp_class = preg_replace("/[\s]/", "-", $dsp_class);
+  return $dsp_class;
 }
-add_filter('wp_headers', 'remove_x_pingback');
 
-add_filter( 'xmlrpc_methods', function( $methods ) {
-unset( $methods['pingback.ping'] );
-return $methods;
-} );
+function dotsqrpress_thumbnail($html, $post_id, $post_thumbnail_id, $size, $attr) {
+  $id = get_post_thumbnail_id();
+  $src = wp_get_attachment_image_src($id, $size);
+  $alt = get_the_title($id);
+  $ext_class = clean_class($alt);
+  $site = get_bloginfo('name');
+  $class = $attr['class'];
+  $html = '<img src="' . $src[0] . '" title="' . $alt . ' - ' . $site . '" alt="' . $alt . ' - ' . $site . '" class="img-responsive thumbnail-' . $ext_class .' ' . $class . '" />';
+
+  return $html;
+}
+add_filter('post_thumbnail_html', 'dotsqrpress_thumbnail', 99, 5);
 
 
 /**

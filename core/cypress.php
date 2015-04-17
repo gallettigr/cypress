@@ -25,14 +25,15 @@ if( !is_blog_installed() ) {
 class Cypress {
 
   public function __construct() {
-    add_action( 'muplugins_loaded', array( $this, 'loaded' ) );
-    add_action( 'wp_loaded', array( $this, 'security' ) );
-    add_action( 'after_setup_theme', array( $this, 'cleanup' ) );
-    add_action( 'plugins_loaded', array( $this, 'apis' ) );
-    add_action( 'generate_rewrite_rules', array( $this, 'apache' ) );
-    add_action( 'init', array( $this, 'ajax' ) );
-    add_action( 'admin_init', array($this, 'backend') );
-    add_action( 'template_redirect', array($this, 'structure') );
+    add_action( 'muplugins_loaded', array( $this, 'Loaded' ) );
+    add_action( 'wp_loaded', array( $this, 'Security' ) );
+    add_action( 'after_setup_theme', array( $this, 'CleanUp' ) );
+    add_action( 'plugins_loaded', array( $this, 'APIs' ) );
+    add_action( 'generate_rewrite_rules', array( $this, 'Apache' ) );
+    add_action( 'init', array( $this, 'AJAX' ) );
+    add_action( 'admin_init', array($this, 'Backend') );
+    add_action( 'template_redirect', array($this, 'Structure') );
+    add_action( 'after_setup_theme', array( $this, 'Auth' ) );
   }
 
   /*
@@ -45,7 +46,7 @@ class Cypress {
   /*
   Setup Cypress textdomain, load default themes from 'WP' folder, hides site from search engines if environment is not 'production', defines custom constants.
    */
-  public function loaded() {
+  public function Loaded() {
     load_muplugin_textdomain( 'cypress', basename( dirname(__FILE__) ) . '/languages' );
     if (!defined('WP_DEFAULT_THEME'))
       register_theme_directory(ABSPATH . 'wp-content/themes');
@@ -61,12 +62,15 @@ class Cypress {
   /*
   Apache custom rewrite rules and output compression.
    */
-  public function apache() {
+  public function Apache() {
     add_rewrite_rule( 'login/?$', WP_RPATH . '/wp-login.php', 'top' );
+    add_rewrite_rule( 'api/auth/?$', WP_RPATH . '/wp-login.php?action=oauth1_authorize', 'top' );
     add_rewrite_rule( 'register/?$', WP_RPATH . '/wp-login.php?action=register', 'top' );
     add_rewrite_rule( 'retrieve/?$', WP_RPATH . '/wp-login.php?action=lostpassword', 'top' );
     add_rewrite_rule( 'views/(.*)', THEME_RPATH . '/$1', 'top' );
-    add_rewrite_rule( 'plugins/(.*)', WP_RPATH . '/wp-includes/$1', 'top' );
+    add_rewrite_rule( 'includes/(.*)', WP_RPATH . '/wp-includes/$1', 'top' );
+    add_rewrite_rule( 'plugins/(.*)', APP_RPATH . '/plugins/$1', 'top' );
+    add_rewrite_rule( 'uploads/(.*)', APP_RPATH . '/uploads/$1', 'top' );
 
     add_filter( 'mod_rewrite_rules', function($rules) {
       $append = "\n<IfModule mod_deflate.c>\nAddOutputFilterByType DEFLATE text/plain\nAddOutputFilterByType DEFLATE text/html\nAddOutputFilterByType DEFLATE text/xml\nAddOutputFilterByType DEFLATE text/css\nAddOutputFilterByType DEFLATE application/xml\nAddOutputFilterByType DEFLATE application/xhtml+xml\nAddOutputFilterByType DEFLATE application/rss+xml\nAddOutputFilterByType DEFLATE application/javascript\nAddOutputFilterByType DEFLATE application/x-javascript\nAddOutputFilterByType DEFLATE application/x-httpd-php\nAddOutputFilterByType DEFLATE application/x-httpd-fastphp\nAddOutputFilterByType DEFLATE image/svg+xml\nBrowserMatch ^Mozilla/4 gzip-only-text/html\nBrowserMatch ^Mozilla/4\.0[678] no-gzip\nBrowserMatch \bMSI[E] !no-gzip !gzip-only-text/html\nHeader append Vary User-Agent env=!dont-vary\n</IfModule>\n";
@@ -83,7 +87,7 @@ class Cypress {
   /*
   Disable WordPress default XMLRPC for security reasons and setup WP-API.org
    */
-  public function apis() {
+  public function APIs() {
     add_filter( 'xmlrpc_enabled', '__return_false' );
     add_action( 'xmlrpc_call', function() {
       wp_die( 'XMLRPC disabled by Cypress.', array( 'response' => 403 ) );
@@ -94,7 +98,7 @@ class Cypress {
   /*
   Clean page headers, better canonical URLS, disable script and style versioning.
    */
-  public function cleanup() {
+  public function CleanUp() {
     remove_action('wp_head', 'feed_links', 2);
     remove_action('wp_head', 'feed_links_extra', 3);
     remove_action('wp_head', 'rsd_link');
@@ -125,8 +129,18 @@ class Cypress {
       endif;
     });
 
-    add_filter('style_loader_src', function($src) { $src = remove_query_arg( array('ver','version'), $src ); return $src; });
-    add_filter('script_loader_src', function($src){ $src = remove_query_arg( array('ver','version'), $src ); return $src; });
+    add_filter('style_loader_src', function($src) {
+      $src = $this->PrettyURIs($src);
+      return $src;
+    });
+    add_filter('script_loader_src', function($src){
+      $src = $this->PrettyURIs($src);
+      return $src;
+    });
+    add_filter('attachment_link', function($src) {
+      $src = $this->PrettyURIs($src);
+      return $src;
+    });
 
     add_filter('body_class', function($class) {
       global $post;
@@ -135,10 +149,11 @@ class Cypress {
         elseif( is_single() ) : $class[] = 'single';
         elseif( is_front_page() ) : $class[] = 'home';
         elseif( is_archive() ) : $class[] = 'archive';
-        elseif ( is_search() ) : $class[] = 'search';
+        elseif( is_search() ) : $class[] = 'search';
+        elseif( is_404() ) : $class[] = '404';
         else: $class[] = get_post_type();
       endif;
-      if( !is_front_page() ) $class[] = $post->post_name;
+      if( !is_front_page() && !is_404() ) $class[] = $post->post_name;
       if( is_page() && $post->post_parent ) :
         $parents = get_post_ancestors( $post );
         $i = 0; foreach ($parents as $parent ) {
@@ -149,48 +164,56 @@ class Cypress {
       return $class;
     });
 
-    add_filter('body_class', function($class) {
-      global $is_lynx, $is_gecko, $is_IE, $is_opera, $is_NS4, $is_safari, $is_chrome, $is_iphone;
-      if($is_lynx) $class[] = 'lynx';
-      elseif($is_gecko) $class[] = 'gecko';
-      elseif($is_opera) $class[] = 'opera';
-      elseif($is_NS4) $class[] = 'ns4';
-      elseif($is_safari) $class[] = 'safari';
-      elseif($is_chrome) $class[] = 'chrome';
-      elseif($is_IE) $class[] = 'ie';
-      else $class[] = 'unknown';
-
-      if($is_iphone) $class[] = 'iphone';
-      return $class;
-    });
-
     add_filter('style_loader_tag', function($tag) {
       preg_match_all("!<link rel='stylesheet'\s?(id='[^']+')?\s+href='(.*)' type='text/css' media='(.*)' />!", $tag, $matches);
       $media = $matches[3][0] === 'print' ? ' media="print"' : '';
       return '<link rel="stylesheet" href="' . $matches[2][0] . '"' . $media . '>' . "\n";
     });
 
+
     show_admin_bar(false);
+
+  }
+
+  /*
+  Replace URIs with Cypress URL masking pattern and add defer or async tags to scripts tag.
+   */
+  private function PrettyURIs($src) {
+    $src = remove_query_arg( array('ver','version'), $src );
+    if( preg_match('#wp-includes#', $src) ) :
+      $src = str_replace(WP_RPATH . '/wp-includes', 'includes', $src);
+    elseif( preg_match('#' . APP_RPATH . '#', $src) ) :
+      $src = str_replace(THEME_RPATH, 'views', $src);
+      $src = str_replace(APP_RPATH . '/plugins', 'plugins', $src);
+      $src = str_replace(APP_RPATH . '/uploads', 'uploads', $src);
+    endif;
+
+    $async = strpos($src, '?async'); $defer = strpos($src, '?defer');
+    if ( !$async && $defer ) : echo '<script type="text/javascript" defer src="' . str_replace('?defer', '', $src) . '"></script>';
+    elseif ( $async && !$defer ) : echo '<script type="text/javascript" async src="' . str_replace('?async', '', $src) . '"></script>';
+    elseif ( $async && $defer ) : echo '<script type="text/javascript" async defer src="' . str_replace(array('?async','?defer'), '', $src) . '"></script>';
+    else : return $src;
+    endif;
 
   }
 
   /*
   Improve WordPress default security. Mask default login and prevent access to unauthorized users.
    */
-  public function security() {
+  public function Security() {
     $redirect_404 =  home_url( '/404' ); $uri = strtolower($_SERVER['REQUEST_URI']);
     if( !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' ) :
         return;
     elseif( preg_match( '#wp-admin#', $uri ) && !current_user_can('manage_options') ) :
         wp_redirect( $redirect_404 );
-        exit;
+        exit();
     elseif( preg_match( '#wp-login#', $uri ) && $_SERVER['REQUEST_METHOD'] !== "POST") :
         wp_redirect( $redirect_404 );
-        exit;
+        exit();
     elseif( $uri == '/logout' ) :
         wp_logout();
         wp_redirect( home_url() );
-        exit;
+        exit();
     endif;
 
     add_filter('login_redirect', function($redirect_to, $request, $user) {
@@ -212,9 +235,15 @@ class Cypress {
       add_filter('lostpassword_url', function($url){ return home_url('/retrieve'); });
       add_filter('lostpassword_url', function($url){ return home_url('/retrieve'); });
     endif;
+    add_filter('authenticate', function( $user, $username, $password ) {
+      if ( is_email( $username ) ) $user = get_user_by( 'email', $username );
+      if ( $user ) $username = $user->user_login;
+      return wp_authenticate_username_password( null, $username, $password );
+    }, 10, 3);
+
   }
 
-  public function structure() {
+  public function Structure() {
 
     global $wp_rewrite;
     if( !isset($wp_rewrite) || !is_object($wp_rewrite) || !$wp_rewrite->using_permalinks() )
@@ -236,16 +265,87 @@ class Cypress {
       return array_merge($args, $menu);
     });
 
+    if (defined('GTM')) {
+      add_action('wp_footer', function(){ ?>
+        <noscript><iframe src="//www.googletagmanager.com/ns.html?id=<?php echo GTM; ?>"
+          height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+          <script async type="text/javascript">(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','<?php echo GTM; ?>');</script>
+      <?php });
+    }
+
   }
 
-  public function ajax() {
-    if( isset($_POST['action']) && !empty($_POST['action']) && isset($_POST['ajax']) && $_POST['ajax'] == 'cypress' ) :
+  public function AJAX() {
+    if( isset($_POST['action']) && !empty($_POST['action']) ) :
       $action = $_POST['action'];
-      do_action( 'ajax_' . $action );
+      if( isset($_POST['ajax']) && $_POST['ajax'] == 'ajax' )
+        do_action( 'ajax_' . $action );
+      if( isset($_POST['ajax']) && $_POST['ajax'] == 'cypress' )
+        do_action( 'cypress_' . $action );
     endif;
   }
 
-  public function backend() {
+  public function Auth() {
+    add_action( 'cypress_login', function(){
+      check_ajax_referer( 'cypress-login', 'nonce' );
+      $user = array(
+        'user_login'    => $_POST['username'],
+        'user_password' => $_POST['password'],
+        'remember'      => $_POST['remember']
+        );
+      $this->Login( $user );
+      exit();
+    });
+
+    add_action( 'cypress_signup', function(){
+      check_ajax_referer( 'cypress-signup', 'nonce' );
+      $user = array(
+        'user_login' => sanitize_user($_POST['username']),
+        'user_pass'  => sanitize_text_field( $_POST['password'] ),
+        'user_email' => sanitize_email( $_POST['email']),
+        'first_name' => sanitize_text_field( (isset($_POST['fname'])) ? $_POST['fname'] : '' ),
+        'last_name' => sanitize_text_field( (isset($_POST['lname'])) ? $_POST['lname'] : '' ),
+        'description' => sanitize_text_field( (isset($_POST['about'])) ? $_POST['about'] : '' ),
+        );
+      $this->Signup( $user );
+      exit();
+    });
+  }
+
+  private function Login( $user = array() ) {
+    if( !isset($user['remember']) )
+      $user['remember'] = false;
+    $login = wp_signon( $user, false);
+    if ( is_wp_error($login) ) :
+      echo json_encode( array( 'loggedin' => false, 'message' => __('Error.') ) );
+    else :
+      wp_set_current_user($user->ID);
+      echo json_encode(array('loggedin' => true, 'message' => __('Success.')));
+    endif;
+    die();
+  }
+
+  private function Signup( $user = array() ) {
+    $signup = wp_insert_user($user);
+    if ( is_wp_error($signup) ) {
+      $error  = $signup->get_error_codes() ;
+      if( in_array('empty_user_login', $error) )
+        echo json_encode( array( 'loggedin' => false, 'message' => __('Username is empty.') ) );
+      elseif( in_array('existing_user_login', $error) )
+        echo json_encode( array( 'loggedin' => false, 'message' => __('Username already exists.') ) );
+      elseif( in_array('existing_user_email', $error) )
+        echo json_encode( array( 'loggedin' => false, 'message' => __('Email already exists.') ) );
+    } else {
+        $this->Login( $user );
+    }
+    die();
+  }
+
+  public function Backend() {
     remove_meta_box( 'dashboard_plugins', 'dashboard', 'normal' );
     remove_meta_box( 'dashboard_primary', 'dashboard', 'normal' );
     remove_meta_box( 'dashboard_secondary', 'dashboard', 'normal' );
@@ -264,15 +364,15 @@ class Cypress {
     remove_meta_box( 'commentstatusdiv','page','normal' );
     remove_meta_box( 'commentstatusdiv','post','normal' );
     remove_meta_box( 'trackbacksdiv','post','normal' );
-    // remove_meta_box( 'postcustom','post','normal' );
-    // remove_meta_box( 'postexcerpt','post','normal' );
-    // remove_meta_box( 'authordiv','post','normal' );
-    // remove_meta_box( 'postcustom','page','normal' );
-    // remove_meta_box( 'postexcerpt','page','normal' );
-    // remove_meta_box( 'trackbacksdiv','page','normal' );
+    //remove_meta_box( 'postcustom','post','normal' );
+    //remove_meta_box( 'postexcerpt','post','normal' );
+    //remove_meta_box( 'authordiv','post','normal' );
+    //remove_meta_box( 'postcustom','page','normal' );
+    //remove_meta_box( 'postexcerpt','page','normal' );
+    //remove_meta_box( 'trackbacksdiv','page','normal' );
 
-    add_filter ('admin_footer_text', '__return_empty_string');
-    add_filter ('update_footer', function(){ return base64_decode('RW5oYW5jZWQgd2l0aCA8c3BhbiBjbGFzcz0iZGFzaGljb25zIGRhc2hpY29ucy1oZWFydCI+PC9zcGFuPiBieSA8c3Ryb25nPkN5cHJlc3M8L3N0cm9uZz4='); });
+    add_filter( 'admin_footer_text', '__return_empty_string' );
+    add_filter( 'update_footer', function(){ return base64_decode('RW5oYW5jZWQgd2l0aCA8c3BhbiBjbGFzcz0iZGFzaGljb25zIGRhc2hpY29ucy1oZWFydCI+PC9zcGFuPiBieSA8c3Ryb25nPkN5cHJlc3M8L3N0cm9uZz4='); });
 
     add_filter( 'automatic_updater_disabled', '__return_true' );
     add_filter( 'auto_update_theme', '__return_false' );
