@@ -33,7 +33,7 @@ function materialwp_setup() {
 	// Add default posts and comments RSS feed links to head.
 
 	//Suport for WordPress 4.1+ to display titles
-	add_theme_support( 'title-tag' );
+	//add_theme_support( 'title-tag' );
 
 	/*
 	 * Enable support for Post Thumbnails on posts and pages.

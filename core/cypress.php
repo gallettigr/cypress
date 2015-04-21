@@ -170,7 +170,6 @@ class Cypress {
       return '<link rel="stylesheet" href="' . $matches[2][0] . '"' . $media . '>' . "\n";
     });
 
-
     show_admin_bar(false);
 
   }
@@ -408,7 +407,7 @@ class Cypress_Menu extends \Walker_Nav_Menu {
     $indent = ($depth) ? str_repeat("\t", $depth) : '';
     $classes = [];
     $classes[] = 'item';
-    if( preg_grep('#has-children#', $item->classes) )
+    if( is_array($item->classes) && preg_grep('#has-children#', $item->classes) )
       $classes[] = 'dropdown';
     if( $item->current )
       $classes[] = 'active';
@@ -424,7 +423,7 @@ class Cypress_Menu extends \Walker_Nav_Menu {
     $atts = [];
     $atts = array('title' => $item->title, 'href' => $item->url, 'target' => $item->target, 'rel' => $item->xfn, 'class' => '');
 
-    if ( preg_grep('#has-children#', $item->classes) && $depth == 0 ) :
+    if ( is_array($item->classes) && preg_grep('#has-children#', $item->classes) && $depth == 0 ) :
       $atts['href'] = '#';
       $atts['class'] = 'dropdown-toggle';
       $atts['data-toggle'] = 'dropdown';
@@ -439,7 +438,7 @@ class Cypress_Menu extends \Walker_Nav_Menu {
     }
     $item_html .= '<a' . $attributes . '>' . $item->title;
 
-    if ( preg_grep('#has-children#', $item->classes) && $depth == 0 )
+    if ( is_array($item->classes) && preg_grep('#has-children#', $item->classes) && $depth == 0 )
       $item_html .= ' <span class="caret"></span>';
     $item_html .= '</a>';
     $output .= $item_html;

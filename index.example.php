@@ -1,3 +1,4 @@
 <?php
 
-require(__DIR__ . '/cypress/wp/wp-blog-header.php');
+define('WP_USE_THEMES', true);
+require( dirname( __FILE__ ) . 'cypress/wp/wp-blog-header.php' );
