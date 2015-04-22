@@ -123,7 +123,7 @@ class Cypress {
 
       if( current_theme_supports( 'mobile-app' ) ) :
         $meta .= '<meta name="application-name" content"' . get_theme_support( 'mobile-app' )[0]['name'] . '">';
-        $meta .= '<meta name="manifest" content="' . json_encode(array( 'name' => get_theme_support( 'mobile-app' )[0]['name'] )) . '">';
+        $meta .= "<meta name='manifest' content='" . json_encode(array( 'name' => get_theme_support( 'mobile-app' )[0]['name'] )) . "'>";
         $meta .= '<meta name="msapplication-config" content="' . home_url('app/browserconfig.xml') . '">';
       endif;
 
