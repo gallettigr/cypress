@@ -57,10 +57,11 @@ define('WP_CACHE', false);
 define('FS_METHOD', 'direct');
 
 /**
- * Cypress production constants.
+ * Cypress development constants.
  */
-//define('GTM', 'GTM-X00XXX');
 define('DEVELOPER', 'gallettigr');
-define('FB_APPID', '00000000000');
+//define('GTM', 'GTM-X00XXX');
+//define('FB_APPID', '00000000000');
+//define('TWITTER_ID', '@gallettigr');
 
  ?>

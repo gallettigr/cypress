@@ -33,7 +33,7 @@ function materialwp_setup() {
 	// Add default posts and comments RSS feed links to head.
 
 	//Suport for WordPress 4.1+ to display titles
-	add_theme_support( 'title-tag' );
+	//add_theme_support( 'title-tag' );
 
 	/*
 	 * Enable support for Post Thumbnails on posts and pages.
@@ -41,6 +41,23 @@ function materialwp_setup() {
 	 * @link http://codex.wordpress.org/Function_Reference/add_theme_support#Post_Thumbnails
 	 */
 	add_theme_support( 'post-thumbnails' );
+
+  add_theme_support( 'mobile-app', array(
+    'name' => 'Cypress', // App name
+    'short_name' => 'CPSS', // Short name
+    'lang' => 'en', // Language
+    'scope' => '/mobile/', // Navigation scope
+    'start_url' => '/mobile/index.html', // App index URL
+    'orientation' => 'portrait', // eg. landscape, portrait
+    'display' => 'standalone', // eg. fullscreen, standalone, minimal-ui, browser
+    'icons' => array(
+      array('src' => '/app/icons/icon-32x.png', 'sizes' => '16x16 32x32', 'density' => 1),
+      array('src' => '/app/icons/icon-72x@2x.png', 'sizes' => '64x64 72x72', 'density' => 2),
+      array('src' => '/app/icons/icon-97x@2x.png', 'sizes' => '97x97', 'density' => 2),
+      array('src' => '/app/icons/icon-72x@2x.png', 'sizes' => '128x128 144x144', 'density' => 1),
+      array('src' => '/app/icons/icon-97x@2x.png', 'sizes' => '194x194', 'density' => 1)
+      )
+  ) );
 
 	// This theme uses wp_nav_menu() in one location.
 	register_nav_menus( array(

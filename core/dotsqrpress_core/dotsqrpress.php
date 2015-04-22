@@ -839,41 +839,6 @@ function dotsqrpress_restrict_admin()
   }
   add_action('pre_user_query','dotsqrpress_hide_webmaster');
 
-# ENABLE AJAX SIGNUP & LOGIN
-  function ajax_auth_init(){
-    add_action( 'wp_ajax_nopriv_ajaxlogin', 'ajax_login' );
-    add_action( 'wp_ajax_nopriv_ajaxregister', 'ajax_register' );
-    add_action( 'wp_ajax_nopriv_ajaxretrieve', 'ajax_retrieve' );
-  }
-
-  function ajax_login(){
-    check_ajax_referer( 'ajax-login-nonce', 'security' );
-    auth_user_login($_POST['email'], $_POST['password'], 'Login');
-    die();
-  }
-
-  function ajax_register(){
-    check_ajax_referer( 'ajax-register-nonce', 'security' );
-    $info = array();
-    $info['user_nicename'] = $info['nickname'] = $info['display_name'] = $info['user_login'] = sanitize_user($_POST['username']);
-    $info['first_name'] = sanitize_text_field($_POST['name']);
-    $info['user_pass'] = sanitize_text_field($_POST['password']);
-    $info['user_email'] = sanitize_email( $_POST['email']);
-
-    $user_register = wp_insert_user($info);
-    if (is_wp_error($user_register)) {
-      $error  = $user_register->get_error_codes() ;
-      if(in_array('empty_user_login', $error))
-        echo json_encode(array('loggedin'=>false, 'message'=>__($user_register->get_error_message('empty_user_login'))));
-      elseif(in_array('existing_user_login',$error))
-        echo json_encode(array('loggedin'=>false, 'message'=>__('Utente già registrato.')));
-      elseif(in_array('existing_user_email',$error))
-          echo json_encode(array('loggedin'=>false, 'message'=>__('Email già registrata.')));
-    } else {
-      auth_user_login($info['user_email'], $info['user_pass'], 'Registration');
-    }
-    die();
-  }
 
   function ajax_retrieve(){
     check_ajax_referer( 'ajax-retrieve-nonce', 'security' );
