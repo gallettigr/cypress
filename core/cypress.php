@@ -68,6 +68,7 @@ class Cypress {
     add_rewrite_rule( 'register/?$', WP_RPATH . '/wp-login.php?action=register', 'top' );
     add_rewrite_rule( 'retrieve/?$', WP_RPATH . '/wp-login.php?action=lostpassword', 'top' );
     add_rewrite_rule( 'views/(.*)', THEME_RPATH . '/$1', 'top' );
+    add_rewrite_rule( 'app/(.*)', THEME_RPATH . '/app/$1', 'top' );
     add_rewrite_rule( 'includes/(.*)', WP_RPATH . '/wp-includes/$1', 'top' );
     add_rewrite_rule( 'plugins/(.*)', APP_RPATH . '/plugins/$1', 'top' );
     add_rewrite_rule( 'uploads/(.*)', APP_RPATH . '/uploads/$1', 'top' );
@@ -89,9 +90,7 @@ class Cypress {
    */
   public function APIs() {
     add_filter( 'xmlrpc_enabled', '__return_false' );
-    add_action( 'xmlrpc_call', function() {
-      wp_die( 'XMLRPC disabled by Cypress.', array( 'response' => 403 ) );
-    });
+    add_action( 'xmlrpc_call', function() {wp_die( 'XMLRPC disabled by Cypress.', array( 'response' => 403 ) ); });
     add_filter('xmlrpc_methods', function($methods) { unset( $methods['pingback.ping'] ); unset( $methods['pingback.extensions.getPingbacks'] ); unset( $methods['wp.getUsersBlogs'] ); return $methods; });
   }
 
@@ -107,71 +106,48 @@ class Cypress {
     remove_action('wp_head', 'wp_generator');
     remove_action('wp_head', 'wp_shortlink_wp_head');
     remove_action('wp_head', 'rel_canonical');
+
     add_filter('the_generator', '__return_false');
-
-    add_filter( 'show_recent_comments_widget_style', '__return_false' );
+    add_filter('show_recent_comments_widget_style', '__return_false' );
     add_filter('wp_headers', function($headers) { unset($headers['X-Pingback']); return $headers; });
-
+    add_action('wp_head', function(){global $wp_the_query; if ($id = $wp_the_query->get_queried_object_id()) : $data = get_post($id); if($data) $type = $data->post_type; if($type && $type == 'page') : echo '<link rel="canonical" href="' . get_permalink( $id ) . '">'; elseif($type && $type == 'post') : $date = new DateTime($data->post_date); $category = get_the_category($id)[0]->slug; $path = 'articles' . $date->format('/d/m/Y/') . $category . '/' . $data->post_name; echo '<link rel="canonical" href="' . home_url($path) . '">'; endif; endif; });
+    add_filter('style_loader_src', function($src) {$src = $this->PrettyURIs($src); return $src; });
+    add_filter('script_loader_src', function($src){$src = $this->PrettyURIs($src); return $src; });
+    add_filter('attachment_link', function($src) {$src = $this->PrettyURIs($src); return $src; });
+    add_filter('body_class', function($class) {global $post; $class = []; if( is_page() && !is_front_page() ) : $class[] = 'page'; elseif( is_single() ) : $class[] = 'single'; elseif( is_front_page() ) : $class[] = 'home'; elseif( is_archive() ) : $class[] = 'archive'; elseif( is_search() ) : $class[] = 'search'; elseif( is_404() ) : $class[] = '404'; else: $class[] = get_post_type(); endif; if( !is_front_page() && !is_404() ) $class[] = $post->post_name; if( is_page() && $post->post_parent ) : $parents = get_post_ancestors( $post ); $i = 0; foreach ($parents as $parent ) {if($i == 0) $class[] = 'parent-' . get_post($parent)->post_name; $i++; } endif; return $class; });
+    add_filter('style_loader_tag', function($tag) {preg_match_all("!<link rel='stylesheet'\s?(id='[^']+')?\s+href='(.*)' type='text/css' media='(.*)' />!", $tag, $matches); $media = $matches[3][0] === 'print' ? ' media="print"' : ''; return '<link rel="stylesheet" href="' . $matches[2][0] . '"' . $media . '>' . "\n"; });
     add_action('wp_head', function(){
-      global $wp_the_query;
-      if ($id = $wp_the_query->get_queried_object_id()) :
-        $data = get_post($id);
-        if($data)
-          $type = $data->post_type;
-        if($type && $type == 'page') :
-          echo '<link rel="canonical" href="' . get_permalink( $id ) . '">';
-        elseif($type && $type == 'post') :
-          $date = new DateTime($data->post_date);
-          $category = get_the_category($id)[0]->slug;
-          $path = 'articles' . $date->format('/d/m/Y/') . $category . '/' . $data->post_name;
-            echo '<link rel="canonical" href="' . home_url($path) . '">';
-        endif;
-      endif;
-    });
+      global $post, $_wp_default_headers;
+      $meta = '';
+      if( is_404() ) return;
 
-    add_filter('style_loader_src', function($src) {
-      $src = $this->PrettyURIs($src);
-      return $src;
-    });
-    add_filter('script_loader_src', function($src){
-      $src = $this->PrettyURIs($src);
-      return $src;
-    });
-    add_filter('attachment_link', function($src) {
-      $src = $this->PrettyURIs($src);
-      return $src;
-    });
-
-    add_filter('body_class', function($class) {
-      global $post;
-      $class = [];
-      if( is_page() && !is_front_page() ) : $class[] = 'page';
-        elseif( is_single() ) : $class[] = 'single';
-        elseif( is_front_page() ) : $class[] = 'home';
-        elseif( is_archive() ) : $class[] = 'archive';
-        elseif( is_search() ) : $class[] = 'search';
-        elseif( is_404() ) : $class[] = '404';
-        else: $class[] = get_post_type();
+      if( current_theme_supports( 'mobile-app' ) ) :
+        $meta .= '<meta name="application-name" content"' . get_theme_support( 'mobile-app' )[0]['name'] . '">';
+        $meta .= "<meta name='manifest' content='" . json_encode(array( 'name' => get_theme_support( 'mobile-app' )[0]['name'] )) . "'>";
+        $meta .= '<meta name="msapplication-config" content="' . home_url('app/browserconfig.xml') . '">';
       endif;
-      if( !is_front_page() && !is_404() ) $class[] = $post->post_name;
-      if( is_page() && $post->post_parent ) :
-        $parents = get_post_ancestors( $post );
-        $i = 0; foreach ($parents as $parent ) {
-          if($i == 0) $class[] = 'parent-' . get_post($parent)->post_name;
-          $i++;
-        }
-      endif;
-      return $class;
-    });
 
-    add_filter('style_loader_tag', function($tag) {
-      preg_match_all("!<link rel='stylesheet'\s?(id='[^']+')?\s+href='(.*)' type='text/css' media='(.*)' />!", $tag, $matches);
-      $media = $matches[3][0] === 'print' ? ' media="print"' : '';
-      return '<link rel="stylesheet" href="' . $matches[2][0] . '"' . $media . '>' . "\n";
-    });
+
+      if( defined('FB_APPID') ) $meta .= '<meta property="fb:app_id" content="' . FB_APPID . '"/>';
+      if( defined('TWITTER_ID') ) $meta .= '<meta property="twitter:site" content="' . TWITTER_ID . '"/>';
+      $meta .= '<meta property="og:url" content="' . get_permalink() . '"/>';
+      $meta .= '<meta property="og:site_name" content="' . get_bloginfo( 'name' ) . '"/>';
+      if( is_front_page() ) :
+        $meta .= '<meta property="og:title" content="' . get_bloginfo( 'name' ) . ' | ' . get_bloginfo( 'description' ) . '"/>';
+        $meta .= '<meta property="og:image" content="' . home_url( 'app/assets/images/icon-large.png' ) . '" />';
+      endif;
+      if( is_single() )
+        $meta .= '<meta property="og:type" content="article"/>';
+      else
+        $meta .= '<meta property="og:type" content="website"/>';
+      if( has_excerpt($post->ID) )
+        $meta .= '<meta property="og:description" content="' . strip_tags( get_the_excerpt() ) . '"/>';
+      else
+        $meta .= '<meta property="og:description" content="' . str_replace( "\r\n", ' ' , substr( strip_tags( strip_shortcodes( $post->post_content ) ), 0, 160 ) ) . '"/>';
+      echo $meta;
+    }, 1);
 
     show_admin_bar(false);
-
   }
 
   /*
@@ -193,7 +169,19 @@ class Cypress {
     elseif ( $async && $defer ) : echo '<script type="text/javascript" async defer src="' . str_replace(array('?async','?defer'), '', $src) . '"></script>';
     else : return $src;
     endif;
+  }
 
+  private function KeyFinder($array, $key) {
+    $result = false;
+    if (is_array($array)) {
+      foreach ($array as $k => $v) {
+        $result = $k === $key ? $v : $this->KeyFinder($v, $key);
+        if ($result) {
+          break;
+        }
+      }
+    }
+    return $result;
   }
 
   /*

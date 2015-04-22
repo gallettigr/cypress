@@ -20,6 +20,7 @@ define('EMPTY_TRASH_DAYS', 10);
 /**
  * Cypress constants.
  */
-define('THEME_COLOR', '#C12431');
+define('MAIN_COLOR', '#00aefd');
+define('SECONDARY_COLOR', '#ffffff');
 
 ?>

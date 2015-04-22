@@ -70,4 +70,5 @@ define('DISABLE_WP_CRON', true);
 define('GTM', 'GTM-X00XXX');
 define('DEVELOPER', 'gallettigr');
 define('FB_APPID', '00000000000');
+define('TWITTER_ID', '@gallettigr');
  ?>
