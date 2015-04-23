@@ -67,8 +67,5 @@ define('DISABLE_WP_CRON', true);
 /**
  * Cypress production constants.
  */
-define('GTM', 'GTM-X00XXX');
 define('DEVELOPER', 'gallettigr');
-define('FB_APPID', '00000000000');
-define('TWITTER_ID', '@gallettigr');
  ?>

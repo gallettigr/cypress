@@ -27,7 +27,7 @@ class Cypress {
   public function __construct() {
     add_action( 'muplugins_loaded', array( $this, 'Loaded' ) );
     add_action( 'wp_loaded', array( $this, 'Security' ) );
-    add_action( 'after_setup_theme', array( $this, 'CleanUp' ) );
+    add_action( 'after_setup_theme', array( $this, 'Theming' ) );
     add_action( 'plugins_loaded', array( $this, 'APIs' ) );
     add_action( 'generate_rewrite_rules', array( $this, 'Apache' ) );
     add_action( 'init', array( $this, 'AJAX' ) );
@@ -97,7 +97,7 @@ class Cypress {
   /*
   Clean page headers, better canonical URLS, disable script and style versioning.
    */
-  public function CleanUp() {
+  public function Theming() {
     remove_action('wp_head', 'feed_links', 2);
     remove_action('wp_head', 'feed_links_extra', 3);
     remove_action('wp_head', 'rsd_link');
@@ -116,20 +116,11 @@ class Cypress {
     add_filter('attachment_link', function($src) {$src = $this->PrettyURIs($src); return $src; });
     add_filter('body_class', function($class) {global $post; $class = []; if( is_page() && !is_front_page() ) : $class[] = 'page'; elseif( is_single() ) : $class[] = 'single'; elseif( is_front_page() ) : $class[] = 'home'; elseif( is_archive() ) : $class[] = 'archive'; elseif( is_search() ) : $class[] = 'search'; elseif( is_404() ) : $class[] = '404'; else: $class[] = get_post_type(); endif; if( !is_front_page() && !is_404() ) $class[] = $post->post_name; if( is_page() && $post->post_parent ) : $parents = get_post_ancestors( $post ); $i = 0; foreach ($parents as $parent ) {if($i == 0) $class[] = 'parent-' . get_post($parent)->post_name; $i++; } endif; return $class; });
     add_filter('style_loader_tag', function($tag) {preg_match_all("!<link rel='stylesheet'\s?(id='[^']+')?\s+href='(.*)' type='text/css' media='(.*)' />!", $tag, $matches); $media = $matches[3][0] === 'print' ? ' media="print"' : ''; return '<link rel="stylesheet" href="' . $matches[2][0] . '"' . $media . '>' . "\n"; });
+
     add_action('wp_head', function(){
-      global $post, $_wp_default_headers;
+      global $post;
       $meta = '';
       if( is_404() ) return;
-
-      if( current_theme_supports( 'mobile-app' ) ) :
-        $meta .= '<meta name="application-name" content"' . get_theme_support( 'mobile-app' )[0]['name'] . '">';
-        $meta .= "<meta name='manifest' content='" . json_encode(array( 'name' => get_theme_support( 'mobile-app' )[0]['name'] )) . "'>";
-        $meta .= '<meta name="msapplication-config" content="' . home_url('app/browserconfig.xml') . '">';
-      endif;
-
-
-      if( defined('FB_APPID') ) $meta .= '<meta property="fb:app_id" content="' . FB_APPID . '"/>';
-      if( defined('TWITTER_ID') ) $meta .= '<meta property="twitter:site" content="' . TWITTER_ID . '"/>';
       $meta .= '<meta property="og:url" content="' . get_permalink() . '"/>';
       $meta .= '<meta property="og:site_name" content="' . get_bloginfo( 'name' ) . '"/>';
       if( is_front_page() ) :
@@ -145,7 +136,21 @@ class Cypress {
       else
         $meta .= '<meta property="og:description" content="' . str_replace( "\r\n", ' ' , substr( strip_tags( strip_shortcodes( $post->post_content ) ), 0, 160 ) ) . '"/>';
       echo $meta;
-    }, 1);
+    });
+
+    add_action('wp_head', function(){
+      if( current_theme_supports( 'web-app' ) ) :
+        $meta = "<!-- Web application tags -->\n";
+        $meta .= "<meta name='application-name' content='{$this->cypress_support('web-app', 'name')}'>\n<meta name='apple-mobile-web-app-title' content='{$this->cypress_support('web-app', 'name')}'>";
+        $meta .= "<meta name='manifest' content='" . json_encode( $this->cypress_support('web-app'), JSON_UNESCAPED_SLASHES ) . "'>";
+        if( $this->cypress_support( 'web-app', 'standalone') ) :
+        endif;
+        foreach ($this->cypress_support('web-app', 'icons') as $group => $icon) {
+         $meta .= "<link sizes='{$icon['sizes']}' rel='apple-touch-icon' media='(-webkit-device-pixel-ratio: {$icon['density']})' href='{$icon['src']}' >";
+        }
+        echo $meta;
+      endif;
+    });
 
     show_admin_bar(false);
   }
@@ -182,6 +187,14 @@ class Cypress {
       }
     }
     return $result;
+  }
+
+  public function cypress_support($feature, $field = false, $sub = false, $value = false) {
+    $support = get_theme_support($feature)[0];
+    if( !empty($field) ) $support = $support[$field];
+    if( !empty($sub) )   $support = $support[$sub];
+    if( !empty($value) ) $support = $support[$value];
+    return $support;
   }
 
   /*

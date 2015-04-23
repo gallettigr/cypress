@@ -60,8 +60,5 @@ define('FS_METHOD', 'direct');
  * Cypress development constants.
  */
 define('DEVELOPER', 'gallettigr');
-//define('GTM', 'GTM-X00XXX');
-//define('FB_APPID', '00000000000');
-//define('TWITTER_ID', '@gallettigr');
 
  ?>
