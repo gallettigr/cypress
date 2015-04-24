@@ -9,7 +9,7 @@
 /**
  * WordPress constants.
  */
-define('WPLANG', 'en_EN');
+define('WPLANG', 'en_US');
 define('POST_EXCERPT_LENGTH', 80);
 define('AUTOSAVE_INTERVAL', 360 );
 define('NOBLOGREDIRECT', WP_HOME);

@@ -19,31 +19,12 @@ Domain Path: /languages/
 # LOAD OPTION-TREE FRAMEWORK, VISIT GITHUB REPO FOR MORE INFO (github.com/valendesigns/option-tree)
 include( 'option-tree/ot-loader.php' );
 
-# DOTSQRPRESS LOGIN STYLING. REMOVES DEFAULT WP CSS WHICH IS FORCED INTO HEADER, ADDS DOTSQRPRESS CSS.
-remove_filter('wp_admin_css', 'login', 99999);
-add_filter('wp_admin_css', 'dotsqrpress_default_styles', 99999);
-function dotsqrpress_default_styles($force_echo) {
-    return false;
-}
-add_action( 'login_init', 'dotsqrpress_remove_login_scripts' );
-function dotsqrpress_remove_login_scripts() {
-    wp_deregister_style( 'wp-admin' );
-    wp_deregister_style( 'login' );
-}
 add_action( 'login_enqueue_scripts', 'dotsqrpress_login_style' );
 function dotsqrpress_login_style() {
     wp_enqueue_style( 'dotsqrpress_core', WP_SITEURL . CORE_ASSET . 'css/dotsqrpress_core.css', false, null, true );
     wp_enqueue_style('dotsqrpress_bootstrap', WP_SITEURL . '/views/css/styles.css', false, null, true);
     wp_enqueue_script( 'dotsqrpress_core_js', WP_SITEURL . CORE_ASSET . 'js/dotsqrpress_core.js', array('jquery'), null, true );
     wp_enqueue_script( 'dotsqrpress_bootstrapjs', WP_SITEURL . '/views/js/bootstrap.min.js', array('jquery'), null, false );
-}
-add_filter( 'login_headerurl', 'dotsqrpress_login_logourl' );
-function dotsqrpress_login_logourl() {
-    return get_option('siteurl');
-}
-add_filter( 'login_headertitle', 'dotsqrpress_login_logotitle' );
-function dotsqrpress_login_logotitle() {
-    return get_option('blogname');
 }
 
 

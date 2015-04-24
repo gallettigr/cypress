@@ -63,7 +63,7 @@ function materialwp_setup() {
 
   add_theme_support( 'social-graph', array(
     'twitter' => '@gallettigr',
-    'fb_appid' => '1611715415714285'
+    'fb_appid' => '1611715415714285',
   ) );
 
 	// This theme uses wp_nav_menu() in one location.

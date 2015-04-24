@@ -20,7 +20,7 @@ get_header(); ?>
 							<h1 class="page-title"><?php _e( 'Oops! That page can&rsquo;t be found.', 'materialwp' ); ?></h1>
 						</header><!-- .page-header -->
 
-					
+
 						<div class="page-content">
 							<p><?php _e( 'It looks like nothing was found at this location. Maybe try one of the links below or a search?', 'materialwp' ); ?></p>
 
@@ -65,4 +65,7 @@ get_header(); ?>
 	</div> <!-- .row -->
 </div> <!-- .container -->
 
+<?php if( is_404() ): ?>
+  <script>_gaq.push(['_trackEvent', '404', document.location.pathname + document.location.search, document.referrer, 0, true]);</script>
+<?php endif; ?>
 <?php get_footer(); ?>
