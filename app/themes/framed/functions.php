@@ -61,9 +61,10 @@ function materialwp_setup() {
     'theme_color' => MAIN_COLOR
   ) );
 
-  add_theme_support( 'social-graph', array(
-    'twitter' => '@gallettigr',
+  add_theme_support( 'open-graph', array(
+    'tw_username' => 'gallettigr',
     'fb_appid' => '1611715415714285',
+    'copyright' => 'Cypress Framework'
   ) );
 
 	// This theme uses wp_nav_menu() in one location.
@@ -143,6 +144,7 @@ function materialwp_scripts() {
 	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
 		wp_enqueue_script( 'comment-reply' );
 	}
+
 }
 add_action( 'wp_enqueue_scripts', 'materialwp_scripts' );
 
@@ -165,19 +167,6 @@ function clean_class($dsp_class)
   $dsp_class = preg_replace("/[\s]/", "-", $dsp_class);
   return $dsp_class;
 }
-
-function dotsqrpress_thumbnail($html, $post_id, $post_thumbnail_id, $size, $attr) {
-  $id = get_post_thumbnail_id();
-  $src = wp_get_attachment_image_src($id, $size);
-  $alt = get_the_title($id);
-  $ext_class = clean_class($alt);
-  $site = get_bloginfo('name');
-  $class = $attr['class'];
-  $html = '<img src="' . $src[0] . '" title="' . $alt . ' - ' . $site . '" alt="' . $alt . ' - ' . $site . '" class="img-responsive thumbnail-' . $ext_class .' ' . $class . '" />';
-
-  return $html;
-}
-add_filter('post_thumbnail_html', 'dotsqrpress_thumbnail', 99, 5);
 
 
 /**

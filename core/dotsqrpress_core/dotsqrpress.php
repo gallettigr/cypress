@@ -19,27 +19,6 @@ Domain Path: /languages/
 # LOAD OPTION-TREE FRAMEWORK, VISIT GITHUB REPO FOR MORE INFO (github.com/valendesigns/option-tree)
 include( 'option-tree/ot-loader.php' );
 
-add_action( 'login_enqueue_scripts', 'dotsqrpress_login_style' );
-function dotsqrpress_login_style() {
-    wp_enqueue_style( 'dotsqrpress_core', WP_SITEURL . CORE_ASSET . 'css/dotsqrpress_core.css', false, null, true );
-    wp_enqueue_style('dotsqrpress_bootstrap', WP_SITEURL . '/views/css/styles.css', false, null, true);
-    wp_enqueue_script( 'dotsqrpress_core_js', WP_SITEURL . CORE_ASSET . 'js/dotsqrpress_core.js', array('jquery'), null, true );
-    wp_enqueue_script( 'dotsqrpress_bootstrapjs', WP_SITEURL . '/views/js/bootstrap.min.js', array('jquery'), null, false );
-}
-
-
-# REMOVE DEFAULT CONTACT FIELDS, REPLACE WITH USEFUL ONES
-function dotsqrpress_useful_user_fields( $user_fields ) {
-	unset($user_fields['aim']);
-	unset($user_fields['jabber']);
-	unset($user_fields['yim']);
-	$user_fields['phone'] = 'Phone';
-	$user_fields['mobile'] = 'Mobile';
-	$user_fields['address'] = 'Address';
-
-	return $user_fields;
-}
-add_filter('user_contactmethods', 'dotsqrpress_useful_user_fields');
 
 # ADD DOTSQRPRESS FAVICON PACK
 function dotsqrpress_favicon() {

@@ -123,32 +123,14 @@ class Cypress {
     add_filter('wp_get_attachment_url', function($src) { return $this->uri_cleaner($src); });
     add_filter('wp_get_attachment_link', function($src) { return $this->uri_cleaner($src); });
 
-    add_filter('body_class', function($class) {global $post; $class = []; if( is_page() && !is_front_page() ) : $class[] = 'page'; elseif( is_single() ) : $class[] = 'single'; elseif( is_front_page() ) : $class[] = 'home'; elseif( is_archive() ) : $class[] = 'archive'; elseif( is_search() ) : $class[] = 'search'; elseif( is_404() ) : $class[] = '404'; else: $class[] = get_post_type(); endif; if( !is_front_page() && !is_404() && !is_search() ) $class[] = $post->post_name; if( is_page() && $post->post_parent ) : $parents = get_post_ancestors( $post ); $i = 0; foreach ($parents as $parent ) {if($i == 0) $class[] = 'parent-' . get_post($parent)->post_name; $i++; } endif; return $class; });
+    add_filter('post_thumbnail_html', function($html, $post, $id, $size, $attr) {$class = ''; if( isset($attr['class']) ) $class .= ' ' . $attr['class']; $html = '<img src="' . wp_get_attachment_image_src($id, $size)[0] . '" title="' . get_the_title($id) . '" alt="' . get_the_title($id) . ' in ' . get_the_title($post) . ' - ' . get_bloginfo('name') . '" class="thumbnail ' . $size . $class . '" />'; return $html; }, 10, 5);
 
-    add_action('wp_head', function(){
-      global $post;
-      $meta = '';
-      if( is_404() ) return;
-      if( is_search() ) return;
-      $meta .= '<meta property="og:url" content="' . get_permalink() . '"/>';
-      $meta .= '<meta property="og:site_name" content="' . get_bloginfo( 'name' ) . '"/>';
-      if( is_front_page() ) :
-        $meta .= '<meta property="og:title" content="' . get_bloginfo( 'name' ) . ' | ' . get_bloginfo( 'description' ) . '"/>';
-        $meta .= '<meta property="og:image" content="' . home_url( 'app/assets/images/icon-large.png' ) . '" />';
-      endif;
-      if( is_single() )
-        $meta .= '<meta property="og:type" content="article"/>';
-      else
-        $meta .= '<meta property="og:type" content="website"/>';
-      if( has_excerpt($post->ID) ) :
-        $meta .= '<meta property="og:description" content="' . strip_tags( get_the_excerpt() ) . '"/>';
-      elseif( is_front_page() ) :
-        $meta .= '<meta property="og:description" content="' . get_bloginfo( 'description' ) . '"/>';
-      else :
-        $meta .= '<meta property="og:description" content="' . str_replace( "\r\n", ' ' , substr( strip_tags( strip_shortcodes( $post->post_content ) ), 0, 160 ) ) . '"/>';
-      endif;
-      echo $meta;
-    },1);
+    add_filter('body_class', function($class) {global $post; $class = []; if( is_page() && !is_front_page() ) : $class[] = 'page'; elseif( is_single() ) : $class[] = 'single'; elseif( is_front_page() ) : $class[] = 'home'; elseif( is_archive() ) : $class[] = 'archive'; elseif( is_search() ) : $class[] = 'search'; elseif( is_404() ) : $class[] = '404'; else: $class[] = get_post_type(); endif; if( !is_front_page() && !is_404() && !is_search() ) $class[] = $post->post_name; if( is_page() && $post->post_parent ) : $parents = get_post_ancestors( $post ); $i = 0; foreach ($parents as $parent ) {if($i == 0) $class[] = 'parent-' . get_post($parent)->post_name; $i++; } endif; return $class; });
+    add_filter('language_attributes', function($output){
+      return $output .= ' xmlns="http://www.w3.org/1999/xhtml" prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#"';
+    });
+
+    add_action('wp_head', function(){if( current_theme_supports( 'open-graph' ) ) : global $post; $meta = ''; if( $this->cypress_support('open-graph', 'copyright') ) $meta .= '<meta name="copyright" content="&copy;' . date('Y') . ' ' . $this->cypress_support('open-graph', 'copyright')  . '">'; if( $this->cypress_support('open-graph', 'tw_username') ) $meta .= '<meta name="twitter:site" content="@' . $this->cypress_support('open-graph', 'tw_username')  . '">'; if( $this->cypress_support('open-graph', 'fb_appid') ) $meta .= '<meta name="fb:app_id" content="' . $this->cypress_support('open-graph', 'fb_appid')  . '">'; if( is_404() || is_search() ) return; $meta .= '<meta property="og:url" content="' . get_permalink() . '"/>'; $meta .= '<meta property="og:site_name" content="' . get_bloginfo( 'name' ) . '"/>'; if( is_front_page() ) : $meta .= '<meta name="twitter:card" content="summary">'; $meta .= '<meta property="og:title" content="' . get_bloginfo( 'name' ) . ' | ' . get_bloginfo( 'description' ) . '"/>'; $meta .= '<meta property="og:image" content="' . home_url( 'app/icons/icon-large.png' ) . '" />'; $meta .= '<meta property="og:type" content="website"/>'; $meta .= '<meta property="og:description" content="' . get_bloginfo( 'description' ) . '"/>'; else : if( is_single() ): $meta .= '<meta name="twitter:card" content="summary_large_image"/>'; $meta .= '<meta property="og:type" content="article"/>'; else : $meta .= '<meta name="twitter:card" content="summary">'; $meta .= '<meta property="og:type" content="website"/>'; endif; if( has_post_thumbnail() ) : $meta .= '<meta property="og:image" content="' . wp_get_attachment_image_src( get_post_thumbnail_id(), 'medium' )[0] . '" />'; else : $meta .= '<meta property="og:image" content="' . home_url( 'app/icons/icon-large.png' ) . '" />'; endif; if( has_excerpt() ) : $meta .= '<meta property="og:description" content="' . strip_tags( get_the_excerpt() ) . '"/>'; else : $meta .= '<meta property="og:description" content="' . str_replace( "\r\n", ' ' , substr( strip_tags( strip_shortcodes( $post->post_content ) ), 0, 80 ) ) . '..."/>'; endif; endif; echo $meta; endif; },1);
 
     add_action('wp_head', function(){
       if( current_theme_supports( 'web-app' ) ) :
@@ -156,9 +138,13 @@ class Cypress {
         $meta .= "<meta name='application-name' content='{$this->cypress_support('web-app', 'name')}'>\n<meta name='apple-mobile-web-app-title' content='{$this->cypress_support('web-app', 'name')}'>";
         $meta .= "<meta name='manifest' content='" . json_encode( $this->cypress_support('web-app'), JSON_UNESCAPED_SLASHES ) . "'>";
         if( $this->cypress_support( 'web-app', 'standalone') ) :
+          $meta .= "<meta name='apple-mobile-web-app-capable' content='yes'>\n<meta name='mobile-web-app-capable' content='yes'>";
+          $meta .= "<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'>\n<link rel='apple-touch-startup-image' href='{$this->cypress_support('web-app', 'splash')}'>";
+          add_action('wp_footer', function(){ echo '<script>(function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)}})(document,window.navigator,"standalone")</script>'; });
         endif;
         foreach ($this->cypress_support('web-app', 'icons') as $group => $icon) {
-         $meta .= "<link sizes='{$icon['sizes']}' rel='apple-touch-icon' media='(-webkit-device-pixel-ratio: {$icon['density']})' href='{$icon['src']}' >";
+          $meta .= "<link sizes='{$icon['sizes']}' rel='apple-touch-icon' media='(-webkit-device-pixel-ratio: {$icon['density']})' href='{$icon['src']}' >";
+          $meta .= "<link sizes='{$icon['sizes']}' rel='icon' href='{$icon['src']}' >";
         }
         echo $meta;
       endif;
@@ -372,7 +358,7 @@ class Cypress {
     add_action( 'admin_head', function() { echo '<meta name="robots" content="noindex, nofollow">'; });
     add_filter( 'admin_title', function($wordpress, $title){ return $title . ' | Cypress';}, 10, 2);
     add_filter( 'admin_footer_text', '__return_empty_string' );
-    add_filter( 'update_footer', function(){ return base64_decode('RW5oYW5jZWQgd2l0aCA8c3BhbiBjbGFzcz0iZGFzaGljb25zIGRhc2hpY29ucy1oZWFydCI+PC9zcGFuPiBieSA8c3Ryb25nPkN5cHJlc3M8L3N0cm9uZz4='); });
+    add_filter( 'update_footer', function(){ return base64_decode('RW5oYW5jZWQgd2l0aCA8c3BhbiBjbGFzcz0iZGFzaGljb25zIGRhc2hpY29ucy1oZWFydCI+PC9zcGFuPiBieSA8YSBocmVmPSJodHRwczovL2dpdGh1Yi5jb20vZ2FsbGV0dGlnci9jeXByZXNzIiB0aXRsZT0iQ3lwcmVzIG9uIEdpdEh1YiIgdGFyZ2V0PSJfYmxhbmsiPjxzdHJvbmc+Q3lwcmVzczwvc3Ryb25nPjwvYT4='); });
 
     add_filter( 'automatic_updater_disabled', '__return_true' );
     add_filter( 'auto_update_theme', '__return_false' );
@@ -385,10 +371,8 @@ class Cypress {
   Customization of Login page.
    */
   public function Login() {
-    wp_deregister_style( 'login' );
-    wp_deregister_style( 'wp-admin' );
-    add_filter('wp_admin_css', '__return_false');
-    //add_filter( 'style_loader_tag', '__return_null' );
+    //wp_deregister_style( 'login' );
+    //add_filter('wp_admin_css', '__return_false');
 
     add_filter( 'login_body_class', function() { return array('cypress'); });
     add_filter( 'login_headerurl', function() { return home_url(); });
