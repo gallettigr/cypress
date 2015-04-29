@@ -17,16 +17,14 @@
 namespace Cypress;
 use \DateTime;
 
-if( !is_blog_installed() ) {
-  $activate = 0;
+if( !is_blog_installed() ) :
   return;
-}
+endif;
 
 class Cypress {
 
   public function __construct() {
     add_action( 'muplugins_loaded', array( $this, 'Loaded' ) );
-    add_action( 'wp_loaded', array( $this, 'Security' ) );
     add_action( 'after_setup_theme', array( $this, 'Theming' ) );
     add_action( 'plugins_loaded', array( $this, 'APIs' ) );
     add_action( 'switch_theme', array( $this, 'Setup' ) );
@@ -36,6 +34,7 @@ class Cypress {
     add_action( 'login_init', array($this, 'Login') );
     add_action( 'template_redirect', array($this, 'Structure') );
     add_action( 'after_setup_theme', array( $this, 'Auth' ) );
+    add_action( 'wp_loaded', array( $this, 'Security' ) );
   }
 
   /*
@@ -78,7 +77,7 @@ class Cypress {
     add_rewrite_rule( 'plugins/(.*)', APP_RPATH . '/plugins/$1', 'top' );
     add_rewrite_rule( 'uploads/(.*)', APP_RPATH . '/uploads/$1', 'top' );
 
-    add_filter( 'mod_rewrite_rules', function($rules){ $append = "\nOptions All -Indexes\n\nRewriteEngine on\nRewriteCond %{HTTP_HOST} !^www(.*)$ [NC]\nRewriteRule ^(.*)$ http://www.%{HTTP_HOST}/$1 [R=301,L]\n"; return $rules . $append; } );
+    add_filter( 'mod_rewrite_rules', function($rules){ $append = "\nOptions All -Indexes\n\nRewriteEngine on\nRewriteCond %{HTTP_HOST} !^www(.*)$ [NC]\nRewriteCond %{HTTP_HOST} !^localhost(.*)$ [NC]\nRewriteRule ^(.*)$ http://www.%{HTTP_HOST}/$1 [R=301,L]\n"; return $rules . $append; } );
     add_filter( 'mod_rewrite_rules', function($rules) {$append = "\n<IfModule mod_deflate.c>\nAddOutputFilterByType DEFLATE text/plain\nAddOutputFilterByType DEFLATE text/html\nAddOutputFilterByType DEFLATE text/xml\nAddOutputFilterByType DEFLATE text/css\nAddOutputFilterByType DEFLATE application/xml\nAddOutputFilterByType DEFLATE application/xhtml+xml\nAddOutputFilterByType DEFLATE application/rss+xml\nAddOutputFilterByType DEFLATE application/javascript\nAddOutputFilterByType DEFLATE application/x-javascript\nAddOutputFilterByType DEFLATE application/x-httpd-php\nAddOutputFilterByType DEFLATE application/x-httpd-fastphp\nAddOutputFilterByType DEFLATE image/svg+xml\nBrowserMatch ^Mozilla/4 gzip-only-text/html\nBrowserMatch ^Mozilla/4\.0[678] no-gzip\nBrowserMatch \bMSI[E] !no-gzip !gzip-only-text/html\nHeader append Vary User-Agent env=!dont-vary\n</IfModule>\n"; return $rules . $append; });
     if (APP_ENV == 'production')
       add_filter( 'mod_rewrite_rules', function($rules) {$append = "\n".'ExpiresActive Off'."\n".'ExpiresByType image/gif "access plus 30 days"'."\n".'ExpiresByType image/jpeg "access plus 30 days"'."\n".'ExpiresByType image/png "access plus 30 days"'."\n".'ExpiresByType text/css "access plus 1 week"'."\n".'ExpiresByType text/javascript "access plus 1 week"'; return $rules . $append; });
@@ -201,31 +200,13 @@ class Cypress {
         exit();
     endif;
 
-    add_filter('login_redirect', function($redirect_to, $request, $user) {
-      global $user;
-      if ( isset( $user->roles ) && is_array( $user->roles ) ) :
-        if ( in_array( 'administrator', $user->roles ) )
-          return admin_url();
-        else
-          return home_url();
-      else :
-        return home_url();
-      endif;
-    }, 10, 3);
-
+    add_filter('login_redirect', function($redirect_to, $request, $user) {global $user; if ( isset( $user->roles ) && is_array( $user->roles ) ) : if ( in_array( 'administrator', $user->roles ) ) return admin_url(); else return home_url(); else : return home_url(); endif; }, 10, 3);
     add_filter('login_errors', function(){ return __('Login error. Try again.', 'cypress'); });
-    if( file_exists(ROOT_PATH . '/.htaccess' ) ) :
-      add_filter('logout_url', function($url, $redirect){ return home_url('/logout'); }, 10, 2);
-      add_filter('login_url', function($url, $redirect){ return home_url('/login'); }, 10, 2);
-      add_filter('lostpassword_url', function($url){ return home_url('/retrieve'); });
-      add_filter('lostpassword_url', function($url){ return home_url('/retrieve'); });
-    endif;
-    add_filter('authenticate', function( $user, $username, $password ) {
-      if ( is_email( $username ) ) $user = get_user_by( 'email', $username );
-      if ( $user ) $username = $user->user_login;
-      return wp_authenticate_username_password( null, $username, $password );
-    }, 10, 3);
-
+    add_filter('logout_url', function($url, $redirect){ return home_url('/logout'); }, 10, 2);
+    add_filter('login_url', function($url, $redirect){ return home_url('/login'); }, 10, 2);
+    add_filter('lostpassword_url', function($url){ return home_url('/retrieve'); });
+    add_filter('lostpassword_url', function($url){ return home_url('/retrieve'); });
+    add_filter('authenticate', function( $user, $username, $password ) {if ( is_email( $username ) ) $user = get_user_by( 'email', $username ); if ( $user ) $username = $user->user_login; return wp_authenticate_username_password( null, $username, $password ); }, 10, 3);
   }
 
   public function Structure() {
