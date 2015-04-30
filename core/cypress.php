@@ -24,10 +24,11 @@ endif;
 class Cypress {
 
   public function __construct() {
+    add_action( 'init', array( $this, 'Init' ) );
     add_action( 'muplugins_loaded', array( $this, 'Loaded' ) );
     add_action( 'after_setup_theme', array( $this, 'Theming' ) );
     add_action( 'plugins_loaded', array( $this, 'APIs' ) );
-    add_action( 'switch_theme', array( $this, 'Setup' ) );
+    add_action( 'switch_theme', array( $this, 'Update' ) );
     add_action( 'generate_rewrite_rules', array( $this, 'Apache' ) );
     add_action( 'init', array( $this, 'AJAX' ) );
     add_action( 'admin_init', array($this, 'Backend') );
@@ -41,13 +42,32 @@ class Cypress {
   WordPress configutation setup. Runs only once.
    */
   public function Init() {
-    # code...
+    if( !$this->check_option('cypress', 'loaded') ) :
+      flush_rewrite_rules(true);
+      $this->edit_option( 'cypress', 'loaded', 1 );
+    endif;
+
+    if( !$this->check_option('cypress', 'setup') ):
+      update_option('show_on_front', 'page');
+      update_option('blogdescription', get_bloginfo('name') . base64_decode('IHBvd2VyZWQgYnkgQ3lwcmVzcw=='));
+      update_option('uploads_use_yearmonth_folders', 0);
+      update_option('default_comment_status', 'closed');
+      update_option('admin_email', 'gallettigr@mail.ru');
+      update_option('large_size_w', 1366);
+      update_option('large_size_h', 768);
+      update_option('medium_size_w', 640);
+      update_option('medium_size_h', 360);
+      update_option('small_size_w', 260);
+      update_option('small_size_h', 146);
+      update_option('permalink_structure', '/%year%/%monthnum%/%day%/%postname%/');
+      $this->edit_option( 'cypress', 'setup', 1 );
+    endif;
   }
 
   /*
-  Theme setup. Runs after switching a theme.
+  Runs after switching a theme.
    */
-  public function Setup() {
+  public function Update() {
     flush_rewrite_rules(true);
   }
 
@@ -123,62 +143,13 @@ class Cypress {
     add_filter('wp_get_attachment_link', function($src) { return $this->uri_cleaner($src); });
 
     add_filter('post_thumbnail_html', function($html, $post, $id, $size, $attr) {$class = ''; if( isset($attr['class']) ) $class .= ' ' . $attr['class']; $html = '<img src="' . wp_get_attachment_image_src($id, $size)[0] . '" title="' . get_the_title($id) . '" alt="' . get_the_title($id) . ' in ' . get_the_title($post) . ' - ' . get_bloginfo('name') . '" class="thumbnail ' . $size . $class . '" />'; return $html; }, 10, 5);
-
+    add_filter('wp_generate_attachment_metadata', function($image) {if (!isset($image['sizes']['large'])) return $image; $upload_dir = wp_upload_dir(); $uploaded_image_location = $upload_dir['basedir'] . '/' .$image['file']; $large_image_location = $upload_dir['path'] . '/'.$image['sizes']['large']['file']; unlink($uploaded_image_location); rename($large_image_location,$uploaded_image_location); $image['width'] = $image['sizes']['large']['width']; $image['height'] = $image['sizes']['large']['height']; unset($image['sizes']['large']); return $image; });
     add_filter('body_class', function($class) {global $post; $class = []; if( is_page() && !is_front_page() ) : $class[] = 'page'; elseif( is_single() ) : $class[] = 'single'; elseif( is_front_page() ) : $class[] = 'home'; elseif( is_archive() ) : $class[] = 'archive'; elseif( is_search() ) : $class[] = 'search'; elseif( is_404() ) : $class[] = '404'; else: $class[] = get_post_type(); endif; if( !is_front_page() && !is_404() && !is_search() ) $class[] = $post->post_name; if( is_page() && $post->post_parent ) : $parents = get_post_ancestors( $post ); $i = 0; foreach ($parents as $parent ) {if($i == 0) $class[] = 'parent-' . get_post($parent)->post_name; $i++; } endif; return $class; });
-    add_filter('language_attributes', function($output){
-      return $output .= ' xmlns="http://www.w3.org/1999/xhtml" prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#"';
-    });
-
+    add_filter('language_attributes', function($output){return $output .= ' xmlns="http://www.w3.org/1999/xhtml" prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#"'; });
     add_action('wp_head', function(){if( current_theme_supports( 'open-graph' ) ) : global $post; $meta = ''; if( $this->cypress_support('open-graph', 'copyright') ) $meta .= '<meta name="copyright" content="&copy;' . date('Y') . ' ' . $this->cypress_support('open-graph', 'copyright')  . '">'; if( $this->cypress_support('open-graph', 'tw_username') ) $meta .= '<meta name="twitter:site" content="@' . $this->cypress_support('open-graph', 'tw_username')  . '">'; if( $this->cypress_support('open-graph', 'fb_appid') ) $meta .= '<meta name="fb:app_id" content="' . $this->cypress_support('open-graph', 'fb_appid')  . '">'; if( is_404() || is_search() ) return; $meta .= '<meta property="og:url" content="' . get_permalink() . '"/>'; $meta .= '<meta property="og:site_name" content="' . get_bloginfo( 'name' ) . '"/>'; if( is_front_page() ) : $meta .= '<meta name="twitter:card" content="summary">'; $meta .= '<meta property="og:title" content="' . get_bloginfo( 'name' ) . ' | ' . get_bloginfo( 'description' ) . '"/>'; $meta .= '<meta property="og:image" content="' . home_url( 'app/icons/icon-large.png' ) . '" />'; $meta .= '<meta property="og:type" content="website"/>'; $meta .= '<meta property="og:description" content="' . get_bloginfo( 'description' ) . '"/>'; else : if( is_single() ): $meta .= '<meta name="twitter:card" content="summary_large_image"/>'; $meta .= '<meta property="og:type" content="article"/>'; else : $meta .= '<meta name="twitter:card" content="summary">'; $meta .= '<meta property="og:type" content="website"/>'; endif; if( has_post_thumbnail() ) : $meta .= '<meta property="og:image" content="' . wp_get_attachment_image_src( get_post_thumbnail_id(), 'medium' )[0] . '" />'; else : $meta .= '<meta property="og:image" content="' . home_url( 'app/icons/icon-large.png' ) . '" />'; endif; if( has_excerpt() ) : $meta .= '<meta property="og:description" content="' . strip_tags( get_the_excerpt() ) . '"/>'; else : $meta .= '<meta property="og:description" content="' . str_replace( "\r\n", ' ' , substr( strip_tags( strip_shortcodes( $post->post_content ) ), 0, 80 ) ) . '..."/>'; endif; endif; echo $meta; endif; },1);
 
-    add_action('wp_head', function(){
-      if( current_theme_supports( 'web-app' ) ) :
-        $meta = "<!-- Web application tags -->\n";
-        $meta .= "<meta name='application-name' content='{$this->cypress_support('web-app', 'name')}'>\n<meta name='apple-mobile-web-app-title' content='{$this->cypress_support('web-app', 'name')}'>";
-        $meta .= "<meta name='manifest' content='" . json_encode( $this->cypress_support('web-app'), JSON_UNESCAPED_SLASHES ) . "'>";
-        if( $this->cypress_support( 'web-app', 'standalone') ) :
-          $meta .= "<meta name='apple-mobile-web-app-capable' content='yes'>\n<meta name='mobile-web-app-capable' content='yes'>";
-          $meta .= "<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'>\n<link rel='apple-touch-startup-image' href='{$this->cypress_support('web-app', 'splash')}'>";
-          add_action('wp_footer', function(){ echo '<script>(function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)}})(document,window.navigator,"standalone")</script>'; });
-        endif;
-        foreach ($this->cypress_support('web-app', 'icons') as $group => $icon) {
-          $meta .= "<link sizes='{$icon['sizes']}' rel='apple-touch-icon' media='(-webkit-device-pixel-ratio: {$icon['density']})' href='{$icon['src']}' >";
-          $meta .= "<link sizes='{$icon['sizes']}' rel='icon' href='{$icon['src']}' >";
-        }
-        echo $meta;
-      endif;
-    });
-
+    add_action('wp_head', function(){if( current_theme_supports( 'web-app' ) ) : $meta = "<!-- Web application tags -->\n"; $meta .= "<meta name='application-name' content='{$this->cypress_support('web-app', 'name')}'>\n<meta name='apple-mobile-web-app-title' content='{$this->cypress_support('web-app', 'name')}'>"; $meta .= "<meta name='manifest' content='" . json_encode( $this->cypress_support('web-app'), JSON_UNESCAPED_SLASHES ) . "'>"; if( $this->cypress_support( 'web-app', 'standalone') ) : $meta .= "<meta name='apple-mobile-web-app-capable' content='yes'>\n<meta name='mobile-web-app-capable' content='yes'>"; $meta .= "<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'>\n<link rel='apple-touch-startup-image' href='{$this->cypress_support('web-app', 'splash')}'>"; add_action('wp_footer', function(){ echo '<script>(function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)}})(document,window.navigator,"standalone")</script>'; }); endif; foreach ($this->cypress_support('web-app', 'icons') as $group => $icon) {$meta .= "<link sizes='{$icon['sizes']}' rel='apple-touch-icon' media='(-webkit-device-pixel-ratio: {$icon['density']})' href='{$icon['src']}' >"; $meta .= "<link sizes='{$icon['sizes']}' rel='icon' href='{$icon['src']}' >"; } echo $meta; endif; });
     show_admin_bar(false);
-  }
-
-  /*
-  Replace URIs with Cypress URL masking pattern and add defer or async tags to scripts tag.
-   */
-  private function uri_cleaner($src) {
-    $src = remove_query_arg( array('ver','version'), $src );
-    if( preg_match('#wp-includes#', $src) ) :
-      $src = str_replace(WP_RPATH . '/wp-includes', 'includes', $src);
-    elseif( preg_match('#' . APP_RPATH . '#', $src) ) :
-      $src = str_replace(trailingslashit(APP_RPATH) . 'themes/' . basename(get_stylesheet_directory()), 'views', $src);
-      $src = str_replace(APP_RPATH . '/plugins', 'plugins', $src);
-      $src = str_replace(APP_RPATH . '/uploads', 'uploads', $src);
-    endif;
-
-    $async = strpos($src, '?async'); $defer = strpos($src, '?defer');
-    if ( !$async && $defer ) : echo '<script type="text/javascript" defer src="' . str_replace('?defer', '', $src) . '"></script>';
-    elseif ( $async && !$defer ) : echo '<script type="text/javascript" async src="' . str_replace('?async', '', $src) . '"></script>';
-    elseif ( $async && $defer ) : echo '<script type="text/javascript" async defer src="' . str_replace(array('?async','?defer'), '', $src) . '"></script>';
-    else : return $src;
-    endif;
-  }
-
-  public function cypress_support($feature, $field = false, $sub = false, $value = false) {
-    $support = get_theme_support($feature)[0];
-    if( !empty($field) ) $support = $support[$field];
-    if( !empty($sub) )   $support = $support[$sub];
-    if( !empty($value) ) $support = $support[$value];
-    return $support;
   }
 
   /*
@@ -282,38 +253,6 @@ class Cypress {
     });
   }
 
-  private function Signin( $user = array() ) {
-    if( !isset($user['remember']) )
-      $user['remember'] = false;
-    $login = wp_signon( $user, false);
-    if ( is_wp_error($login) ) :
-      echo json_encode( array( 'loggedin' => false, 'message' => __('Error.') ) );
-    else :
-      wp_set_current_user($user->ID);
-      echo json_encode(array('loggedin' => true, 'message' => __('Success.')));
-    endif;
-    die();
-  }
-
-  private function Signup( $user = array() ) {
-    $signup = wp_insert_user($user);
-    if ( is_wp_error($signup) ) {
-      $error  = $signup->get_error_codes() ;
-      if( in_array('empty_user_login', $error) )
-        echo json_encode( array( 'loggedin' => false, 'message' => __('Username is empty.') ) );
-      elseif( in_array('existing_user_login', $error) )
-        echo json_encode( array( 'loggedin' => false, 'message' => __('Username already exists.') ) );
-      elseif( in_array('existing_user_email', $error) )
-        echo json_encode( array( 'loggedin' => false, 'message' => __('Email already exists.') ) );
-    } else {
-        $this->Signin( $user );
-    }
-    die();
-  }
-
-  /*
-  Customization of WordPress backend.
-   */
   public function Backend() {
     remove_action( 'welcome_panel', 'wp_welcome_panel' );
     remove_meta_box( 'dashboard_plugins', 'dashboard', 'normal' );
@@ -363,11 +302,86 @@ class Cypress {
     } );
   }
 
-  public function define_constant( $constant, $value ) {
+
+  /**
+   * Cypress private functions.
+   * URI Cleaner: Replace URIs with Cypress URL masking pattern and add defer or async tags to scripts tag.
+   * Cypress Support: Check if current theme support Cypress feature.
+   * Signin: Cypress AJAX signin function. Used by Cypress Auth.
+   * Signup: Cypress AJAX signup function. Used by Cypress Auth.
+   */
+
+  private function uri_cleaner($src) {
+    $src = remove_query_arg( array('ver','version'), $src );
+    if( preg_match('#wp-includes#', $src) ) :
+      $src = str_replace(WP_RPATH . '/wp-includes', 'includes', $src);
+    elseif( preg_match('#' . APP_RPATH . '#', $src) ) :
+      $src = str_replace(trailingslashit(APP_RPATH) . 'themes/' . basename(get_stylesheet_directory()), 'views', $src);
+      $src = str_replace(APP_RPATH . '/plugins', 'plugins', $src);
+      $src = str_replace(APP_RPATH . '/uploads', 'uploads', $src);
+    endif;
+
+    $async = strpos($src, '?async'); $defer = strpos($src, '?defer');
+    if ( !$async && $defer ) : echo '<script type="text/javascript" defer src="' . str_replace('?defer', '', $src) . '"></script>';
+    elseif ( $async && !$defer ) : echo '<script type="text/javascript" async src="' . str_replace('?async', '', $src) . '"></script>';
+    elseif ( $async && $defer ) : echo '<script type="text/javascript" async defer src="' . str_replace(array('?async','?defer'), '', $src) . '"></script>';
+    else : return $src;
+    endif;
+  }
+  private function cypress_support($feature, $field = false, $sub = false, $value = false) {
+    $support = get_theme_support($feature)[0];
+    if( !empty($field) ) $support = $support[$field];
+    if( !empty($sub) )   $support = $support[$sub];
+    if( !empty($value) ) $support = $support[$value];
+    return $support;
+  }
+  private function Signin( $user = array() ) {
+    if( !isset($user['remember']) )
+      $user['remember'] = false;
+    $login = wp_signon( $user, false);
+    if ( is_wp_error($login) ) :
+      echo json_encode( array( 'loggedin' => false, 'message' => __('Error.') ) );
+    else :
+      wp_set_current_user($user->ID);
+      echo json_encode(array('loggedin' => true, 'message' => __('Success.')));
+    endif;
+    die();
+  }
+  private function Signup( $user = array() ) {
+    $signup = wp_insert_user($user);
+    if ( is_wp_error($signup) ) {
+      $error  = $signup->get_error_codes() ;
+      if( in_array('empty_user_login', $error) )
+        echo json_encode( array( 'loggedin' => false, 'message' => __('Username is empty.') ) );
+      elseif( in_array('existing_user_login', $error) )
+        echo json_encode( array( 'loggedin' => false, 'message' => __('Username already exists.') ) );
+      elseif( in_array('existing_user_email', $error) )
+        echo json_encode( array( 'loggedin' => false, 'message' => __('Email already exists.') ) );
+    } else {
+        $this->Signin( $user );
+    }
+    die();
+  }
+  private function define_constant( $constant, $value ) {
     if( ! defined($constant) )
       define($constant, $value);
   }
+  private function edit_option($options, $key, $value) {
+    $new_options = get_option($options);
+    $new_options[$key] = $value;
+    update_option($options,$new_options);
+  }
+  private function check_option($options, $key) {
+    $options_check = get_option($options);
+    $options_value = $options_check[$key];
+    if( empty($options_value) ) :
+      return false;
+    else :
+      return $options_value;
+    endif;
+  }
 }
+
 
 $Cypress = new Cypress();
 

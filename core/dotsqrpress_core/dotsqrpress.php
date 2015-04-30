@@ -19,33 +19,6 @@ Domain Path: /languages/
 # LOAD OPTION-TREE FRAMEWORK, VISIT GITHUB REPO FOR MORE INFO (github.com/valendesigns/option-tree)
 include( 'option-tree/ot-loader.php' );
 
-
-# ADD DOTSQRPRESS FAVICON PACK
-function dotsqrpress_favicon() {
- echo '<link rel="apple-touch-icon" sizes="57x57" href="' . get_bloginfo('url') . '/core/assets/favicon/apple-touch-icon-57x57.png">
-<link rel="apple-touch-icon" sizes="114x114" href="' . get_bloginfo('url') . '/core/assets/favicon/apple-touch-icon-114x114.png">
-<link rel="apple-touch-icon" sizes="72x72" href="' . get_bloginfo('url') . '/core/assets/favicon/apple-touch-icon-72x72.png">
-<link rel="apple-touch-icon" sizes="144x144" href="' . get_bloginfo('url') . '/core/assets/favicon/apple-touch-icon-144x144.png">
-<link rel="apple-touch-icon" sizes="60x60" href="' . get_bloginfo('url') . '/core/assets/favicon/apple-touch-icon-60x60.png">
-<link rel="apple-touch-icon" sizes="120x120" href="' . get_bloginfo('url') . '/core/assets/favicon/apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" sizes="76x76" href="' . get_bloginfo('url') . '/core/assets/favicon/apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" sizes="152x152" href="' . get_bloginfo('url') . '/core/assets/favicon/apple-touch-icon-152x152.png">
-<link rel="apple-touch-icon" sizes="180x180" href="' . get_bloginfo('url') . '/core/assets/favicon/apple-touch-icon-180x180.png">
-<link rel="icon" type="image/png" href="' . get_bloginfo('url') . '/core/assets/favicon/favicon-192x192.png" sizes="192x192">
-<link rel="icon" type="image/png" href="' . get_bloginfo('url') . '/core/assets/favicon/favicon-160x160.png" sizes="160x160">
-<link rel="icon" type="image/png" href="' . get_bloginfo('url') . '/core/assets/favicon/favicon-96x96.png" sizes="96x96">
-<link rel="icon" type="image/png" href="' . get_bloginfo('url') . '/core/assets/favicon/favicon-16x16.png" sizes="16x16">
-<link rel="icon" type="image/png" href="' . get_bloginfo('url') . '/core/assets/favicon/favicon-32x32.png" sizes="32x32">
-<meta name="msapplication-TileImage" content="' . get_bloginfo('url') . '/core/assets/favicon/mstile-144x144.png">
-<meta name="apple-mobile-web-app-title" content="DOTSQRPress - ' . get_bloginfo('name') . '">
-<meta name="application-name" content="DOTSQRPress - ' . get_bloginfo('name') . '">
-<meta name="msapplication-TileColor" content="#2b5797">
-<meta name="msapplication-config" content="' . get_bloginfo('url') . '/core/assets/favicon/browserconfig.xml"> ';
-}
-add_action( 'admin_head', 'dotsqrpress_favicon' );
-add_action( 'wp_head', 'dotsqrpress_favicon' );
-
-
 # ADMIN STYLING
 add_action('admin_head', 'dotsqrpress_admin_style');
 function dotsqrpress_admin_style(){
@@ -66,9 +39,6 @@ function dotsqrpress_main_color() {
 add_filter('wp_head', 'dotsqrpress_main_color');
 add_filter('admin_head', 'dotsqrpress_main_color');
 
-# DISABLE HTML COMMENTS
-add_filter( 'pre_comment_content', 'wp_specialchars' );
-
 #DISABLE AUTOSAVE
 add_action( 'admin_init', 'dotsqrpress_disable_autosave' );
 function dotsqrpress_disable_autosave(){
@@ -88,32 +58,6 @@ add_filter('excerpt_more', 'dotsqrpress_excerpet_ellipses');
 # MAKE HTML EDITOR DEFAULT ONE
 add_filter( 'wp_default_editor', create_function('', 'return "html";') );
 
-# CLEANUP THUMBNAILS ATTRIBUTES AND MAKE THEM USEFUL. TURNS IMG TITLE INTO CLEAN CSS CLASS.
-function clean_class($dsp_class)
-{
-    $src = 'àáâãäçèéêëìíîïñòóôõöøùúûüýÿßÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝ';
-    $rep = 'aaaaaceeeeiiiinoooooouuuuyysAAAAACEEEEIIIINOOOOOOUUUUY';
-    $dsp_class = strtr(utf8_decode($dsp_class), utf8_decode($src), $rep);
-    $dsp_class = strtolower($dsp_class);
-    $dsp_class = preg_replace("/[^a-z0-9\s._-]/", "", $dsp_class);
-    $dsp_class = preg_replace("/[\s._-]+/", " ", $dsp_class);
-    $dsp_class = preg_replace("/[\s]/", "-", $dsp_class);
-    return $dsp_class;
-}
-
-function dotsqrpress_thumbnail($html, $post_id, $post_thumbnail_id, $size, $attr) {
-    $id = get_post_thumbnail_id();
-    $src = wp_get_attachment_image_src($id, $size);
-    $alt = get_the_title($id);
-    $ext_class = clean_class($alt);
-    $site = get_bloginfo('name');
-    $class = $attr['class'];
-    $html = '<img src="' . $src[0] . '" title="' . $alt . ' - ' . $site . '" alt="' . $alt . ' - ' . $site . '" class="img-responsive thumbnail-' . $ext_class .' ' . $class . '" />';
-
-    return $html;
-}
-add_filter('post_thumbnail_html', 'dotsqrpress_thumbnail', 99, 5);
-
 # ADD ANALYTICS ON ALL SITE IF DEFINED IN DOTSQRPRESS CONF FILE
 function dotsqrpress_google_analytics() {
 ?>
@@ -131,22 +75,6 @@ function dotsqrpress_google_analytics() {
 if (defined('GOOGLE_ANALYTICS')) {
 	add_action('wp_footer', 'dotsqrpress_analytics');
 }
-
-# RESIZE UPLOADED IMAGES ACCORDING TO WP LARGE SIZE SET IN WP SETTINGS. THIS AVOIDS UPLOADING VERY BIG FILES.
-function dotsqrpress_replace_big_images($image_data) {
-	if (!isset($image_data['sizes']['large'])) return $image_data;
-	$upload_dir = wp_upload_dir();
-	$uploaded_image_location = $upload_dir['basedir'] . '/' .$image_data['file'];
-	$large_image_location = $upload_dir['path'] . '/'.$image_data['sizes']['large']['file'];
-	unlink($uploaded_image_location);
-	rename($large_image_location,$uploaded_image_location);
-	$image_data['width'] = $image_data['sizes']['large']['width'];
-	$image_data['height'] = $image_data['sizes']['large']['height'];
-	unset($image_data['sizes']['large']);
-	return $image_data;
-}
-add_filter('wp_generate_attachment_metadata','dotsqrpress_replace_big_images');
-
 
 # REMOVE WORDPRESS DEFAULT WIDGETS
 function dotsqrpress_remove_default_widgets() {

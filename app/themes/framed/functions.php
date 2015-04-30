@@ -155,20 +155,6 @@ function redirect_home() {
 add_action('ajax_redirect', 'redirect_home');
 
 
-# CLEANUP THUMBNAILS ATTRIBUTES AND MAKE THEM USEFUL. TURNS IMG TITLE INTO CLEAN CSS CLASS.
-function clean_class($dsp_class)
-{
-  $src = 'àáâãäçèéêëìíîïñòóôõöøùúûüýÿßÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝ';
-  $rep = 'aaaaaceeeeiiiinoooooouuuuyysAAAAACEEEEIIIINOOOOOOUUUUY';
-  $dsp_class = strtr(utf8_decode($dsp_class), utf8_decode($src), $rep);
-  $dsp_class = strtolower($dsp_class);
-  $dsp_class = preg_replace("/[^a-z0-9\s._-]/", "", $dsp_class);
-  $dsp_class = preg_replace("/[\s._-]+/", " ", $dsp_class);
-  $dsp_class = preg_replace("/[\s]/", "-", $dsp_class);
-  return $dsp_class;
-}
-
-
 /**
  * Implement the Custom Header feature.
  */
