@@ -58,59 +58,6 @@ add_filter('excerpt_more', 'dotsqrpress_excerpet_ellipses');
 # MAKE HTML EDITOR DEFAULT ONE
 add_filter( 'wp_default_editor', create_function('', 'return "html";') );
 
-# ADD ANALYTICS ON ALL SITE IF DEFINED IN DOTSQRPRESS CONF FILE
-function dotsqrpress_google_analytics() {
-?>
-<script type="text/javascript">
-    var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-    document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
-    try {
-        var pageTracker = _gat._getTracker("UA-XXXXXXX-X");
-        pageTracker._trackPageview();
-    } catch(err) {}</script>
-<?php
-}
-if (defined('GOOGLE_ANALYTICS')) {
-	add_action('wp_footer', 'dotsqrpress_analytics');
-}
-
-# REMOVE WORDPRESS DEFAULT WIDGETS
-function dotsqrpress_remove_default_widgets() {
-  unregister_widget('WP_Widget_Pages');
-  unregister_widget('WP_Widget_Calendar');
-  unregister_widget('WP_Widget_Archives');
-  unregister_widget('WP_Widget_Links');
-  unregister_widget('WP_Widget_Meta');
-  unregister_widget('WP_Widget_Search');
-  unregister_widget('WP_Widget_Text');
-  unregister_widget('WP_Widget_Categories');
-  unregister_widget('WP_Widget_Recent_Posts');
-  unregister_widget('WP_Widget_Recent_Comments');
-  unregister_widget('WP_Widget_RSS');
-  unregister_widget('WP_Widget_Tag_Cloud');
-}
-add_action('widgets_init', 'dotsqrpress_remove_default_widgets', 1);
-
-# REMOVE 'PRIVATE:' PREFIX FROM HIDDEN PAGES
-function dotsqrpress_private_pages($title) {
-	$title = esc_attr($title);
-	$findthese = array(
-	    '#Protected:#',
-	    '#Private:#',
-	    '#Protetto:#',
-	    '#Privato:#'
-	);
-	$replacewith = array(
-	    '', // What to replace "Protected:" with
-	    '' // What to replace "Private:" with
-	);
-	$title = preg_replace($findthese, $replacewith, $title);
-	return $title;
-}
-add_filter('the_title', 'dotsqrpress_private_pages');
-
 
 #####################
 # ADMIN FEATURES. REMEMBER TO SET THE SUPER ADMIN (MAIN_USER) USERNAME IN THE CONF FILE.
@@ -166,36 +113,6 @@ function dotsqrpress_custom_admin_ui() {
 		add_filter( 'ot_show_new_layout', '__return_false', 9999 );
 	}
 }
-# MAKE SURE TO DISABLE WP AUTOMATIC UPDATES. YOU CAN MANUALLY UPDATE IT IF YOU ARE MAIN_USER.
-add_filter( 'automatic_updater_disabled', '__return_true' );
-add_filter( 'auto_update_theme', '__return_false' );
-add_filter( 'auto_update_plugin', '__return_false' );
-add_filter( 'auto_core_update_send_email', '__return_false' );
-
-# RESTRICT ADMIN MENU. SHOW ALL FIELDS ONLY TO WEBMASTER, AS DEFINED IN WP-CONFIG.
-function dotsqrpress_restrict_admin()
-{
-    global $menu;
-    global $current_user;
-    get_currentuserinfo();
-    if($current_user->user_login !== MAIN_USER && defined('MAIN_USER')) {
-        $restricted = array(__('Media'),
-                            __('Dashboard'),
-                            __('Links'),
-                            __('Comments'),
-                            __('Appearance'),
-                            __('Plugins'),
-                            __('Tools'),
-                            __('Settings')
-        );
-        end ($menu);
-        while (prev($menu)){
-            $value = explode(' ',$menu[key($menu)][0]);
-            if(in_array($value[0] != NULL?$value[0]:"" , $restricted)){unset($menu[key($menu)]);}
-        }// end while
-    }// end if
-}
-add_action('admin_menu', 'dotsqrpress_restrict_admin');
 
 # HIDE WEBMASTER FROM USER LIST FOR OTHER USERS
 function dotsqrpress_hide_webmaster($user_search) {
@@ -209,27 +126,6 @@ function dotsqrpress_hide_webmaster($user_search) {
 }
 add_action('pre_user_query','dotsqrpress_hide_webmaster');
 
-
-#####################
-# FLUSH REWRITE RULES ON THEME CHANGE AND CHECKS IF DOTSQRPRESS CORE HAS BEEN MODIFIED, THEN FLUSHES.
-
-add_action( 'after_switch_theme', 'dotsqrpress_flush_ontheme' );
-function dotsqrpress_flush_ontheme() {
-	global $wp_rewrite;
-	$wp_rewrite->flush_rules();
-}
-
-add_action( 'admin_init','dotsqrpress_core_mods_check', 1 );
-function dotsqrpress_core_mods_check() {
-	$dotsqrpress_options_check = get_option('dotsqrpress');
-	$core_ver = filemtime( __FILE__ );
-
-	if ( $dotsqrpress_options_check['core_version'] != $core_ver ) {
-		global $wp_rewrite;
-		$wp_rewrite->flush_rules();
-		dotsqrpress_option_update('core_version',$core_ver,'dotsqrpress');
-	}
-}
 
 ?>
 
@@ -348,14 +244,6 @@ return $my_content . $rules;
 //add_filter('mod_rewrite_rules', 'dotsqrpress_custom_rules');
 
 
-# STOP REDIRECTING TO SIMILAR URL
-add_filter('redirect_canonical', 'dotsqrpress_no_similar_url');
-function dotsqrpress_no_similar_url($url) {
- if (is_404()) {
-   return false;
- }
- return $url;
-}
 
 # DOTSQRPRESS LOGIN STYLING. REMOVES DEFAULT WP CSS WHICH IS FORCED INTO HEADER, ADDS DOTSQRPRESS CSS.
 remove_filter('wp_admin_css', 'login', 99999);
@@ -412,30 +300,6 @@ function dotsqrpress_useful_user_fields( $user_fields ) {
   return $user_fields;
 }
 add_filter('user_contactmethods', 'dotsqrpress_useful_user_fields');
-
-# ADD DOTSQRPRESS FAVICON PACK
-function dotsqrpress_favicon() {
- echo '<link rel="apple-touch-icon" sizes="57x57" href="' . get_bloginfo('url') . '/core/assets/favicon/apple-touch-icon-57x57.png">
- <link rel="apple-touch-icon" sizes="114x114" href="' . get_bloginfo('url') . '/core/assets/favicon/apple-touch-icon-114x114.png">
- <link rel="apple-touch-icon" sizes="72x72" href="' . get_bloginfo('url') . '/core/assets/favicon/apple-touch-icon-72x72.png">
- <link rel="apple-touch-icon" sizes="144x144" href="' . get_bloginfo('url') . '/core/assets/favicon/apple-touch-icon-144x144.png">
- <link rel="apple-touch-icon" sizes="60x60" href="' . get_bloginfo('url') . '/core/assets/favicon/apple-touch-icon-60x60.png">
- <link rel="apple-touch-icon" sizes="120x120" href="' . get_bloginfo('url') . '/core/assets/favicon/apple-touch-icon-120x120.png">
- <link rel="apple-touch-icon" sizes="76x76" href="' . get_bloginfo('url') . '/core/assets/favicon/apple-touch-icon-76x76.png">
- <link rel="apple-touch-icon" sizes="152x152" href="' . get_bloginfo('url') . '/core/assets/favicon/apple-touch-icon-152x152.png">
- <link rel="apple-touch-icon" sizes="180x180" href="' . get_bloginfo('url') . '/core/assets/favicon/apple-touch-icon-180x180.png">
- <link rel="icon" type="image/png" href="' . get_bloginfo('url') . '/core/assets/favicon/favicon-192x192.png" sizes="192x192">
- <link rel="icon" type="image/png" href="' . get_bloginfo('url') . '/core/assets/favicon/favicon-160x160.png" sizes="160x160">
- <link rel="icon" type="image/png" href="' . get_bloginfo('url') . '/core/assets/favicon/favicon-96x96.png" sizes="96x96">
- <link rel="icon" type="image/png" href="' . get_bloginfo('url') . '/core/assets/favicon/favicon-16x16.png" sizes="16x16">
- <link rel="icon" type="image/png" href="' . get_bloginfo('url') . '/core/assets/favicon/favicon-32x32.png" sizes="32x32">
- <meta name="msapplication-TileImage" content="' . get_bloginfo('url') . '/core/assets/favicon/mstile-144x144.png">
- <meta name="apple-mobile-web-app-title" content="DOTSQRPress - ' . get_bloginfo('name') . '">
- <meta name="application-name" content="DOTSQRPress - ' . get_bloginfo('name') . '">
- <meta name="msapplication-TileColor" content="#2b5797">
- <meta name="msapplication-config" content="' . get_bloginfo('url') . '/core/assets/favicon/browserconfig.xml"> ';
-}
-add_action( 'admin_head', 'dotsqrpress_favicon' );
 
 # ADD DOTSQRPRESS META PROFILE
 function dotsqrpress_profile() {
@@ -506,32 +370,6 @@ add_filter('excerpt_more', 'dotsqrpress_excerpet_ellipses');
 # MAKE HTML EDITOR DEFAULT ONE
 add_filter( 'wp_default_editor', create_function('', 'return "html";') );
 
-# CLEANUP THUMBNAILS ATTRIBUTES AND MAKE THEM USEFUL. TURNS IMG TITLE INTO CLEAN CSS CLASS.
-function clean_class($dsp_class)
-{
-  $src = 'àáâãäçèéêëìíîïñòóôõöøùúûüýÿßÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝ';
-  $rep = 'aaaaaceeeeiiiinoooooouuuuyysAAAAACEEEEIIIINOOOOOOUUUUY';
-  $dsp_class = strtr(utf8_decode($dsp_class), utf8_decode($src), $rep);
-  $dsp_class = strtolower($dsp_class);
-  $dsp_class = preg_replace("/[^a-z0-9\s._-]/", "", $dsp_class);
-  $dsp_class = preg_replace("/[\s._-]+/", " ", $dsp_class);
-  $dsp_class = preg_replace("/[\s]/", "-", $dsp_class);
-  return $dsp_class;
-}
-
-function dotsqrpress_thumbnail($html, $post_id, $post_thumbnail_id, $size, $attr) {
-  $id = get_post_thumbnail_id();
-  $src = wp_get_attachment_image_src($id, $size);
-  $alt = get_the_title($id);
-  $ext_class = clean_class($alt);
-  $site = get_bloginfo('name');
-  $class = $attr['class'];
-  $html = '<img src="' . $src[0] . '" title="' . $alt . ' - ' . $site . '" alt="' . $alt . ' - ' . $site . '" class="img-responsive thumbnail-' . $ext_class .' ' . $class . '" />';
-
-  return $html;
-}
-add_filter('post_thumbnail_html', 'dotsqrpress_thumbnail', 99, 5);
-
 # CLEANUP AVATAR CLASSES AND LOCAL IMG URL
 add_filter( 'get_avatar', 'swappyt_avatar', 15 );
 function swappyt_avatar ($avatar) {
@@ -551,21 +389,6 @@ function swappyt_avatar ($avatar) {
   return $avatar_url;
 }
 
-
-# RESIZE UPLOADED IMAGES ACCORDING TO WP LARGE SIZE SET IN WP SETTINGS. THIS AVOIDS UPLOADING VERY BIG FILES.
-function dotsqrpress_replace_big_images($image_data) {
-  if (!isset($image_data['sizes']['large'])) return $image_data;
-  $upload_dir = wp_upload_dir();
-  $uploaded_image_location = $upload_dir['basedir'] . '/' .$image_data['file'];
-  $large_image_location = $upload_dir['path'] . '/'.$image_data['sizes']['large']['file'];
-  unlink($uploaded_image_location);
-  rename($large_image_location,$uploaded_image_location);
-  $image_data['width'] = $image_data['sizes']['large']['width'];
-  $image_data['height'] = $image_data['sizes']['large']['height'];
-  unset($image_data['sizes']['large']);
-  return $image_data;
-}
-add_filter('wp_generate_attachment_metadata','dotsqrpress_replace_big_images');
 
 # REMOVE WORDPRESS DEFAULT META BOXES
 function dotsqrpress_remove_default_metaboxes() {
@@ -599,65 +422,6 @@ function dotsqrpress_remove_default_widgets() {
 }
 add_action('widgets_init', 'dotsqrpress_remove_default_widgets', 1);
 
-# REMOVE 'PRIVATE:' PREFIX FROM HIDDEN PAGES
-function dotsqrpress_private_pages($title) {
-  $title = esc_attr($title);
-  $findthese = array(
-   '#Protected:#',
-   '#Private:#',
-   '#Protetto:#',
-   '#Privato:#'
-   );
-  $replacewith = array(
-      '', // What to replace "Protected:" with
-      '' // What to replace "Private:" with
-     );
-  $title = preg_replace($findthese, $replacewith, $title);
-  return $title;
-}
-add_filter('the_title', 'dotsqrpress_private_pages');
-
-
-#####################
-# ADMIN FEATURES. REMEMBER TO SET THE SUPER ADMIN (MAIN_USER) USERNAME IN THE CONF FILE.
-
-# ADD ADMIN BAR LINK TO THEME SETTINGS - POWERED BY OPTION TREE
-add_action( 'admin_bar_menu', 'dotsqrpress_adminbar_links', 999 );
-function dotsqrpress_adminbar_links( $wp_admin_bar ) {
-  $dotsqrpress_node = array(
-    'id'    => 'dotsqrpress-adminbar-icon',
-    'title' => '<span class="ab-icon"></span><span class="ab-label">' . get_bloginfo('name') . '</span>',
-    'href'  => site_url(),
-    'meta'  => array( 'class' => 'dotsqrpress-adminbar-icon' )
-   );
-  $view_site_node = array(
-    'id'    => 'dotsqrpress_goto_site',
-    'parent'=> 'dotsqrpress-adminbar-icon',
-    'title' => __('Settings'),
-    'href'  => admin_url('themes.php?page=ot-theme-options'),
-    'meta'  => array( 'class' => 'dotsqrpress-theme-settings' )
-   );
-  $logout_node = array(
-    'id'    => 'dotsqrpress-logout',
-    'title' => '<span class="ab-icon"></span><span class="ab-label">' . __('Log Out') . ' ' . wp_get_current_user()->user_login . '</span>',
-    'href'  => site_url('logout'),
-    'meta'  => array( 'class' => 'dotsqrpress-logout' )
-   );
-  $wp_admin_bar->add_node($dotsqrpress_node);
-  $wp_admin_bar->add_node($view_site_node);
-  $wp_admin_bar->add_node($logout_node);
-  $wp_admin_bar->remove_node('comments');
-  $wp_admin_bar->remove_menu('my-account');
-  $wp_admin_bar->remove_menu('site-name');
-  $wp_admin_bar->remove_menu('wp-logo');
-  $wp_admin_bar->remove_menu('updates');
-  $wp_admin_bar->remove_menu('search');
-  $wp_admin_bar->remove_menu('bp-notifications');
-}
-
-# DISABLE ADMIN BAR FOR ALL USERS
-add_filter('show_admin_bar', '__return_false');
-
 # DEFAULT DOTSQRPRESS FOOTER FOR ADMIN
 function dotsqrpress_remove_footer () {
   return '';
@@ -689,31 +453,6 @@ add_filter( 'automatic_updater_disabled', '__return_true' );
 add_filter( 'auto_update_theme', '__return_false' );
 add_filter( 'auto_update_plugin', '__return_false' );
 add_filter( 'auto_core_update_send_email', '__return_false' );
-
-# RESTRICT ADMIN MENU. SHOW ALL FIELDS ONLY TO WEBMASTER, AS DEFINED IN WP-CONFIG.
-function dotsqrpress_restrict_admin()
-{
-  global $menu;
-  global $current_user;
-  get_currentuserinfo();
-  if($current_user->user_login !== MAIN_USER && defined('MAIN_USER')) {
-    $restricted = array(__('Media'),
-      __('Dashboard'),
-      __('Links'),
-      __('Comments'),
-      __('Appearance'),
-      __('Plugins'),
-      __('Tools'),
-      __('Settings')
-      );
-    end ($menu);
-    while (prev($menu)){
-      $value = explode(' ',$menu[key($menu)][0]);
-      if(in_array($value[0] != NULL?$value[0]:"" , $restricted)){unset($menu[key($menu)]);}
-        }// end while
-    }// end if
-  }
-  add_action('admin_menu', 'dotsqrpress_restrict_admin');
 
 # HIDE WEBMASTER FROM USER LIST FOR OTHER USERS
   function dotsqrpress_hide_webmaster($user_search) {
@@ -759,26 +498,6 @@ function dotsqrpress_restrict_admin()
   add_action( 'wp_head', 'dotsqrpress_ios_webapp' , 2 );
 
 
-#####################
-# FLUSH REWRITE RULES ON THEME CHANGE AND CHECKS IF DOTSQRPRESS CORE HAS BEEN MODIFIED, THEN FLUSHES.
-
-  add_action( 'after_switch_theme', 'dotsqrpress_flush_ontheme' );
-  function dotsqrpress_flush_ontheme() {
-   global $wp_rewrite;
-   $wp_rewrite->flush_rules();
- }
-
- add_action( 'admin_init','dotsqrpress_core_mods_check', 1 );
- function dotsqrpress_core_mods_check() {
-   $dotsqrpress_options_check = get_option('dotsqrpress');
-   $core_ver = filemtime( __FILE__ );
-
-   if ( $dotsqrpress_options_check['core_version'] != $core_ver ) {
-    global $wp_rewrite;
-    $wp_rewrite->flush_rules();
-    dotsqrpress_option_update('core_version',$core_ver,'dotsqrpress');
-  }
-}
 
 ######################
 # OPEN GRAPH GENERATOR

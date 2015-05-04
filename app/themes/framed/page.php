@@ -22,8 +22,8 @@ get_header(); ?>
         },
          type: 'post',
          success: function(output) {
-                      console.log(output);
-                  }
+          console.log(output);
+        }
       });
     });
   });

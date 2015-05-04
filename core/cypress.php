@@ -26,7 +26,6 @@ class Cypress {
   public function __construct() {
     add_action( 'init', array( $this, 'Init' ) );
     add_action( 'muplugins_loaded', array( $this, 'Loaded' ) );
-    add_action( 'after_setup_theme', array( $this, 'Theming' ) );
     add_action( 'plugins_loaded', array( $this, 'APIs' ) );
     add_action( 'switch_theme', array( $this, 'Update' ) );
     add_action( 'generate_rewrite_rules', array( $this, 'Apache' ) );
@@ -35,20 +34,19 @@ class Cypress {
     add_action( 'login_init', array($this, 'Login') );
     add_action( 'template_redirect', array($this, 'Structure') );
     add_action( 'after_setup_theme', array( $this, 'Auth' ) );
-    add_action( 'wp_loaded', array( $this, 'Security' ) );
+    if( $this->check_option( 'Cypress', 'loaded' ) ) :
+      add_action( 'after_setup_theme', array( $this, 'Theming' ) );
+      add_action( 'wp_loaded', array( $this, 'Security' ) );
+    endif;
   }
 
   /*
   WordPress configutation setup. Runs only once.
    */
   public function Init() {
-    if( !$this->check_option('cypress', 'loaded') ) :
-      flush_rewrite_rules(true);
-      $this->edit_option( 'cypress', 'loaded', 1 );
-    endif;
-
-    if( !$this->check_option('cypress', 'setup') ):
+    if( !$this->check_option( 'Cypress', 'setup' ) && is_blog_installed() ):
       update_option('show_on_front', 'page');
+      update_option('page_on_front', 2);
       update_option('blogdescription', get_bloginfo('name') . base64_decode('IHBvd2VyZWQgYnkgQ3lwcmVzcw=='));
       update_option('uploads_use_yearmonth_folders', 0);
       update_option('default_comment_status', 'closed');
@@ -60,7 +58,7 @@ class Cypress {
       update_option('small_size_w', 260);
       update_option('small_size_h', 146);
       update_option('permalink_structure', '/%year%/%monthnum%/%day%/%postname%/');
-      $this->edit_option( 'cypress', 'setup', 1 );
+      $this->edit_option( 'Cypress', 'setup', 1 );
     endif;
   }
 
@@ -148,7 +146,7 @@ class Cypress {
     add_filter('language_attributes', function($output){return $output .= ' xmlns="http://www.w3.org/1999/xhtml" prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#"'; });
     add_action('wp_head', function(){if( current_theme_supports( 'open-graph' ) ) : global $post; $meta = ''; if( $this->cypress_support('open-graph', 'copyright') ) $meta .= '<meta name="copyright" content="&copy;' . date('Y') . ' ' . $this->cypress_support('open-graph', 'copyright')  . '">'; if( $this->cypress_support('open-graph', 'tw_username') ) $meta .= '<meta name="twitter:site" content="@' . $this->cypress_support('open-graph', 'tw_username')  . '">'; if( $this->cypress_support('open-graph', 'fb_appid') ) $meta .= '<meta name="fb:app_id" content="' . $this->cypress_support('open-graph', 'fb_appid')  . '">'; if( is_404() || is_search() ) return; $meta .= '<meta property="og:url" content="' . get_permalink() . '"/>'; $meta .= '<meta property="og:site_name" content="' . get_bloginfo( 'name' ) . '"/>'; if( is_front_page() ) : $meta .= '<meta name="twitter:card" content="summary">'; $meta .= '<meta property="og:title" content="' . get_bloginfo( 'name' ) . ' | ' . get_bloginfo( 'description' ) . '"/>'; $meta .= '<meta property="og:image" content="' . home_url( 'app/icons/icon-large.png' ) . '" />'; $meta .= '<meta property="og:type" content="website"/>'; $meta .= '<meta property="og:description" content="' . get_bloginfo( 'description' ) . '"/>'; else : if( is_single() ): $meta .= '<meta name="twitter:card" content="summary_large_image"/>'; $meta .= '<meta property="og:type" content="article"/>'; else : $meta .= '<meta name="twitter:card" content="summary">'; $meta .= '<meta property="og:type" content="website"/>'; endif; if( has_post_thumbnail() ) : $meta .= '<meta property="og:image" content="' . wp_get_attachment_image_src( get_post_thumbnail_id(), 'medium' )[0] . '" />'; else : $meta .= '<meta property="og:image" content="' . home_url( 'app/icons/icon-large.png' ) . '" />'; endif; if( has_excerpt() ) : $meta .= '<meta property="og:description" content="' . strip_tags( get_the_excerpt() ) . '"/>'; else : $meta .= '<meta property="og:description" content="' . str_replace( "\r\n", ' ' , substr( strip_tags( strip_shortcodes( $post->post_content ) ), 0, 80 ) ) . '..."/>'; endif; endif; echo $meta; endif; },1);
 
-    add_action('wp_head', function(){if( current_theme_supports( 'web-app' ) ) : $meta = "<!-- Web application tags -->\n"; $meta .= "<meta name='application-name' content='{$this->cypress_support('web-app', 'name')}'>\n<meta name='apple-mobile-web-app-title' content='{$this->cypress_support('web-app', 'name')}'>"; $meta .= "<meta name='manifest' content='" . json_encode( $this->cypress_support('web-app'), JSON_UNESCAPED_SLASHES ) . "'>"; if( $this->cypress_support( 'web-app', 'standalone') ) : $meta .= "<meta name='apple-mobile-web-app-capable' content='yes'>\n<meta name='mobile-web-app-capable' content='yes'>"; $meta .= "<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'>\n<link rel='apple-touch-startup-image' href='{$this->cypress_support('web-app', 'splash')}'>"; add_action('wp_footer', function(){ echo '<script>(function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)}})(document,window.navigator,"standalone")</script>'; }); endif; foreach ($this->cypress_support('web-app', 'icons') as $group => $icon) {$meta .= "<link sizes='{$icon['sizes']}' rel='apple-touch-icon' media='(-webkit-device-pixel-ratio: {$icon['density']})' href='{$icon['src']}' >"; $meta .= "<link sizes='{$icon['sizes']}' rel='icon' href='{$icon['src']}' >"; } echo $meta; endif; });
+    add_action('wp_head', function(){if( current_theme_supports( 'web-app' ) ) : $meta = "<!-- Web application tags -->\n"; $meta .= "<meta name='application-name' content='{$this->cypress_support('web-app', 'name')}'>\n<meta name='apple-mobile-web-app-title' content='{$this->cypress_support('web-app', 'name')}'>"; if( $this->cypress_support( 'web-app', 'standalone') ) : $meta .= "<meta name='apple-mobile-web-app-capable' content='yes'>\n<meta name='mobile-web-app-capable' content='yes'>"; $meta .= "<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'>\n<link rel='apple-touch-startup-image' href='{$this->cypress_support('web-app', 'splash')}'>"; add_action('wp_footer', function(){ echo '<script>(function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)}})(document,window.navigator,"standalone")</script>'; }); endif; foreach ($this->cypress_support('web-app', 'icons') as $group => $icon) {$meta .= "<link sizes='{$icon['sizes']}' rel='apple-touch-icon' media='(-webkit-device-pixel-ratio: {$icon['density']})' href='{$icon['src']}' >"; $meta .= "<link sizes='{$icon['sizes']}' rel='icon' href='{$icon['src']}' >"; } echo $meta; endif; });
     show_admin_bar(false);
   }
 
@@ -156,16 +154,16 @@ class Cypress {
   Improve WordPress default security. Mask default login and prevent access to unauthorized users.
    */
   public function Security() {
-    $redirect_404 =  home_url( '/404' ); $uri = strtolower($_SERVER['REQUEST_URI']);
+
     if( !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' ) :
         return;
-    elseif( preg_match( '#wp-admin#', $uri ) && !current_user_can('manage_options') ) :
-        wp_redirect( $redirect_404 );
+    elseif( preg_match( '#wp-admin#', strtolower($_SERVER['REQUEST_URI']) ) && !current_user_can('manage_options') ) :
+        wp_redirect( home_url( '/404' ) );
         exit();
-    elseif( preg_match( '#wp-login#', $uri ) && $_SERVER['REQUEST_METHOD'] !== "POST") :
-        wp_redirect( $redirect_404 );
+    elseif( preg_match( '#wp-login#', strtolower($_SERVER['REQUEST_URI']) ) && $_SERVER['REQUEST_METHOD'] !== "POST") :
+        wp_redirect( home_url( '/404' ) );
         exit();
-    elseif( $uri == '/logout' ) :
+    elseif( strtolower($_SERVER['REQUEST_URI']) == '/logout' ) :
         wp_logout();
         wp_redirect( home_url() );
         exit();
@@ -178,40 +176,20 @@ class Cypress {
     add_filter('lostpassword_url', function($url){ return home_url('/retrieve'); });
     add_filter('lostpassword_url', function($url){ return home_url('/retrieve'); });
     add_filter('authenticate', function( $user, $username, $password ) {if ( is_email( $username ) ) $user = get_user_by( 'email', $username ); if ( $user ) $username = $user->user_login; return wp_authenticate_username_password( null, $username, $password ); }, 10, 3);
+
   }
 
   public function Structure() {
 
     global $wp_rewrite;
-    if( !isset($wp_rewrite) || !is_object($wp_rewrite) || !$wp_rewrite->using_permalinks() )
-      return;
-    $search = $wp_rewrite->search_base;
-    if( is_search() && strpos($_SERVER['REQUEST_URI'], "/{$search}/") === false ) :
-      wp_redirect( home_url("/{$search}/" . urlencode(get_query_var('s'))) );
-      exit();
-    endif;
+    if( !isset($wp_rewrite) || !is_object($wp_rewrite) || !$wp_rewrite->using_permalinks() ) return; $search = $wp_rewrite->search_base; if( is_search() && strpos($_SERVER['REQUEST_URI'], "/{$search}/") === false ) : wp_redirect( home_url("/{$search}/" . urlencode(get_query_var('s'))) ); exit(); endif;
+    add_filter('request', function($query_vars){if( isset($_GET['s']) && empty($_GET['s']) ) $query_vars['s'] = ' '; return $query_vars; });
 
-    add_filter('request', function($query_vars){
-      if( isset($_GET['s']) && empty($_GET['s']) )
-        $query_vars['s'] = ' ';
-      return $query_vars;
-    });
-
-    add_filter('wp_nav_menu_args', function($args){
-      $menu = array( 'container' => false, 'items_wrap' => '<ul id="%1$s" class="%2$s">%3$s</ul>', 'depth' => 3, 'walker' => new Cypress_Menu(), 'fallback_cb' => 'wp_page_menu' );
-      return array_merge($args, $menu);
-    });
-
+    add_filter('wp_nav_menu_args', function($args){$menu = array( 'container' => false, 'items_wrap' => '<ul id="%1$s" class="%2$s">%3$s</ul>', 'depth' => 3, 'walker' => new Cypress_Menu(), 'fallback_cb' => 'wp_page_menu' ); return array_merge($args, $menu); });
+    add_filter('private_title_format', function(){return '%s';});
+    add_filter('protected_title_format', function(){return '%s';});
     if (defined('GTM')) {
-      add_action('wp_footer', function(){ ?>
-        <noscript><iframe src="//www.googletagmanager.com/ns.html?id=<?php echo GTM; ?>"
-          height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-          <script async type="text/javascript">(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-          '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-        })(window,document,'script','dataLayer','<?php echo GTM; ?>');</script>
-      <?php });
+      add_action('wp_footer', function(){ ?> <noscript><iframe src="//www.googletagmanager.com/ns.html?id=<?php echo GTM; ?>"height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript> <script async type="text/javascript">(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); })(window,document,'script','dataLayer','<?php echo GTM; ?>');</script> <?php });
     }
 
   }
@@ -275,15 +253,51 @@ class Cypress {
     //remove_meta_box( 'postexcerpt','page','normal' );
     //remove_meta_box( 'trackbacksdiv','page','normal' );
 
-    add_action( 'admin_head', function() { echo '<meta name="robots" content="noindex, nofollow">'; });
+    add_filter( 'get_user_option_admin_color', function( $color_scheme ) { return $color_scheme = 'blue'; }, 5 );
     add_filter( 'admin_title', function($wordpress, $title){ return $title . ' | Cypress';}, 10, 2);
     add_filter( 'admin_footer_text', '__return_empty_string' );
     add_filter( 'update_footer', function(){ return base64_decode('RW5oYW5jZWQgd2l0aCA8c3BhbiBjbGFzcz0iZGFzaGljb25zIGRhc2hpY29ucy1oZWFydCI+PC9zcGFuPiBieSA8YSBocmVmPSJodHRwczovL2dpdGh1Yi5jb20vZ2FsbGV0dGlnci9jeXByZXNzIiB0aXRsZT0iQ3lwcmVzIG9uIEdpdEh1YiIgdGFyZ2V0PSJfYmxhbmsiPjxzdHJvbmc+Q3lwcmVzczwvc3Ryb25nPjwvYT4='); });
-
     add_filter( 'automatic_updater_disabled', '__return_true' );
     add_filter( 'auto_update_theme', '__return_false' );
     add_filter( 'auto_update_plugin', '__return_false' );
     add_filter( 'auto_core_update_send_email', '__return_false' );
+
+    add_action( 'admin_head', function() { echo '<meta name="robots" content="noindex, nofollow">'; });
+    add_action( 'admin_bar_menu', function($nav_bar){
+      $nav_bar->add_node( array('id'    => 'cypress-adminbar-site', 'title' => '<span class="label">' . get_bloginfo('name') . '</span>', 'href'  => home_url(), 'meta'  => array( 'class' => 'cypress-menu-item' ) ) );
+      $nav_bar->add_node( array('id'    => 'cypress-adminbar-options', 'parent'=> 'cypress-adminbar-site', 'title' => __('Settings'), 'href'  => admin_url('themes.php?page=ot-theme-options'), 'meta'  => array( 'class' => 'cypress-menu-subitem' ) ) );
+      $nav_bar->add_node( array('id'    => 'cypress-adminbar-logout', 'title' => '<span class="ab-icon"></span><span class="ab-label">' . __('Log Out') . '</span>', 'href'  => home_url('logout'), 'meta'  => array( 'class' => 'ab-top-secondary' ) ) );
+      $nav_bar->remove_node('comments');
+      $nav_bar->remove_node('new-content');
+      $nav_bar->remove_menu('my-account');
+      $nav_bar->remove_menu('site-name');
+      $nav_bar->remove_menu('wp-logo');
+      $nav_bar->remove_menu('updates');
+      $nav_bar->remove_menu('search');
+      $nav_bar->remove_menu('bp-notifications');
+    },70);
+
+    global $current_user;
+    if( defined('DEVELOPER') && !$current_user->user_login == DEVELOPER ) :
+      remove_action( 'admin_notices', 'update_nag' );
+      remove_action( 'init', 'wp_version_check' );
+      remove_action( 'load-update-core.php','wp_update_plugins' );
+      add_filter( 'pre_option_update_core', '__return_null' );
+      add_filter( 'pre_site_transient_update_core','__return_null' );
+      add_filter( 'pre_site_transient_update_plugins','__return_null' );
+      add_filter( 'pre_site_transient_update_themes','__return_null' );
+      add_filter( 'ot_show_new_layout', '__return_false', 9999 );
+    endif;
+    add_filter('user_contactmethods', function($fields){
+      $fields['phone'] = 'Phone';
+      $fields['mobile'] = 'Mobile';
+      return $fields;
+    });
+
+    if( !$this->check_option( 'Cypress', 'loaded' ) && $this->check_option( 'Cypress', 'setup' ) ) :
+      flush_rewrite_rules(true);
+      $this->edit_option( 'Cypress', 'loaded', 1 );
+    endif;
 
   }
 
@@ -311,137 +325,28 @@ class Cypress {
    * Signup: Cypress AJAX signup function. Used by Cypress Auth.
    */
 
-  private function uri_cleaner($src) {
-    $src = remove_query_arg( array('ver','version'), $src );
-    if( preg_match('#wp-includes#', $src) ) :
-      $src = str_replace(WP_RPATH . '/wp-includes', 'includes', $src);
-    elseif( preg_match('#' . APP_RPATH . '#', $src) ) :
-      $src = str_replace(trailingslashit(APP_RPATH) . 'themes/' . basename(get_stylesheet_directory()), 'views', $src);
-      $src = str_replace(APP_RPATH . '/plugins', 'plugins', $src);
-      $src = str_replace(APP_RPATH . '/uploads', 'uploads', $src);
-    endif;
+  private function uri_cleaner($src) {$src = remove_query_arg( array('ver','version'), $src ); if( preg_match('#wp-includes#', $src) ) : $src = str_replace(WP_RPATH . '/wp-includes', 'includes', $src); elseif( preg_match('#' . APP_RPATH . '#', $src) ) : $src = str_replace(trailingslashit(APP_RPATH) . 'themes/' . basename(get_stylesheet_directory()), 'views', $src); $src = str_replace(APP_RPATH . '/plugins', 'plugins', $src); $src = str_replace(APP_RPATH . '/uploads', 'uploads', $src); endif; $async = strpos($src, '?async'); $defer = strpos($src, '?defer'); if ( !$async && $defer ) : echo '<script type="text/javascript" defer src="' . str_replace('?defer', '', $src) . '"></script>'; elseif ( $async && !$defer ) : echo '<script type="text/javascript" async src="' . str_replace('?async', '', $src) . '"></script>'; elseif ( $async && $defer ) : echo '<script type="text/javascript" async defer src="' . str_replace(array('?async','?defer'), '', $src) . '"></script>'; else : return $src; endif; }
+  private function cypress_support($feature, $field = false, $sub = false, $value = false) {$support = get_theme_support($feature)[0]; if( !empty($field) ) $support = $support[$field]; if( !empty($sub) )   $support = $support[$sub]; if( !empty($value) ) $support = $support[$value]; return $support; }
+  private function Signin( $user = array() ) {if( !isset($user['remember']) ) $user['remember'] = false; $login = wp_signon( $user, false); if ( is_wp_error($login) ) : echo json_encode( array( 'loggedin' => false, 'message' => __('Error.') ) ); else : wp_set_current_user($user->ID); echo json_encode(array('loggedin' => true, 'message' => __('Success.'))); endif; die(); }
+  private function Signup( $user = array() ) {$signup = wp_insert_user($user); if ( is_wp_error($signup) ) {$error  = $signup->get_error_codes() ; if( in_array('empty_user_login', $error) ) echo json_encode( array( 'loggedin' => false, 'message' => __('Username is empty.') ) ); elseif( in_array('existing_user_login', $error) ) echo json_encode( array( 'loggedin' => false, 'message' => __('Username already exists.') ) ); elseif( in_array('existing_user_email', $error) ) echo json_encode( array( 'loggedin' => false, 'message' => __('Email already exists.') ) ); } else {$this->Signin( $user ); } die(); }
+  private function define_constant( $constant, $value ) {if( ! defined($constant) ) define($constant, $value); }
+  public function edit_option($options, $key, $value) {$new_options = get_option($options); $new_options[$key] = $value; update_option($options,$new_options); }
+  public function check_option($options, $key) {$options_check = get_option($options); if( empty($options_check[$key]) ) : return false; else : return $options_check[$key]; endif; }
 
-    $async = strpos($src, '?async'); $defer = strpos($src, '?defer');
-    if ( !$async && $defer ) : echo '<script type="text/javascript" defer src="' . str_replace('?defer', '', $src) . '"></script>';
-    elseif ( $async && !$defer ) : echo '<script type="text/javascript" async src="' . str_replace('?async', '', $src) . '"></script>';
-    elseif ( $async && $defer ) : echo '<script type="text/javascript" async defer src="' . str_replace(array('?async','?defer'), '', $src) . '"></script>';
-    else : return $src;
-    endif;
-  }
-  private function cypress_support($feature, $field = false, $sub = false, $value = false) {
-    $support = get_theme_support($feature)[0];
-    if( !empty($field) ) $support = $support[$field];
-    if( !empty($sub) )   $support = $support[$sub];
-    if( !empty($value) ) $support = $support[$value];
-    return $support;
-  }
-  private function Signin( $user = array() ) {
-    if( !isset($user['remember']) )
-      $user['remember'] = false;
-    $login = wp_signon( $user, false);
-    if ( is_wp_error($login) ) :
-      echo json_encode( array( 'loggedin' => false, 'message' => __('Error.') ) );
-    else :
-      wp_set_current_user($user->ID);
-      echo json_encode(array('loggedin' => true, 'message' => __('Success.')));
-    endif;
-    die();
-  }
-  private function Signup( $user = array() ) {
-    $signup = wp_insert_user($user);
-    if ( is_wp_error($signup) ) {
-      $error  = $signup->get_error_codes() ;
-      if( in_array('empty_user_login', $error) )
-        echo json_encode( array( 'loggedin' => false, 'message' => __('Username is empty.') ) );
-      elseif( in_array('existing_user_login', $error) )
-        echo json_encode( array( 'loggedin' => false, 'message' => __('Username already exists.') ) );
-      elseif( in_array('existing_user_email', $error) )
-        echo json_encode( array( 'loggedin' => false, 'message' => __('Email already exists.') ) );
-    } else {
-        $this->Signin( $user );
-    }
-    die();
-  }
-  private function define_constant( $constant, $value ) {
-    if( ! defined($constant) )
-      define($constant, $value);
-  }
-  private function edit_option($options, $key, $value) {
-    $new_options = get_option($options);
-    $new_options[$key] = $value;
-    update_option($options,$new_options);
-  }
-  private function check_option($options, $key) {
-    $options_check = get_option($options);
-    $options_value = $options_check[$key];
-    if( empty($options_value) ) :
-      return false;
-    else :
-      return $options_value;
-    endif;
-  }
 }
 
 
 $Cypress = new Cypress();
 
-
+/**
+ * Cypress Walker Menu for WordPress.
+ * * It reflects the standard menu layout for Bootstrap.
+ * * To customize it, I recommend to copy it into your theme functions and edit it there.
+ */
 class Cypress_Menu extends \Walker_Nav_Menu {
-
-  public function start_lvl( &$output, $depth = 0, $args = array() ) {
-    if( $depth == 0 )
-      $output .= '<ul class="dropdown-menu" role="menu">';
-    if( $depth > 0 )
-      $output .= '<ul class="dropdown-submenu">';
-  }
-
-  public function end_lvl( &$output, $depth = 0, $args = array() ) {
-    $output .= '</ul>';
-  }
-
-  public function start_el(&$output, $item, $depth = 0, $args = array(), $id = 0) {
-    $indent = ($depth) ? str_repeat("\t", $depth) : '';
-    $classes = [];
-    $classes[] = 'item';
-    if( is_array($item->classes) && preg_grep('#has-children#', $item->classes) )
-      $classes[] = 'dropdown';
-    if( $item->current )
-      $classes[] = 'active';
-    if( $item->current_item_parent )
-      $classes[] = 'parent';
-    if( !empty($item->attr_title) )
-      $classes[] = $item->attr_title;
-
-    $class = ' class="' . implode(' ', $classes) . '" ';
-    $id = ' id="item-' . $item->ID . '" ';
-    $item_html = '<li' . $id . $class . '>';
-
-    $atts = [];
-    $atts = array('title' => $item->title, 'href' => $item->url, 'target' => $item->target, 'rel' => $item->xfn, 'class' => '');
-
-    if ( is_array($item->classes) && preg_grep('#has-children#', $item->classes) && $depth == 0 ) :
-      $atts['href'] = '#';
-      $atts['class'] = 'dropdown-toggle';
-      $atts['data-toggle'] = 'dropdown';
-      $atts['role'] = 'button';
-      $atts['aria-haspopup'] = 'true';
-      $atts['aria-expanded'] = 'false';
-    endif;
-    $attributes = '';
-    foreach ($atts as $key => $value) {
-      if( !empty($value) )
-        $attributes .= ' ' . $key . '="' . $value . '"';
-    }
-    $item_html .= '<a' . $attributes . '>' . $item->title;
-
-    if ( is_array($item->classes) && preg_grep('#has-children#', $item->classes) && $depth == 0 )
-      $item_html .= ' <span class="caret"></span>';
-    $item_html .= '</a>';
-    $output .= $item_html;
-  }
-
-  public function end_el( &$output, $item, $depth = 0, $args = array() ) {
-    $output .= '</li>';
-  }
+  public function start_lvl( &$output, $depth = 0, $args = array() ) {if( $depth == 0 ) $output .= '<ul class="dropdown-menu" role="menu">'; if( $depth > 0 ) $output .= '<ul class="dropdown-submenu">'; }
+  public function end_lvl( &$output, $depth = 0, $args = array() ) {$output .= '</ul>'; }
+  public function start_el(&$output, $item, $depth = 0, $args = array(), $id = 0) {$indent = ($depth) ? str_repeat("\t", $depth) : ''; $classes = []; $classes[] = 'item'; if( is_array($item->classes) && preg_grep('#has-children#', $item->classes) ) $classes[] = 'dropdown'; if( $item->current ) $classes[] = 'active'; if( $item->current_item_parent ) $classes[] = 'parent'; if( !empty($item->attr_title) ) $classes[] = $item->attr_title; $class = ' class="' . implode(' ', $classes) . '" '; $id = ' id="item-' . $item->ID . '" '; $item_html = '<li' . $id . $class . '>'; $atts = []; $atts = array('title' => $item->title, 'href' => $item->url, 'target' => $item->target, 'rel' => $item->xfn, 'class' => ''); if ( is_array($item->classes) && preg_grep('#has-children#', $item->classes) && $depth == 0 ) : $atts['href'] = '#'; $atts['class'] = 'dropdown-toggle'; $atts['data-toggle'] = 'dropdown'; $atts['role'] = 'button'; $atts['aria-haspopup'] = 'true'; $atts['aria-expanded'] = 'false'; endif; $attributes = ''; foreach ($atts as $key => $value) {if( !empty($value) ) $attributes .= ' ' . $key . '="' . $value . '"'; } $item_html .= '<a' . $attributes . '>' . $item->title; if ( is_array($item->classes) && preg_grep('#has-children#', $item->classes) && $depth == 0 ) $item_html .= ' <span class="caret"></span>'; $item_html .= '</a>'; $output .= $item_html; }
+  public function end_el( &$output, $item, $depth = 0, $args = array() ) {$output .= '</li>'; }
 }
 ?>
