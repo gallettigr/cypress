@@ -64,7 +64,8 @@ function materialwp_setup() {
   add_theme_support( 'open-graph', array(
     'tw_username' => 'gallettigr',
     'fb_appid' => '1611715415714285',
-    'copyright' => 'Cypress Framework'
+    'copyright' => 'Cypress Framework',
+    'developer' => 'Giammarco Galletti <gallettigr@mail.ru>'
   ) );
 
 	// This theme uses wp_nav_menu() in one location.

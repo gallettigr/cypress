@@ -59,42 +59,6 @@ add_filter('excerpt_more', 'dotsqrpress_excerpet_ellipses');
 add_filter( 'wp_default_editor', create_function('', 'return "html";') );
 
 
-#####################
-# ADMIN FEATURES. REMEMBER TO SET THE SUPER ADMIN (MAIN_USER) USERNAME IN THE CONF FILE.
-
-# ADD ADMIN BAR LINK TO THEME SETTINGS - POWERED BY OPTION TREE
-add_action( 'admin_bar_menu', 'dotsqrpress_adminbar_links', 999 );
-function dotsqrpress_adminbar_links( $wp_admin_bar ) {
-	$dotsqrpress_node = array(
-		'id'    => 'dotsqrpress-adminbar-icon',
-		'title' => '<span class="ab-icon"></span><span class="ab-label">' . get_bloginfo('name') . '</span>',
-		'href'  => site_url(),
-		'meta'  => array( 'class' => 'dotsqrpress-adminbar-icon' )
-	);
-	$view_site_node = array(
-		'id'    => 'dotsqrpress_goto_site',
-		'parent'=> 'dotsqrpress-adminbar-icon',
-		'title' => __('Settings'),
-		'href'  => admin_url('themes.php?page=ot-theme-options'),
-		'meta'  => array( 'class' => 'dotsqrpress-theme-settings' )
-	);
-	$logout_node = array(
-		'id'    => 'dotsqrpress-logout',
-		'title' => '<span class="ab-icon"></span><span class="ab-label">' . __('Log Out') . ' ' . wp_get_current_user()->user_login . '</span>',
-		'href'  => site_url('logout'),
-		'meta'  => array( 'class' => 'dotsqrpress-logout' )
-	);
-	$wp_admin_bar->add_node($dotsqrpress_node);
-	$wp_admin_bar->add_node($view_site_node);
-	$wp_admin_bar->add_node($logout_node);
-	$wp_admin_bar->remove_node('comments');
-	$wp_admin_bar->remove_menu('my-account');
-	$wp_admin_bar->remove_menu('site-name');
-	$wp_admin_bar->remove_menu('wp-logo');
-	$wp_admin_bar->remove_menu('updates');
-	$wp_admin_bar->remove_menu('search');
-}
-
 # SIMPLIFY CUSTOMER BACKEND AND SHOW ADVANCED OPTIONS ONLY TO SUPER ADMIN
 add_action('admin_init','dotsqrpress_custom_admin_ui', 2);
 function dotsqrpress_custom_admin_ui() {
@@ -167,84 +131,6 @@ remove_action( 'wp_head', 'json_output_link_wp_head', 10 );
 include( 'metabox/meta-box.php' );
 
 
-# UPDATE PROD SITE URL
-if (defined('PROD_URL')) {
-  update_option('siteurl',PROD_URL);
-  update_option('home',PROD_URL);
-
-  $host = DB_HOST;
-  $username = DB_USER;
-  $password = DB_PASSWORD;
-  $database = DB_NAME;
-  $string_to_replace  = WP_SITEURL;
-  $new_string = PROD_URL;
-
-  mysql_connect($host, $username, $password);
-  mysql_select_db($database);
-  $sql = "SHOW TABLES FROM ".$database;
-  $tables_result = mysql_query($sql);
-
-  if (!$tables_result) {
-    echo "Database error, could not list tables\nMySQL error: " . mysql_error();
-    exit;
-  }
-
-  echo "In these fields '$string_to_replace' have been replaced with '$new_string'\n\n";
-  while ($table = mysql_fetch_row($tables_result)) {
-    echo "Table: {$table[0]}\n";
-    $fields_result = mysql_query("SHOW COLUMNS FROM ".$table[0]);
-    if (!$fields_result) {
-      echo 'Could not run query: ' . mysql_error();
-      exit;
-    }
-    if (mysql_num_rows($fields_result) > 0) {
-      while ($field = mysql_fetch_assoc($fields_result)) {
-        if (stripos($field['Type'], "VARCHAR") !== false || stripos($field['Type'], "TEXT") !== false) {
-          echo "  ".$field['Field']."\n";
-          $sql = "UPDATE ".$table[0]." SET ".$field['Field']." = replace(".$field['Field'].", '$string_to_replace', '$new_string')";
-          mysql_query($sql);
-        }
-      }
-      echo "\n";
-    }
-  }
-
-  mysql_free_result($tables_result);
-}
-
-# HTACCESS CUSTOM RULES. YOU CAN ADD EXTRAS IF YOU KNOW WHAT YOU'RE DOING.
-function dotsqrpress_custom_rules( $rules )
-{
-  $my_content = <<<EOD
-  \n # BEGIN CUSTOM RULES
-  <Files wp-config.php>
-    Order Allow,Deny
-    Deny from all
-  </Files>
-
-  Options All -Indexes
-
-  <IfModule mod_rewrite.c>
-   <Files sitemap.xml>
-    Header set X-Robots-Tag "noindex"
-  </Files>
-</IfModule>
-
-ExpiresActive Off
-ExpiresByType image/gif "access plus 30 days"
-ExpiresByType image/jpeg "access plus 30 days"
-ExpiresByType image/png "access plus 30 days"
-ExpiresByType text/css "access plus 1 week"
-ExpiresByType text/javascript "access plus 1 week"
-
-# END CUSTOM RULES\n
-EOD;
-return $my_content . $rules;
-}
-//add_filter('mod_rewrite_rules', 'dotsqrpress_custom_rules');
-
-
-
 # DOTSQRPRESS LOGIN STYLING. REMOVES DEFAULT WP CSS WHICH IS FORCED INTO HEADER, ADDS DOTSQRPRESS CSS.
 remove_filter('wp_admin_css', 'login', 99999);
 add_filter('wp_admin_css', 'dotsqrpress_default_styles', 99999);
@@ -276,30 +162,6 @@ function dotsqrpress_disable_login_errors(){
 }
 add_filter( 'login_errors', 'dotsqrpress_disable_login_errors' );
 
-# CUSTOM ROBOTS.TXT
-add_filter( 'robots_txt', 'dotsqrpress_robots', 10, 2 );
-function dotsqrpress_robots( $output, $public ) {
-  $output .= "Disallow: /wp-admin/" . "\n" .
-  "Disallow: /wp-includes/" . "\n" .
-  "Disallow: /wp-content/plugins/" . "\n" .
-  "Disallow: /wp-content/themes/" . "\n" .
-  "Disallow: /feed/" . "\n" .
-  "Disallow: */feed/" . "\n";
-  return $output;
-}
-
-# REMOVE DEFAULT CONTACT FIELDS, REPLACE WITH USEFUL ONES
-function dotsqrpress_useful_user_fields( $user_fields ) {
-  unset($user_fields['aim']);
-  unset($user_fields['jabber']);
-  unset($user_fields['yim']);
-  $user_fields['phone'] = 'Phone';
-  $user_fields['mobile'] = 'Mobile';
-  $user_fields['address'] = 'Address';
-
-  return $user_fields;
-}
-add_filter('user_contactmethods', 'dotsqrpress_useful_user_fields');
 
 # ADD DOTSQRPRESS META PROFILE
 function dotsqrpress_profile() {
@@ -422,13 +284,6 @@ function dotsqrpress_remove_default_widgets() {
 }
 add_action('widgets_init', 'dotsqrpress_remove_default_widgets', 1);
 
-# DEFAULT DOTSQRPRESS FOOTER FOR ADMIN
-function dotsqrpress_remove_footer () {
-  return '';
-}
-add_filter ('update_footer', 'dotsqrpress_remove_footer', 99);
-add_filter ('admin_footer_text', 'dotsqrpress_remove_footer');
-
 # SIMPLIFY CUSTOMER BACKEND AND SHOW ADVANCED OPTIONS ONLY TO SUPER ADMIN
 add_action('admin_init','dotsqrpress_custom_admin_ui', 2);
 function dotsqrpress_custom_admin_ui() {
@@ -448,11 +303,6 @@ function dotsqrpress_custom_admin_ui() {
     add_filter( 'ot_show_docs', '__return_false', 9999 );
   }
 }
-# MAKE SURE TO DISABLE WP AUTOMATIC UPDATES. YOU CAN MANUALLY UPDATE IT IF YOU ARE MAIN_USER.
-add_filter( 'automatic_updater_disabled', '__return_true' );
-add_filter( 'auto_update_theme', '__return_false' );
-add_filter( 'auto_update_plugin', '__return_false' );
-add_filter( 'auto_core_update_send_email', '__return_false' );
 
 # HIDE WEBMASTER FROM USER LIST FOR OTHER USERS
   function dotsqrpress_hide_webmaster($user_search) {
@@ -467,119 +317,5 @@ add_filter( 'auto_core_update_send_email', '__return_false' );
   add_action('pre_user_query','dotsqrpress_hide_webmaster');
 
 
-  function ajax_retrieve(){
-    check_ajax_referer( 'ajax-retrieve-nonce', 'security' );
-    auth_retrieve($_POST['email']);
-    die();
-  }
-
-  function auth_user_login($user_login, $password, $login) {
-    $info = array();
-    $info['user_login'] = $user_login;
-    $info['user_password'] = $password;
-    $info['remember'] = true;
-    $user_signon = wp_signon( $info, false );
-    if ( is_wp_error($user_signon)) {
-      echo json_encode(array('loggedin'=>false, 'message'=>__('Password e utente non corrispondono.')));
-    } else {
-      wp_set_current_user($user_signon->ID);
-      echo json_encode(array('loggedin'=>true, 'message'=>__($login.' riuscito, aggiorno pagina...')));
-    }
-    die();
-  }
-
-
-# ADD WEB APP CAPABILITIES FOR IOS7. ADD 'MINIMAL-UI' TO VIEWPORT META.
-  function dotsqrpress_ios_webapp() {
-    echo '<meta name="apple-mobile-web-app-capable" content="yes">' . "\n";
-    echo '<meta name="apple-mobile-web-app-title" content="' . get_bloginfo( 'name' ) . '">' . "\n";
-    echo '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">' . "\n";
-  }
-  add_action( 'wp_head', 'dotsqrpress_ios_webapp' , 2 );
-
-
-
-######################
-# OPEN GRAPH GENERATOR
-function ogp_namespace($output) {
-  return $output.' prefix="og: http://ogp.me/ns#"';
-}
-add_filter('language_attributes','ogp_namespace');
-
-function ogp_images() {
-  global $post, $posts, $forum_id;
-  if(bbp_is_forum()) {
-    $ogp_images = 'hello.jpg';
-  } else {
-    $content = $post->post_content;
-    $output = preg_match_all( '/<img.+src=[\'"]([^\'"]+)[\'"].*>/i', $content, $matches );
-    if ( $output === FALSE ) {
-      return false;
-    }
-    $ogp_images = array();
-    foreach ( $matches[1] as $match ) {
-      // If the image path is relative, add the site url to the beginning
-      if ( ! preg_match('/^https?:\/\//', $match ) ) {
-        // Remove any starting slash with ltrim() and add one to the end of site_url()
-        $match = site_url( '/' ) . ltrim( $match, '/' );
-      }
-      $ogp_images[] = $match;
-    }
-  }
-  return $ogp_images;
-}
-
-add_action( 'init', 'ogp_init', 0 );
-function ogp_init() {
-  if ( ! is_feed() ) {
-    ob_start( 'ogp_callback' );
-  }
-}
-function ogp_callback( $content ) {
-  $title = preg_match( '/<title>(.*)<\/title>/', $content, $title_matches );
-  $description = preg_match( '/<meta name="description" content="(.*)"/', $content, $description_matches );
-  if ( $title !== FALSE && count( $title_matches ) == 2 ) {
-    $content = preg_replace( '/<meta property="og:title" content="(.*)">/', '<meta property="og:title" content="' . $title_matches[1] . '">', $content );
-  }
-  if ( $description !== FALSE && count( $description_matches ) == 2 ) {
-    $content = preg_replace( '/<meta property="og:description" content="(.*)">/', '<meta property="og:description" content="' . $description_matches[1] . '">', $content );
-  }
-
-  return $content;
-}
-
-function ogp_head() {
-  global $post;
-  ?>
-  <?php if (defined('FB_APPID')) { ?>
-  <meta property="fb:app_id" content="<?php echo FB_APPID; ?>"/>
-  <?php } ?>
-  <meta property="og:url" content="<?php $ogp_url = 'http' . (is_ssl() ? 's' : '') . "://".$_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']; echo $ogp_url; ?>"/>
-  <meta property="og:title" content="<?php echo get_the_title(); ?>"/>
-  <meta property="og:site_name" content="<?php echo get_bloginfo( 'name' ); ?>"/>
-  <meta property="og:description" content="<?php if ( has_excerpt( $post->ID ) ) { $ogp_description = strip_tags( get_the_excerpt() ); } else { $ogp_description = str_replace( "\r\n", ' ' , substr( strip_tags( strip_shortcodes( $post->post_content ) ), 0, 160 ) ); } ?>"/>
-  <meta property="og:type" content="<?php if (is_single()) { $ogp_type = 'article'; } else { $ogp_type = 'website'; } echo $ogp_type; ?>"/>
-  <?php $ogp_images = array();
-  if ( function_exists( 'has_post_thumbnail' ) && has_post_thumbnail( $post->ID ) ) {
-    $thumbnail_src = wp_get_attachment_image_src( get_post_thumbnail_id( $post->ID ), 'medium' );
-    $link = $thumbnail_src[0];
-    if ( ! preg_match( '/^https?:\/\//', $link ) ) {
-      $link = site_url( '/' ) . ltrim( $link, '/' );
-    }
-    $ogp_images[] = $link;
-  }
-  if ( ogp_images() !== false && is_singular() ) {
-    $ogp_images = array_merge( $ogp_images, ogp_images() );
-  }
-  if ( ! empty( $ogp_images ) && is_array( $ogp_images ) ) {
-    foreach ( $ogp_images as $image ) {
-      echo '<meta property="og:image" content="' . esc_url( apply_filters( 'wpfbogp_image', $image ) ) . '"/>' . "\n";
-    }
-  }
-  ?>
-  <meta property="og:locale" content="<?php echo get_locale(); ?>"/>
-  <?php
-}
-add_action('wp_head','ogp_head',50);
 ?>
 
