@@ -26,6 +26,7 @@ class Cypress {
   public function __construct() {
     add_action( 'init', array( $this, 'Init' ) );
     add_action( 'muplugins_loaded', array( $this, 'Loaded' ) );
+    add_action( 'muplugins_loaded', array( $this, 'Libraries' ) );
     add_action( 'plugins_loaded', array( $this, 'APIs' ) );
     add_action( 'switch_theme', array( $this, 'Update' ) );
     add_action( 'generate_rewrite_rules', array( $this, 'Apache' ) );
@@ -73,7 +74,8 @@ class Cypress {
   Cypress vendors libraries.
    */
   public function Libraries() {
-
+    $plugins = new Plugins();
+    $plugins->add( array('options', 'cache', 'api') );
   }
 
   /*
@@ -93,7 +95,6 @@ class Cypress {
    */
   public function Apache() {
     add_rewrite_rule( 'login/?$', WP_RPATH . '/wp-login.php', 'top' );
-    add_rewrite_rule( 'api/auth/?$', WP_RPATH . '/wp-login.php?action=oauth1_authorize', 'top' );
     add_rewrite_rule( 'register/?$', WP_RPATH . '/wp-login.php?action=register', 'top' );
     add_rewrite_rule( 'retrieve/?$', WP_RPATH . '/wp-login.php?action=lostpassword', 'top' );
     add_rewrite_rule( 'views/(.*)', trailingslashit(APP_RPATH) . 'themes/' . basename(get_stylesheet_directory()) . '/$1', 'top' );
@@ -137,7 +138,7 @@ class Cypress {
     add_filter('the_generator', '__return_false');
     add_filter('show_recent_comments_widget_style', '__return_false' );
     add_filter( 'pre_comment_content', 'esc_html' );
-    add_filter('style_loader_tag', function($tag) {preg_match_all("!<link rel='stylesheet'\s?(id='[^']+')?\s+href='(.*)' type='text/css' media='(.*)' />!", $tag, $matches); $media = $matches[3][0] === 'print' ? ' media="print"' : ''; return '<link rel="stylesheet" href="' . $matches[2][0] . '"' . $media . '>' . "\n"; });
+    add_filter('style_loader_tag', function($tag, $handler) { return str_replace( " id='$handler-css'", '', $tag ); },10,2);
     add_filter('wp_headers', function($headers) { unset($headers['X-Pingback']); return $headers; });
     add_action('wp_head', function(){global $wp_the_query; if ($id = $wp_the_query->get_queried_object_id()) : $data = get_post($id); if($data) $type = $data->post_type; if($type && $type == 'page') : echo '<link rel="canonical" href="' . get_permalink( $id ) . '">'; elseif($type && $type == 'post') : $date = new DateTime($data->post_date); $category = get_the_category($id)[0]->slug; $path = 'articles' . $date->format('/d/m/Y/') . $category . '/' . $data->post_name; echo '<link rel="canonical" href="' . home_url($path) . '">'; endif; endif; });
 
@@ -259,7 +260,7 @@ class Cypress {
     //remove_meta_box( 'postexcerpt','page','normal' );
     //remove_meta_box( 'trackbacksdiv','page','normal' );
 
-    add_filter( 'get_user_option_admin_color', function( $color_scheme ) { return $color_scheme = 'blue'; }, 5 );
+    add_filter( 'get_user_option_admin_color', function( $color_scheme ) { return $color_scheme = 'ocean'; }, 5 );
     add_filter( 'admin_title', function($wordpress, $title){ return $title . ' | Cypress';}, 10, 2);
     add_filter( 'admin_footer_text', '__return_empty_string' );
     add_filter( 'update_footer', function(){ return base64_decode('RW5oYW5jZWQgd2l0aCA8c3BhbiBjbGFzcz0iZGFzaGljb25zIGRhc2hpY29ucy1oZWFydCI+PC9zcGFuPiBieSA8YSBocmVmPSJodHRwczovL2dpdGh1Yi5jb20vZ2FsbGV0dGlnci9jeXByZXNzIiB0aXRsZT0iQ3lwcmVzIG9uIEdpdEh1YiIgdGFyZ2V0PSJfYmxhbmsiPjxzdHJvbmc+Q3lwcmVzczwvc3Ryb25nPjwvYT4='); });
@@ -344,6 +345,33 @@ class Cypress {
 
 }
 
+class Plugins extends Cypress {
+
+  public static $plugins;
+
+  public function add($plugins) {
+    if( is_array($plugins) ) :
+      foreach ($plugins as $plugins) {
+        switch ($plugins) :
+          case 'api':
+            require_once 'lib/api/plugin.php';
+            add_filter( 'rest_url_prefix', function(){ return 'api/v1'; } );
+            break;
+          case 'cache':
+            require_once 'lib/cache/wp-cache.php';
+            break;
+          case 'oauth':
+            require_once 'lib/oauth1/oauth-server.php';
+            break;
+          case 'options':
+            require_once 'lib/options/ot-loader.php';
+            break;
+        endswitch;
+      }
+    endif;
+  }
+
+}
 
 $Cypress = new Cypress();
 

@@ -41,7 +41,6 @@ function materialwp_setup() {
 	 * @link http://codex.wordpress.org/Function_Reference/add_theme_support#Post_Thumbnails
 	 */
 	add_theme_support( 'post-thumbnails' );
-
   /*
   Add Android manifest to header.
    */

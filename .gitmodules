@@ -1,3 +1,17 @@
 [submodule "wp"]
 	path = wp
 	url = git@github.com:WordPress/WordPress.git
+[submodule "core/lib/api"]
+	path = core/lib/api
+	url = git@github.com:WP-API/WP-API.git
+	branch = develop
+[submodule "core/lib/oauth1"]
+	path = core/lib/oauth1
+	url = git@github.com:WP-API/OAuth1.git
+	branch = admin-ui
+[submodule "core/lib/options"]
+	path = core/lib/options
+	url = git@github.com:valendesigns/option-tree.git
+[submodule "core/lib/cache"]
+	path = core/lib/cache
+	url = git@github.com:Automattic/wp-super-cache.git
