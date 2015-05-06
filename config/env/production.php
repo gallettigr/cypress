@@ -26,15 +26,14 @@ define('WP_HOME', 'http://' . $_SERVER['SERVER_NAME']);
 /**
  * Debug constants.
  */
-define('WP_DEBUG', false);
+define('WP_DEBUG', true);
 define('SCRIPT_DEBUG', false);
 define('WP_DEBUG_DISPLAY', false);
-define('WP_DEBUG_LOG', true);
 define('SAVEQUERIES', false);
-ini_set('display_errors', 0);
-ini_set('display_startup_errors', 0);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
 ini_set('log_errors', 1);
-ini_set('error_log', ROOT_PATH . '/logs/error_log.php');
+ini_set('error_log', CP_PATH . '/.logs/error_log.log');
 
 /**
  * Salt keys. Generate from {@link https://api.wordpress.org/secret-key/1.1/salt/ }

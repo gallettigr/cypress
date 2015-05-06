@@ -29,7 +29,6 @@ define('WP_HOME', 'http://' . $_SERVER['SERVER_NAME']);
 define('WP_DEBUG', true);
 define('SCRIPT_DEBUG', true);
 define('WP_DEBUG_DISPLAY', true);
-define('WP_DEBUG_LOG', true);
 define('SAVEQUERIES', true);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);

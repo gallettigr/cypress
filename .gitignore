@@ -5,3 +5,5 @@
 wp-config.php
 app/uploads/*
 !app/uploads/.gitkeep
+.logs/
+!.logs/.gitkeep

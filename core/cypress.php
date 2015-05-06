@@ -70,6 +70,13 @@ class Cypress {
   }
 
   /*
+  Cypress vendors libraries.
+   */
+  public function Libraries() {
+
+  }
+
+  /*
   Setup Cypress textdomain, load default themes from 'WP' folder, hides site from search engines if environment is not 'production', defines custom constants.
    */
   public function Loaded() {
@@ -180,7 +187,6 @@ class Cypress {
   }
 
   public function Structure() {
-
     global $wp_rewrite;
     if( !isset($wp_rewrite) || !is_object($wp_rewrite) || !$wp_rewrite->using_permalinks() ) return; $search = $wp_rewrite->search_base; if( is_search() && strpos($_SERVER['REQUEST_URI'], "/{$search}/") === false ) : wp_redirect( home_url("/{$search}/" . urlencode(get_query_var('s'))) ); exit(); endif;
     add_filter('request', function($query_vars){if( isset($_GET['s']) && empty($_GET['s']) ) $query_vars['s'] = ' '; return $query_vars; });
@@ -287,6 +293,7 @@ class Cypress {
       add_filter( 'pre_site_transient_update_plugins','__return_null' );
       add_filter( 'pre_site_transient_update_themes','__return_null' );
       add_filter( 'ot_show_new_layout', '__return_false', 9999 );
+      add_filter( 'ot_show_docs', '__return_false', 9999 );
     endif;
 
     add_filter('user_contactmethods', function($fields){
@@ -306,15 +313,16 @@ class Cypress {
   Customization of Login page.
    */
   public function Login() {
-    //wp_deregister_style( 'login' );
-    //add_filter('wp_admin_css', '__return_false');
 
+    add_action('wp_login_failed',function(){wp_redirect( add_query_arg( 'login', 'failed', wp_login_url() ) ); exit; });
+
+    add_filter('wp_authenticate_user', function($user, $password){if(!wp_check_password($password, $user->user_pass, $user->ID)){error_log("Failed login from '$user->user_login' with password '$password'", 0); } return $user; }, 10, 2);
     add_filter( 'login_body_class', function() { return array('cypress'); });
     add_filter( 'login_headerurl', function() { return home_url(); });
     add_filter( 'login_headertitle', function() { return get_option('blogname'); });
     add_filter( 'login_enqueue_scripts', function() {
-      wp_enqueue_style( 'login', CP_ASSETS . '/hello.css', false, null, true );
-    } );
+      wp_enqueue_style( 'cypress-login', CP_ASSETS . '/hello.css', false, null, true );
+    });
   }
 
 
