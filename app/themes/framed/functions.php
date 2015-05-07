@@ -67,6 +67,12 @@ function materialwp_setup() {
     'developer' => 'Giammarco Galletti <gallettigr@mail.ru>'
   ) );
 
+  add_theme_support( 'cypress', array(
+    'secure' => true,
+    'hidden' => true,
+    'plugins' => array('options', 'cache', 'api')
+  ) );
+
 	// This theme uses wp_nav_menu() in one location.
 	register_nav_menus( array(
 		'primary' => __( 'Primary Menu', 'materialwp' ),

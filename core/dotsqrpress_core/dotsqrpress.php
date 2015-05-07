@@ -296,11 +296,12 @@ function dotsqrpress_custom_admin_ui() {
     remove_menu_page('ot-settings');
     add_filter( 'pre_option_update_core', '__return_null' );
     add_filter('pre_site_transient_update_core','__return_null');
-    add_filter('pre_site_transient_update_plugins','__return_null');
     add_filter('pre_site_transient_update_themes','__return_null');
     remove_action('load-update-core.php','wp_update_plugins');
+    add_filter('pre_site_transient_update_plugins','__return_null');
     add_filter( 'ot_show_new_layout', '__return_false', 9999 );
     add_filter( 'ot_show_docs', '__return_false', 9999 );
+    remove_menu_page('edit.php');
   }
 }
 

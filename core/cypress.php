@@ -75,7 +75,7 @@ class Cypress {
    */
   public function Libraries() {
     $plugins = new Plugins();
-    $plugins->add( array('options', 'cache', 'api') );
+    $plugins->add( array('options', 'api') );
   }
 
   /*
@@ -163,28 +163,33 @@ class Cypress {
    */
   public function Security() {
 
-    if( !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' ) :
-        return;
-    elseif( preg_match( '#wp-admin#', strtolower($_SERVER['REQUEST_URI']) ) && !current_user_can('manage_options') ) :
-        wp_redirect( home_url( '/404' ) );
-        exit();
-    elseif( preg_match( '#wp-login#', strtolower($_SERVER['REQUEST_URI']) ) && $_SERVER['REQUEST_METHOD'] !== "POST") :
-        wp_redirect( home_url( '/404' ) );
-        exit();
-    elseif( strtolower($_SERVER['REQUEST_URI']) == '/logout' ) :
-        wp_logout();
-        wp_redirect( home_url() );
-        exit();
+    if( current_theme_supports( 'cypress' ) && $this->cypress_support('cypress', 'secure') == true ) :
+      if( $this->cypress_support('cypress', 'hidden') && $this->cypress_support('cypress', 'hidden') == true ):
+        if( !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' ) :
+            return;
+        elseif( preg_match( '#wp-admin#', strtolower($_SERVER['REQUEST_URI']) ) && !current_user_can('manage_options') ) :
+            wp_redirect( home_url( '/404' ) );
+            exit();
+        elseif( preg_match( '#wp-login#', strtolower($_SERVER['REQUEST_URI']) ) && $_SERVER['REQUEST_METHOD'] !== "POST") :
+            wp_redirect( home_url( '/404' ) );
+            exit();
+        elseif( strtolower($_SERVER['REQUEST_URI']) == '/logout' ) :
+            wp_logout();
+            wp_redirect( home_url() );
+            exit();
+        endif;
+      endif;
+
+      add_filter('login_redirect', function($redirect_to, $request, $user) {global $user; if ( isset( $user->roles ) && is_array( $user->roles ) ) : if ( in_array( 'administrator', $user->roles ) ) return admin_url(); else return home_url(); else : return home_url(); endif; }, 10, 3);
+      add_filter('login_errors', function(){ return __('Login error. Try again.', 'cypress'); });
+      add_filter('logout_url', function($url, $redirect){ return home_url('/logout'); }, 10, 2);
+      add_filter('login_url', function($url, $redirect){ return home_url('/login'); }, 10, 2);
+      add_filter('lostpassword_url', function($url){ return home_url('/retrieve'); });
+      add_filter('lostpassword_url', function($url){ return home_url('/retrieve'); });
+      add_filter('authenticate', function( $user, $username, $password ) {if ( is_email( $username ) ) $user = get_user_by( 'email', $username ); if ( $user ) $username = $user->user_login; return wp_authenticate_username_password( null, $username, $password ); }, 10, 3);
+      add_action('wp_login_failed',function(){ wp_redirect( add_query_arg( 'login', 'failed', wp_login_url() ) ); exit; });
+      add_filter('wp_authenticate_user', function($user, $password){if(!wp_check_password($password, $user->user_pass, $user->ID)){error_log("Failed login from '$user->user_login' with password '$password'", 0); } return $user; }, 10, 2);
     endif;
-
-    add_filter('login_redirect', function($redirect_to, $request, $user) {global $user; if ( isset( $user->roles ) && is_array( $user->roles ) ) : if ( in_array( 'administrator', $user->roles ) ) return admin_url(); else return home_url(); else : return home_url(); endif; }, 10, 3);
-    add_filter('login_errors', function(){ return __('Login error. Try again.', 'cypress'); });
-    add_filter('logout_url', function($url, $redirect){ return home_url('/logout'); }, 10, 2);
-    add_filter('login_url', function($url, $redirect){ return home_url('/login'); }, 10, 2);
-    add_filter('lostpassword_url', function($url){ return home_url('/retrieve'); });
-    add_filter('lostpassword_url', function($url){ return home_url('/retrieve'); });
-    add_filter('authenticate', function( $user, $username, $password ) {if ( is_email( $username ) ) $user = get_user_by( 'email', $username ); if ( $user ) $username = $user->user_login; return wp_authenticate_username_password( null, $username, $password ); }, 10, 3);
-
   }
 
   public function Structure() {
@@ -285,7 +290,7 @@ class Cypress {
     },70);
 
     global $current_user;
-    if( defined('DEVELOPER') && !$current_user->user_login == DEVELOPER ) :
+    if( defined('DEVELOPER') && $current_user->user_login == DEVELOPER ) :
       remove_action( 'admin_notices', 'update_nag' );
       remove_action( 'init', 'wp_version_check' );
       remove_action( 'load-update-core.php','wp_update_plugins' );
@@ -295,6 +300,8 @@ class Cypress {
       add_filter( 'pre_site_transient_update_themes','__return_null' );
       add_filter( 'ot_show_new_layout', '__return_false', 9999 );
       add_filter( 'ot_show_docs', '__return_false', 9999 );
+      remove_menu_page('ot-settings');
+      remove_submenu_page('index.php', 'update-core.php');
     endif;
 
     add_filter('user_contactmethods', function($fields){
@@ -314,10 +321,6 @@ class Cypress {
   Customization of Login page.
    */
   public function Login() {
-
-    add_action('wp_login_failed',function(){wp_redirect( add_query_arg( 'login', 'failed', wp_login_url() ) ); exit; });
-
-    add_filter('wp_authenticate_user', function($user, $password){if(!wp_check_password($password, $user->user_pass, $user->ID)){error_log("Failed login from '$user->user_login' with password '$password'", 0); } return $user; }, 10, 2);
     add_filter( 'login_body_class', function() { return array('cypress'); });
     add_filter( 'login_headerurl', function() { return home_url(); });
     add_filter( 'login_headertitle', function() { return get_option('blogname'); });
@@ -345,7 +348,7 @@ class Cypress {
 
 }
 
-class Plugins extends Cypress {
+class Plugins {
 
   public static $plugins;
 
@@ -356,6 +359,7 @@ class Plugins extends Cypress {
           case 'api':
             require_once 'lib/api/plugin.php';
             add_filter( 'rest_url_prefix', function(){ return 'api/v1'; } );
+            remove_action( 'wp_head', 'rest_output_link_wp_head' );
             break;
           case 'cache':
             require_once 'lib/cache/wp-cache.php';

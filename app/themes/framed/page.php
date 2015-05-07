@@ -11,7 +11,7 @@
  */
 
 get_header(); ?>
-<h1 id="test-1">Hello</h1>
+<h1 id="test-1"><?php echo WPCACHEHOME ?></h1>
 <script type="text/javascript" charset="utf-8" async defer>
   jQuery(document).ready(function($) {
     $('#test-1').click(function(event) {
