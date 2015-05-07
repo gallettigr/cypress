@@ -1,35 +1,28 @@
-Cypress -- Less mess for WordPress.
-===========
-Contributors: gallettigr
-Requires at least: 3.8.0
-Tested up to WP: 4.1.1
-Tested up to PHP: 5.6.2
-License: MIT
-License URI: http://opensource.org/licenses/MIT
+Title | Author | Description | Tested up to | License
+:---: | :---: | :---: | :---: | :---:
+Cypress | @gallettigr | WordPress development stack | `WP 4.2`, `PHP 5.6.2` | LGPL-3
+
+# Cypress
+![Cypress - Less mess, for WordPress][logo]
 
 
-== Description ==
 
-TO-DO
+```
+Cypress -- WordPress development stack
+Copyright (C) 2015  Giammarco Galletti>
 
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.>
 
-== Installation ==
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.>
 
-TO-DO
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+```
 
-
-== Frequently Asked Questions ==
-
-TO-DO
-
-== Screenshots ==
-
-TO-DO
-
-== Changelog ==
-
-= 0.1 =
-TO-DO
-
-== Upgrade Notice ==
-TO-DO
+[logo]: core/assets/images/logo.png?raw=true
