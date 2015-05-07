@@ -290,7 +290,7 @@ class Cypress {
     },70);
 
     global $current_user;
-    if( defined('DEVELOPER') && $current_user->user_login == DEVELOPER ) :
+    if( defined('DEVELOPER') && !$current_user->user_login == DEVELOPER ) :
       remove_action( 'admin_notices', 'update_nag' );
       remove_action( 'init', 'wp_version_check' );
       remove_action( 'load-update-core.php','wp_update_plugins' );
