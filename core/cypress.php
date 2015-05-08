@@ -289,12 +289,6 @@ class Cypress {
       $nav_bar->remove_menu('bp-notifications');
     },70);
 
-    add_action( '_core_updated_successfully', function($version){
-      global $current_user;
-      get_currentuserinfo();
-      error_log("'$current_user->user_login' upgraded WordPress to $version", 0);
-    }, 1, 1 );
-
     global $current_user;
     if( defined('DEVELOPER') && !$current_user->user_login == DEVELOPER ) :
       remove_action( 'admin_notices', 'update_nag' );
@@ -308,6 +302,8 @@ class Cypress {
       add_filter( 'ot_show_docs', '__return_false', 9999 );
       remove_menu_page('ot-settings');
       remove_submenu_page('index.php', 'update-core.php');
+      remove_submenu_page('index.php', 'simple_history_page');
+
     endif;
 
     add_filter('user_contactmethods', function($fields){
