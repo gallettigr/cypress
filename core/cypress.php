@@ -75,7 +75,7 @@ class Cypress {
    */
   public function Libraries() {
     $plugins = new Plugins();
-    $plugins->add( array('options', 'api') );
+    $plugins->add( array('options', 'api', 'history') );
   }
 
   /*
@@ -154,7 +154,7 @@ class Cypress {
     add_filter('language_attributes', function($output){return $output .= ' xmlns="http://www.w3.org/1999/xhtml" prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#"'; });
     add_action('wp_head', function(){if( current_theme_supports( 'open-graph' ) ) : global $post; $meta = ''; if( $this->cypress_support('open-graph', 'copyright') ) $meta .= '<meta name="copyright" content="&copy;' . date('Y') . ' ' . $this->cypress_support('open-graph', 'copyright')  . '">'; if( $this->cypress_support('open-graph', 'tw_username') ) $meta .= '<meta name="twitter:site" content="@' . $this->cypress_support('open-graph', 'tw_username')  . '">'; if( $this->cypress_support('open-graph', 'fb_appid') ) $meta .= '<meta name="fb:app_id" content="' . $this->cypress_support('open-graph', 'fb_appid')  . '">'; if( $this->cypress_support('open-graph', 'developer') ) $meta .= '<meta name="developer" content="' . $this->cypress_support('open-graph', 'developer')  . '">'; $meta .= base64_decode('PG1ldGEgbmFtZT0iZnJhbWV3b3JrIiBjb250ZW50PSJDeXByZXNzIj4='); if( is_404() || is_search() ) return; $meta .= '<meta property="og:url" content="' . get_permalink() . '"/>'; $meta .= '<meta property="og:site_name" content="' . get_bloginfo( 'name' ) . '"/>'; if( is_front_page() ) : $meta .= '<meta name="twitter:card" content="summary">'; $meta .= '<meta property="og:title" content="' . get_bloginfo( 'name' ) . ' | ' . get_bloginfo( 'description' ) . '"/>'; $meta .= '<meta property="og:image" content="' . home_url( 'app/icons/icon-large.png' ) . '" />'; $meta .= '<meta property="og:type" content="website"/>'; $meta .= '<meta property="og:description" content="' . get_bloginfo( 'description' ) . '"/>'; else : if( is_single() ): $meta .= '<meta name="twitter:card" content="summary_large_image"/>'; $meta .= '<meta property="og:type" content="article"/>'; else : $meta .= '<meta name="twitter:card" content="summary">'; $meta .= '<meta property="og:type" content="website"/>'; endif; if( has_post_thumbnail() ) : $meta .= '<meta property="og:image" content="' . wp_get_attachment_image_src( get_post_thumbnail_id(), 'medium' )[0] . '" />'; else : $meta .= '<meta property="og:image" content="' . home_url( 'app/icons/icon-large.png' ) . '" />'; endif; if( has_excerpt() ) : $meta .= '<meta property="og:description" content="' . strip_tags( get_the_excerpt() ) . '"/>'; else : $meta .= '<meta property="og:description" content="' . str_replace( "\r\n", ' ' , substr( strip_tags( strip_shortcodes( $post->post_content ) ), 0, 80 ) ) . '..."/>'; endif; endif; echo $meta; endif; },1);
 
-    add_action('wp_head', function(){if( current_theme_supports( 'web-app' ) ) : $meta = "<!-- Web application tags -->\n"; $meta .= "<meta name='application-name' content='{$this->cypress_support('web-app', 'name')}'>\n<meta name='apple-mobile-web-app-title' content='{$this->cypress_support('web-app', 'name')}'>"; if( $this->cypress_support( 'web-app', 'standalone') ) : $meta .= "<meta name='apple-mobile-web-app-capable' content='yes'>\n<meta name='mobile-web-app-capable' content='yes'>"; $meta .= "<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'>\n<link rel='apple-touch-startup-image' href='{$this->cypress_support('web-app', 'splash')}'>"; add_action('wp_footer', function(){ echo '<script>(function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)}})(document,window.navigator,"standalone")</script>'; }); endif; echo $meta; endif; });
+    add_action('wp_head', function(){if( current_theme_supports( 'web-app' ) ) : $meta = "<!-- Web application tags -->\n"; $meta .= "<meta name='application-name' content='{$this->cypress_support('web-app', 'name')}'>\n<meta name='apple-mobile-web-app-title' content='{$this->cypress_support('web-app', 'name')}'>"; if( $this->cypress_support( 'web-app', 'standalone') ) : $meta .= "<meta name='apple-mobile-web-app-capable' content='yes'>\n<meta name='mobile-web-app-capable' content='yes'>"; $meta .= "<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'>"; $meta .= $this->theme_icons(); add_action('wp_footer', function(){ echo '<script>(function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)}})(document,window.navigator,"standalone")</script>'; }); endif; echo $meta; endif; });
     show_admin_bar(false);
   }
 
@@ -289,6 +289,12 @@ class Cypress {
       $nav_bar->remove_menu('bp-notifications');
     },70);
 
+    add_action( '_core_updated_successfully', function($version){
+      global $current_user;
+      get_currentuserinfo();
+      error_log("'$current_user->user_login' upgraded WordPress to $version", 0);
+    }, 1, 1 );
+
     global $current_user;
     if( defined('DEVELOPER') && !$current_user->user_login == DEVELOPER ) :
       remove_action( 'admin_notices', 'update_nag' );
@@ -341,15 +347,33 @@ class Cypress {
   private function uri_cleaner($src) {$src = remove_query_arg( array('ver','version'), $src ); if( preg_match('#wp-includes#', $src) ) : $src = str_replace(WP_RPATH . '/wp-includes', 'includes', $src); elseif( preg_match('#' . APP_RPATH . '#', $src) ) : $src = str_replace(trailingslashit(APP_RPATH) . 'themes/' . basename(get_stylesheet_directory()), 'views', $src); $src = str_replace(APP_RPATH . '/plugins', 'plugins', $src); $src = str_replace(APP_RPATH . '/uploads', 'uploads', $src); endif; $async = strpos($src, '?async'); $defer = strpos($src, '?defer'); if ( !$async && $defer ) : echo '<script type="text/javascript" defer src="' . str_replace('?defer', '', $src) . '"></script>'; elseif ( $async && !$defer ) : echo '<script type="text/javascript" async src="' . str_replace('?async', '', $src) . '"></script>'; elseif ( $async && $defer ) : echo '<script type="text/javascript" async defer src="' . str_replace(array('?async','?defer'), '', $src) . '"></script>'; else : return $src; endif; }
   private function cypress_support($feature, $field = false, $sub = false, $value = false) {$support = get_theme_support($feature)[0]; if( !empty($field) ) $support = $support[$field]; if( !empty($sub) )   $support = $support[$sub]; if( !empty($value) ) $support = $support[$value]; return $support; }
   private function theme_icons(){
-    $icons = array();
-    $images = $this->cypress_support('web-app', 'icons');
-    $regex = '(?<=icon-)(.*)(?=x)';
-    if( $images ) :
-      foreach ($images as $group => $icon) {
-        $icons[] = "<link sizes='{$icon['sizes']}' rel='apple-touch-icon' media='(-webkit-device-pixel-ratio: {$icon['density']})' href='{$icon['src']}' >";
+    $dir = $this->cypress_support('web-app', 'icons');
+    $path = trailingslashit(get_stylesheet_directory()) . untrailingslashit($dir);
+    if( is_dir($path) && !empty($dir) ):
+      $files = scandir($path);
+      $icons = [];
+      foreach ($files as $file) {
+        $fpath = trailingslashit($path) . $file;
+        if( is_file($fpath) && getimagesize($fpath) ) :
+          $uri = trailingslashit(get_template_directory_uri()) . trailingslashit($dir) . $file;
+          $media = "";
+          if( preg_match('#app#', $file) ) : $rel = "apple-touch-icon"; elseif( preg_match('#splash#', $file) ): $rel = "apple-touch-startup-image"; else: $rel = "icon"; endif;
+          if( preg_match('#@2x#', $file) ) :
+            $media .= "sizes='" . getimagesize($fpath)[0]/2 . "x" . getimagesize($fpath)[1]/2 . "'";
+            $media .= " media ='(-webkit-device-pixel-ratio: 2)'";
+          elseif( preg_match('#@3x#', $file) ) :
+            $media .= "sizes='" . getimagesize($fpath)[0]/3 . "x" . getimagesize($fpath)[1]/3 . "'";
+            $media .= " media ='(-webkit-device-pixel-ratio: 3)'";
+          else:
+            $media .= "sizes='" . getimagesize($fpath)[0] . "x" . getimagesize($fpath)[1] . "' type='" . getimagesize($fpath)['mime'] . "'";
+          endif;
+          $icons[] = "<link rel='$rel' href='$uri' $media>";
+        endif;
       }
+      return implode("\n", $icons);
+    else:
+      return null;
     endif;
-    return $icons;
   }
   private function Signin( $user = array() ) {if( !isset($user['remember']) ) $user['remember'] = false; $login = wp_signon( $user, false); if ( is_wp_error($login) ) : echo json_encode( array( 'loggedin' => false, 'message' => __('Error.') ) ); else : wp_set_current_user($user->ID); echo json_encode(array('loggedin' => true, 'message' => __('Success.'))); endif; die(); }
   private function Signup( $user = array() ) {$signup = wp_insert_user($user); if ( is_wp_error($signup) ) {$error  = $signup->get_error_codes() ; if( in_array('empty_user_login', $error) ) echo json_encode( array( 'loggedin' => false, 'message' => __('Username is empty.') ) ); elseif( in_array('existing_user_login', $error) ) echo json_encode( array( 'loggedin' => false, 'message' => __('Username already exists.') ) ); elseif( in_array('existing_user_email', $error) ) echo json_encode( array( 'loggedin' => false, 'message' => __('Email already exists.') ) ); } else {$this->Signin( $user ); } die(); }
@@ -374,6 +398,10 @@ class Plugins {
             break;
           case 'cache':
             require_once 'lib/cache/wp-cache.php';
+            break;
+          case 'history':
+            require_once 'lib/history/index.php';
+            add_filter( 'plugins_url', function($url, $path, $plugin){if( preg_match('#history#', $plugin) ) : $url = str_replace('app/plugins', 'core', $url); endif; return $url; }, 1, 3);
             break;
           case 'oauth':
             require_once 'lib/oauth1/oauth-server.php';

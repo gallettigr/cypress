@@ -15,3 +15,6 @@
 [submodule "core/lib/cache"]
 	path = core/lib/cache
 	url = git@github.com:Automattic/wp-super-cache.git
+[submodule "core/lib/history"]
+	path = core/lib/history
+	url = git@github.com:bonny/WordPress-Simple-History.git

@@ -34,7 +34,7 @@ define('SAVEQUERIES', true);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 ini_set('log_errors', 1);
-ini_set('error_log', CP_PATH . '/.logs/error_log.log');
+ini_set('error_log', CP_PATH . '/.logs/errors.log');
 
 /**
  * Salt keys. Generate from {@link https://api.wordpress.org/secret-key/1.1/salt/ }

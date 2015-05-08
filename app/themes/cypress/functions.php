@@ -48,12 +48,8 @@ function materialwp_setup() {
     'name' => 'Cypress', // App name
     'standalone' => true, // Is it a standalone app?
     'start_url' => '/',
-    'splash' => '/app/icons/splash.png',
     'orientation' => 'portrait', // eg. landscape, portrait
-    'icons' => array(
-      array('src' => '/app/icons/icon-32x.png', 'rel' => 'icon'),
-      array('src' => '/app/icons/icon-72x.png', 'rel' => 'icon')
-      ),
+    'icons' => 'app/icons',
     'theme_color' => MAIN_COLOR
   ) );
 
