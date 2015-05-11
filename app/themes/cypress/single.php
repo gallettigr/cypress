@@ -1,8 +1,9 @@
 <?php
 /**
- * The template for displaying all single posts.
+ * Single post template
  *
- * @package materialwp
+ * @package Cypress
+ * @author gallettigr
  */
 
 get_header(); ?>

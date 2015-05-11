@@ -2,7 +2,8 @@
 /**
  * The template for displaying search results pages.
  *
- * @package materialwp
+ * @package Cypress
+ * @author gallettigr
  */
 
 get_header(); ?>

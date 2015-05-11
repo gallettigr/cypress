@@ -9,7 +9,7 @@ Cypress | @gallettigr | WordPress development stack | `WP 4.2`, `PHP 5.6.2` | LG
 
 ```
 Cypress -- WordPress development stack
-Copyright (C) 2015  Giammarco Galletti>
+Copyright (C) 2015  Giammarco Galletti
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

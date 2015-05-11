@@ -2,7 +2,8 @@
 /**
  * materialwp Theme Customizer
  *
- * @package materialwp
+ * @package Cypress
+ * @author gallettigr
  */
 
 /**

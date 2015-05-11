@@ -35,6 +35,10 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 ini_set('log_errors', 1);
 ini_set('error_log', CP_PATH . '/.logs/errors.log');
+// define('COMPRESS_CSS', true);
+// define('COMPRESS_SCRIPTS', true);
+// define('CONCATENATE_SCRIPTS', true);
+// define('ENFORCE_GZIP', true);
 
 /**
  * Salt keys. Generate from {@link https://api.wordpress.org/secret-key/1.1/salt/ }
@@ -52,8 +56,7 @@ define('NONCE_SALT',       'ks3Q@X.~FQB0Gs-*mMMjq)JLqe?mk#G]so)Jcp)cybTT-0!bE}5#
  * Other useful development constants.
  */
 define('WP_POST_REVISIONS', false);
-define('WP_MEMORY_LIMIT', '64M');
-define('WP_CACHE', false);
+define('WP_MEMORY_LIMIT', '96M');
 define('FS_METHOD', 'direct');
 
 /**

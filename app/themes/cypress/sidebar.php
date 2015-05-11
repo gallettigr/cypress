@@ -2,7 +2,8 @@
 /**
  * The sidebar containing the main widget area.
  *
- * @package materialwp
+ * @package Cypress
+ * @author gallettigr
  */
 
 if ( ! is_active_sidebar( 'sidebar-1' ) ) {
