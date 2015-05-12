@@ -12,7 +12,6 @@
  */
 
 get_header(); ?>
-<h1 id="test-1">Hello</h1>
 
 <div class="container">
   <div class="row">

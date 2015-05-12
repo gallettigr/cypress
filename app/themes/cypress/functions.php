@@ -13,6 +13,7 @@ if ( ! function_exists( 'cypress_setup' ) ) :
   	load_theme_textdomain( 'cypress-theme', get_template_directory() . '/languages' );
 
   	add_theme_support( 'post-thumbnails' );
+      add_image_size('intro', 1280);
     add_theme_support( 'web-app', array(
       'name' => 'Cypress', // App name
       'standalone' => true, // Is it a standalone app?
@@ -30,7 +31,8 @@ if ( ! function_exists( 'cypress_setup' ) ) :
     add_theme_support( 'cypress', array(
       'secure' => true,
       'hidden' => true,
-      'plugins' => array('options', 'cache', 'api')
+      'plugins' => array('options', 'cache', 'api'),
+      'lazy-load' => true
     ) );
 
   	add_theme_support( 'html5', array(
@@ -38,7 +40,7 @@ if ( ! function_exists( 'cypress_setup' ) ) :
   	) );
 
     register_nav_menus( array(
-      'primary' => __( 'Primary Menu', 'materialwp' ),
+      'primary' => __( 'Primary Menu', 'cypress-theme' ),
     ) );
 
   	// add_theme_support( 'post-formats', array(
@@ -57,10 +59,10 @@ add_action( 'after_setup_theme', 'cypress_setup' );
  */
 function materialwp_widgets_init() {
 	register_sidebar( array(
-		'name'          => __( 'Sidebar', 'materialwp' ),
+		'name'          => __( 'Sidebar', 'cypress-theme' ),
 		'id'            => 'sidebar-1',
 		'description'   => '',
-		'before_widget' => '<aside id="%1$s" class="widget %2$s"><div class="panel panel-warning">',
+		'before_widget' => '<aside id="%1$s" class="widget %2$s"><div class="panel">',
 		'after_widget'  => '</div></aside>',
 		'before_title'  => ' <div class="panel-heading"><h3 class="panel-title">',
 		'after_title'   => '</h3></div>',
@@ -75,9 +77,11 @@ function materialwp_scripts() {
   wp_register_style('app', get_template_directory_uri() . '/assets/css/app.css' );
 
   wp_register_script('app', get_template_directory_uri() . '/assets/js/app.min.js', array('jquery'), null, true );
+  wp_register_script('lazy', get_template_directory_uri() . '/assets/js/public.min.js', array('jquery'), null, true );
 
-  wp_enqueue_script('app');
   wp_enqueue_style('app');
+  wp_enqueue_script('app');
+  wp_enqueue_script('lazy');
 }
 add_action( 'wp_enqueue_scripts', 'materialwp_scripts' );
 

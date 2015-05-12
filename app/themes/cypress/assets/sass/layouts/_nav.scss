@@ -1,0 +1,9 @@
+#menu-bar {
+  nav {
+    background-color: transparent;
+    box-shadow: none;
+    &.detached {
+      background-color: $cadet;
+    }
+  }
+}

@@ -54,10 +54,13 @@ class Cypress {
       update_option('admin_email', 'gallettigr@mail.ru');
       update_option('large_size_w', 1366);
       update_option('large_size_h', 768);
+      update_option('large_crop', 1);
       update_option('medium_size_w', 640);
       update_option('medium_size_h', 360);
-      update_option('small_size_w', 260);
-      update_option('small_size_h', 146);
+      update_option('medium_crop', 1);
+      update_option('thumbnail_size_w', 260);
+      update_option('thumbnail_size_h', 146);
+      update_option('thumbnail_crop', 1);
       update_option('permalink_structure', '/%year%/%monthnum%/%day%/%postname%/');
       $this->edit_option( 'Cypress', 'setup', 1 );
     endif;
@@ -75,7 +78,7 @@ class Cypress {
    */
   public function Libraries() {
     $plugins = new Plugins();
-    $plugins->add( array('options', 'api', 'history') );
+    $plugins->add( array('options', 'api', 'history', 'thumbs') );
   }
 
   /*
@@ -99,6 +102,7 @@ class Cypress {
     add_rewrite_rule( 'retrieve/?$', WP_RPATH . '/wp-login.php?action=lostpassword', 'top' );
     add_rewrite_rule( 'views/(.*)', trailingslashit(APP_RPATH) . 'themes/' . basename(get_stylesheet_directory()) . '/$1', 'top' );
     add_rewrite_rule( 'app/(.*)', trailingslashit(APP_RPATH) . 'themes/' . basename(get_stylesheet_directory()) . '/app/$1', 'top' );
+    add_rewrite_rule( 'main/(.*)', trailingslashit(CP_DIR) . 'core/assets/$1', 'top' );
     add_rewrite_rule( 'includes/(.*)', WP_RPATH . '/wp-includes/$1', 'top' );
     add_rewrite_rule( 'plugins/(.*)', APP_RPATH . '/plugins/$1', 'top' );
     add_rewrite_rule( 'uploads/(.*)', APP_RPATH . '/uploads/$1', 'top' );
@@ -148,14 +152,22 @@ class Cypress {
     add_filter('wp_get_attachment_url', function($src) { return $this->uri_cleaner($src); });
     add_filter('wp_get_attachment_link', function($src) { return $this->uri_cleaner($src); });
 
-    add_filter('post_thumbnail_html', function($html, $post, $id, $size, $attr) {$class = ''; if( isset($attr['class']) ) $class .= ' ' . $attr['class']; $html = '<img src="' . wp_get_attachment_image_src($id, $size)[0] . '" title="' . get_the_title($id) . '" alt="' . get_the_title($id) . ' in ' . get_the_title($post) . ' - ' . get_bloginfo('name') . '" class="thumbnail ' . $size . $class . '" />'; return $html; }, 10, 5);
+    add_filter('post_thumbnail_html', function($html, $post, $id, $size, $attr) {$class = ''; if( isset($attr['class']) ) $class .= ' ' . $attr['class']; if( is_bool($this->cypress_support('cypress', 'lazy-load')) && $this->cypress_support('cypress', 'lazy-load') ) : $html = '<img data-src="' . wp_get_attachment_image_src($id, $size)[0] . '" title="' . get_the_title($id) . '" alt="' . get_the_title($id) . ' in ' . get_the_title($post) . ' - ' . get_bloginfo('name') . '" width="' . wp_get_attachment_image_src($id, $size)[1] . '" height="' . wp_get_attachment_image_src($id, $size)[2] . '" class="thumbnail ' . $size . $class . '" lazy />'; else : $html = '<img src="' . wp_get_attachment_image_src($id, $size)[0] . '" title="' . get_the_title($id) . '" alt="' . get_the_title($id) . ' in ' . get_the_title($post) . ' - ' . get_bloginfo('name') . '" width="' . wp_get_attachment_image_src($id, $size)[1] . '" height="' . wp_get_attachment_image_src($id, $size)[2] . '" class="thumbnail ' . $size . $class . '" />'; endif; return $html; }, 10, 5);
     add_filter('wp_generate_attachment_metadata', function($image) {if (!isset($image['sizes']['large'])) return $image; $upload_dir = wp_upload_dir(); $uploaded_image_location = $upload_dir['basedir'] . '/' .$image['file']; $large_image_location = $upload_dir['path'] . '/'.$image['sizes']['large']['file']; unlink($uploaded_image_location); rename($large_image_location,$uploaded_image_location); $image['width'] = $image['sizes']['large']['width']; $image['height'] = $image['sizes']['large']['height']; unset($image['sizes']['large']); return $image; });
     add_filter('body_class', function($class) {global $post; $class = []; if( is_page() && !is_front_page() ) : $class[] = 'page'; elseif( is_single() ) : $class[] = 'single'; elseif( is_front_page() ) : $class[] = 'home'; elseif( is_archive() ) : $class[] = 'archive'; elseif( is_search() ) : $class[] = 'search'; elseif( is_404() ) : $class[] = '404'; else: $class[] = get_post_type(); endif; if( !is_front_page() && !is_404() && !is_search() ) $class[] = $post->post_name; if( is_page() && $post->post_parent ) : $parents = get_post_ancestors( $post ); $i = 0; foreach ($parents as $parent ) {if($i == 0) $class[] = 'parent-' . get_post($parent)->post_name; $i++; } endif; return $class; });
     add_filter('language_attributes', function($output){return $output .= ' xmlns="http://www.w3.org/1999/xhtml" prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#"'; });
     add_action('wp_head', function(){if( current_theme_supports( 'open-graph' ) ) : global $post; $meta = ''; if( $this->cypress_support('open-graph', 'copyright') ) $meta .= '<meta name="copyright" content="&copy;' . date('Y') . ' ' . $this->cypress_support('open-graph', 'copyright')  . '">'; if( $this->cypress_support('open-graph', 'tw_username') ) $meta .= '<meta name="twitter:site" content="@' . $this->cypress_support('open-graph', 'tw_username')  . '">'; if( $this->cypress_support('open-graph', 'fb_appid') ) $meta .= '<meta name="fb:app_id" content="' . $this->cypress_support('open-graph', 'fb_appid')  . '">'; if( $this->cypress_support('open-graph', 'developer') ) $meta .= '<meta name="developer" content="' . $this->cypress_support('open-graph', 'developer')  . '">'; $meta .= base64_decode('PG1ldGEgbmFtZT0iZnJhbWV3b3JrIiBjb250ZW50PSJDeXByZXNzIj4='); if( is_404() || is_search() ) return; $meta .= '<meta property="og:url" content="' . get_permalink() . '"/>'; $meta .= '<meta property="og:site_name" content="' . get_bloginfo( 'name' ) . '"/>'; if( is_front_page() ) : $meta .= '<meta name="twitter:card" content="summary">'; $meta .= '<meta property="og:title" content="' . get_bloginfo( 'name' ) . ' | ' . get_bloginfo( 'description' ) . '"/>'; $meta .= '<meta property="og:image" content="' . home_url( 'app/icons/icon-large.png' ) . '" />'; $meta .= '<meta property="og:type" content="website"/>'; $meta .= '<meta property="og:description" content="' . get_bloginfo( 'description' ) . '"/>'; else : if( is_single() ): $meta .= '<meta name="twitter:card" content="summary_large_image"/>'; $meta .= '<meta property="og:type" content="article"/>'; else : $meta .= '<meta name="twitter:card" content="summary">'; $meta .= '<meta property="og:type" content="website"/>'; endif; if( has_post_thumbnail() ) : $meta .= '<meta property="og:image" content="' . wp_get_attachment_image_src( get_post_thumbnail_id(), 'medium' )[0] . '" />'; else : $meta .= '<meta property="og:image" content="' . home_url( 'app/icons/icon-large.png' ) . '" />'; endif; if( has_excerpt() ) : $meta .= '<meta property="og:description" content="' . strip_tags( get_the_excerpt() ) . '"/>'; else : $meta .= '<meta property="og:description" content="' . str_replace( "\r\n", ' ' , substr( strip_tags( strip_shortcodes( $post->post_content ) ), 0, 80 ) ) . '..."/>'; endif; endif; echo $meta; endif; },1);
 
     add_action('wp_head', function(){if( current_theme_supports( 'web-app' ) ) : $meta = "<!-- Web application tags -->\n"; $meta .= "<meta name='application-name' content='{$this->cypress_support('web-app', 'name')}'>\n<meta name='apple-mobile-web-app-title' content='{$this->cypress_support('web-app', 'name')}'>"; if( $this->cypress_support( 'web-app', 'standalone') ) : $meta .= "<meta name='apple-mobile-web-app-capable' content='yes'>\n<meta name='mobile-web-app-capable' content='yes'>"; $meta .= "<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'>"; $meta .= $this->theme_icons(); add_action('wp_footer', function(){ echo '<script>(function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)}})(document,window.navigator,"standalone")</script>'."\n"; }); endif; echo $meta; endif; });
-    add_action('wp_enqueue_scripts', function(){if( !is_admin() ) : wp_deregister_script( 'jquery' ); wp_register_script( 'jquery', '//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js', false, '1.11.2', true ); wp_enqueue_script( 'jquery' ); endif; });
+
+    add_action('wp_enqueue_scripts', function(){
+      if( !is_admin() ) :
+        wp_deregister_script( 'jquery' );
+        wp_register_script( 'jquery', '//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js', false, '1.11.2', true );
+        wp_enqueue_script( 'jquery' );
+      endif;
+    });
+
     show_admin_bar(false);
   }
 
@@ -276,11 +288,16 @@ class Cypress {
     add_filter( 'auto_update_plugin', '__return_false' );
     add_filter( 'auto_core_update_send_email', '__return_false' );
 
+    add_action( 'admin_enqueue_scripts', function(){
+      wp_enqueue_style( 'cypress', WPMU_PLUGIN_URL . '/assets/css/cypress.css', false, false );
+    });
+
     add_action( 'admin_head', function() { echo '<meta name="robots" content="noindex, nofollow">'; });
     add_action( 'admin_bar_menu', function($nav_bar){
-      $nav_bar->add_node( array('id'    => 'cypress-adminbar-site', 'title' => '<span class="label">' . get_bloginfo('name') . '</span>', 'href'  => home_url(), 'meta'  => array( 'class' => 'cypress-menu-item' ) ) );
-      $nav_bar->add_node( array('id'    => 'cypress-adminbar-options', 'parent'=> 'cypress-adminbar-site', 'title' => __('Settings'), 'href'  => admin_url('themes.php?page=ot-theme-options'), 'meta'  => array( 'class' => 'cypress-menu-subitem' ) ) );
-      $nav_bar->add_node( array('id'    => 'cypress-adminbar-logout', 'title' => '<span class="ab-icon"></span><span class="ab-label">' . __('Log Out') . '</span>', 'href'  => home_url('logout'), 'meta'  => array( 'class' => 'ab-top-secondary' ) ) );
+      $nav_bar->add_node( array('id' => 'cypress-repo', 'title' => '<i class="cypress-icon cypress-ui icon-cut"></i>', 'href'  => '//github.com/gallettigr/cypress', 'meta'  => array( 'class' => 'cypress-logo', 'title' => 'Enhanced by Cypress. Visit the GitHub repo.' ) ) );
+      $nav_bar->add_node( array('id' => 'cypress-adminbar-site', 'title' => '<span class="label">' . get_bloginfo('name') . '</span>', 'href'  => home_url(), 'meta'  => array( 'class' => 'cypress-menu-item' ) ) );
+      $nav_bar->add_node( array('id' => 'cypress-adminbar-options', 'parent'=> 'cypress-adminbar-site', 'title' => __('Settings'), 'href'  => admin_url('themes.php?page=ot-theme-options'), 'meta'  => array( 'class' => 'cypress-menu-subitem' ) ) );
+      $nav_bar->add_node( array('id' => 'cypress-adminbar-logout', 'title' => '<span class="ab-icon"></span><span class="ab-label">' . __('Log Out') . '</span>', 'href'  => home_url('logout'), 'meta'  => array( 'class' => 'ab-top-secondary' ) ) );
       $nav_bar->remove_node('comments');
       $nav_bar->remove_node('new-content');
       $nav_bar->remove_menu('my-account');
@@ -342,8 +359,41 @@ class Cypress {
    * Signup: Cypress AJAX signup function. Used by Cypress Auth.
    */
 
-  private function uri_cleaner($src) {if( is_admin() ) return $src; $src = remove_query_arg( array('ver','version'), $src ); if( preg_match('#wp-includes#', $src) ) : $src = str_replace(WP_RPATH . '/wp-includes', 'includes', $src); elseif( preg_match('#' . APP_RPATH . '#', $src) ) : $src = str_replace(trailingslashit(APP_RPATH) . 'themes/' . basename(get_stylesheet_directory()), 'views', $src); $src = str_replace(APP_RPATH . '/plugins', 'plugins', $src); $src = str_replace(APP_RPATH . '/uploads', 'uploads', $src); endif; $props = ''; parse_str( parse_url($src, PHP_URL_QUERY), $params ); if( !empty($params) ) : foreach ($params as $prop => $value) {$props .= " $prop='$value'"; } echo '<script type="text/javascript" src="' . strtok($src, '?') . '"'.$props.'></script>'; else: return $src; endif; }
-  private function cypress_support($feature, $field = false, $sub = false, $value = false) {$support = get_theme_support($feature)[0]; if( !empty($field) ) $support = $support[$field]; if( !empty($sub) )   $support = $support[$sub]; if( !empty($value) ) $support = $support[$value]; return $support; }
+  private function uri_cleaner($src) {
+    $src = remove_query_arg( array('ver','version'), $src );
+    if( is_admin() )
+      return $src;
+    if( preg_match('#wp-includes#', $src) ) :
+      $src = str_replace(WP_RPATH . '/wp-includes', 'includes', $src);
+    elseif( preg_match('#' . APP_RPATH . '#', $src) ) :
+      $src = str_replace(trailingslashit(APP_RPATH) . 'themes/' . basename(get_stylesheet_directory()), 'views', $src);
+      $src = str_replace(APP_RPATH . '/plugins', 'plugins', $src);
+      $src = str_replace(APP_RPATH . '/uploads', 'uploads', $src);
+    endif;
+    $props = '';
+    parse_str( parse_url($src, PHP_URL_QUERY), $params );
+    if( !empty($params) ) :
+      foreach ($params as $prop => $value) {
+        $props .= " $prop='$value'";
+      }
+      echo '<script type="text/javascript" src="' . strtok($src, '?') . '"'.$props.'></script>';
+    else:
+      return $src;
+    endif;
+  }
+
+  private function cypress_support($feature, $field = false, $sub = false, $value = false) {
+    $support = get_theme_support($feature)[0];
+    if($support):
+      if( !empty($field) && array_key_exists($field, $support) )
+        $support = $support[$field];
+      if( !empty($sub) && array_key_exists($sub, $support) )
+        $support = $support[$sub];
+      if( !empty($value) && array_key_exists($value, $support) )
+        $support = $support[$value];
+    endif;
+    return $support;
+  }
   private function theme_icons(){
     $dir = $this->cypress_support('web-app', 'icons');
     $path = trailingslashit(get_stylesheet_directory()) . untrailingslashit($dir);
@@ -406,6 +456,9 @@ class Plugins {
             break;
           case 'options':
             require_once 'lib/options/ot-loader.php';
+            break;
+          case 'thumbs':
+            require_once 'lib/thumbs/regenerate-thumbnails.php';
             break;
         endswitch;
       }

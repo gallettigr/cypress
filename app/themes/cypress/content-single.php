@@ -19,7 +19,6 @@
         <?php the_title( '<h1 class="entry-title">', '</h1>' ); ?>
 
         <div class="entry-meta">
-          <?php materialwp_posted_on(); ?>
         </div><!-- .entry-meta -->
       </header><!-- .entry-header -->
 
@@ -34,7 +33,6 @@
       </div><!-- .entry-content -->
 
       <footer class="entry-footer">
-        <?php materialwp_entry_footer(); ?>
       </footer><!-- .entry-footer -->
     </div> <!-- .entry-container -->
   </div> <!-- .card -->

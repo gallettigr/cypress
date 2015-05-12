@@ -10,11 +10,6 @@
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 
   <div class="card">
-    <div class="entry-img">
-      <?php if ( has_post_thumbnail() ) : ?>
-        <?php the_post_thumbnail(); ?>
-      <?php endif; ?>
-    </div>
 
     <div class="entry-container">
       <header class="entry-header">

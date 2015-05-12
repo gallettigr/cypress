@@ -18,3 +18,6 @@
 [submodule "core/lib/history"]
 	path = core/lib/history
 	url = git@github.com:bonny/WordPress-Simple-History.git
+[submodule "core/lib/thumbs"]
+	path = core/lib/thumbs
+	url = git@github.com:Viper007Bond/regenerate-thumbnails.git
