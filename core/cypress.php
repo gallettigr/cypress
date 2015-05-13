@@ -297,7 +297,6 @@ class Cypress {
     add_action( 'admin_bar_menu', function($nav_bar){
       $nav_bar->add_node( array('id' => 'cypress-repo', 'title' => '<i class="cypress-icon cypress-ui icon-cut"></i>', 'href'  => '//github.com/gallettigr/cypress', 'meta'  => array( 'class' => 'cypress-logo', 'title' => 'Enhanced by Cypress. Visit the GitHub repo.' ) ) );
       $nav_bar->add_node( array('id' => 'cypress-adminbar-site', 'title' => '<span class="label">' . get_bloginfo('name') . '</span>', 'href'  => home_url(), 'meta'  => array( 'class' => 'cypress-menu-item' ) ) );
-      $nav_bar->add_node( array('id' => 'cypress-adminbar-options', 'parent'=> 'cypress-adminbar-site', 'title' => __('Settings'), 'href'  => admin_url('themes.php?page=ot-theme-options'), 'meta'  => array( 'class' => 'cypress-menu-subitem' ) ) );
       $nav_bar->add_node( array('id' => 'cypress-adminbar-logout', 'title' => '<span class="ab-icon"></span><span class="ab-label">' . __('Log Out') . '</span>', 'href'  => home_url('logout'), 'meta'  => array( 'class' => 'ab-top-secondary' ) ) );
       $nav_bar->remove_node('comments');
       $nav_bar->remove_node('new-content');
@@ -470,6 +469,9 @@ class Plugins {
             break;
           case 'options':
             require_once 'lib/options/ot-loader.php';
+            add_action( 'admin_bar_menu', function($nav_bar){
+              $nav_bar->add_node( array('id' => 'cypress-adminbar-options', 'parent'=> 'cypress-adminbar-site', 'title' => 'Theme Options', 'href'  => admin_url('admin.php?page=cypress-options'), 'meta'  => array( 'class' => 'cypress-menu-subitem' ) ) );
+            },70);
             add_filter( 'ot_theme_options_parent_slug', function(){return 'cypress'; });
             add_filter( 'ot_theme_options_menu_slug', function(){return 'cypress-options'; });
             add_filter( 'ot_theme_options_page_title', function(){return 'Theme Options'; } );
