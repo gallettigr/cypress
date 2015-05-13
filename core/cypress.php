@@ -32,6 +32,7 @@ class Cypress {
     add_action( 'generate_rewrite_rules', array( $this, 'Apache' ) );
     add_action( 'init', array( $this, 'AJAX' ) );
     add_action( 'admin_init', array($this, 'Backend') );
+    add_action( 'admin_menu', array($this, 'CypressPage') );
     add_action( 'login_init', array($this, 'Login') );
     add_action( 'template_redirect', array($this, 'Structure') );
     add_action( 'after_setup_theme', array( $this, 'Auth' ) );
@@ -266,7 +267,6 @@ class Cypress {
     remove_meta_box( 'commentstatusdiv','page','normal' );
     remove_meta_box( 'commentstatusdiv','post','normal' );
     remove_meta_box( 'trackbacksdiv','post','normal' );
-    remove_meta_box( 'simple_history_dashboard_widget', 'dashboard', 'normal' );
     //remove_meta_box( 'dashboard_quick_press', 'dashboard', 'side' );
     //remove_meta_box( 'dashboard_recent_drafts', 'dashboard', 'side' );
     //remove_meta_box( 'dashboard_recent_comments', 'dashboard', 'normal' );
@@ -287,6 +287,7 @@ class Cypress {
     add_filter( 'auto_update_theme', '__return_false' );
     add_filter( 'auto_update_plugin', '__return_false' );
     add_filter( 'auto_core_update_send_email', '__return_false' );
+    add_filter('upload_mimes', function($mimes) {$mimes['svg'] = 'image/svg+xml'; return $mimes; });
 
     add_action( 'admin_enqueue_scripts', function(){
       wp_enqueue_style( 'cypress', WPMU_PLUGIN_URL . '/assets/css/cypress.css', false, false );
@@ -317,8 +318,7 @@ class Cypress {
       add_filter( 'pre_site_transient_update_core','__return_null' );
       add_filter( 'pre_site_transient_update_plugins','__return_null' );
       add_filter( 'pre_site_transient_update_themes','__return_null' );
-      add_filter( 'ot_show_new_layout', '__return_false', 9999 );
-      add_filter( 'ot_show_docs', '__return_false', 9999 );
+
       remove_menu_page('ot-settings');
       remove_submenu_page('index.php', 'update-core.php');
       remove_submenu_page('index.php', 'simple_history_page');
@@ -338,6 +338,10 @@ class Cypress {
 
   }
 
+  public function CypressPage() {
+    add_menu_page( 'Cypress Menu', 'Cypress', 'edit_pages', 'cypress', array( $this, 'cypress_page' ), 'none' , 82 );
+  }
+
   /*
   Customization of Login page.
    */
@@ -352,12 +356,18 @@ class Cypress {
 
 
   /**
-   * Cypress private functions.
+   * Cypress helper functions.
    * URI Cleaner: Replace URIs with Cypress URL masking pattern and add defer or async tags to scripts tag.
    * Cypress Support: Check if current theme support Cypress feature.
    * Signin: Cypress AJAX signin function. Used by Cypress Auth.
    * Signup: Cypress AJAX signup function. Used by Cypress Auth.
    */
+
+  public function cypress_page() {
+    $html  = "<h1>Cypress -- <em>Less mess, for WordPress</em></h1>\n";
+    $html .= "<blockquote>Thanks for using Cypress. Documentation coming soon. Visit <a href='https://github.com/gallettigr/cypress'>our repo</a> to read more about it.</blockquote>";
+    echo $html;
+  }
 
   private function uri_cleaner($src) {
     $src = remove_query_arg( array('ver','version'), $src );
@@ -450,12 +460,34 @@ class Plugins {
           case 'history':
             require_once 'lib/history/index.php';
             add_filter( 'plugins_url', function($url, $path, $plugin){if( preg_match('#history#', $plugin) ) : $url = str_replace('app/plugins', 'core', $url); endif; return $url; }, 1, 3);
+            add_filter( 'simple_history/show_dashboard_widget', '__return_false');
+            add_filter( 'simple_history_show_on_dashboard', '__return_false');
+            add_filter( 'simple_history_show_settings_page', '__return_false');
+            add_filter( 'simple_history/page_pager_size', function(){return 100;});
             break;
           case 'oauth':
             require_once 'lib/oauth1/oauth-server.php';
             break;
           case 'options':
             require_once 'lib/options/ot-loader.php';
+            add_filter( 'ot_theme_options_parent_slug', function(){return 'cypress'; });
+            add_filter( 'ot_theme_options_menu_slug', function(){return 'cypress-options'; });
+            add_filter( 'ot_theme_options_page_title', function(){return 'Theme Options'; } );
+            add_filter( 'ot_theme_options_menu_title', function(){return 'Options'; } );
+            add_filter( 'ot_theme_options_icon_url', function(){return trailingslashit(WPMU_PLUGIN_URL) . 'assets/images/icon.svg'; } );
+            add_filter( 'ot_options_id', function() {return 'cypress_options'; });
+            add_filter( 'ot_settings_id', function() {return 'cypress_settings'; });
+            add_filter( 'ot_layouts_id', function() {return 'cypress_layouts'; });
+            add_filter( 'ot_show_pages', '__return_true' );
+            add_filter( 'ot_show_options_ui', '__return_true' );
+            add_filter( 'ot_show_settings_import', '__return_true' );
+            add_filter( 'ot_show_settings_export', '__return_true' );
+            add_filter( 'ot_show_new_layout', '__return_true' );
+            add_filter( 'ot_show_docs', '__return_true' );
+            add_filter( 'ot_use_theme_options', '__return_true' );
+            add_filter( 'ot_meta_boxes', '__return_true' );
+            add_filter( 'ot_allow_unfiltered_html', '__return_false' );
+            add_filter( 'ot_post_formats', '__return_true' );
             break;
           case 'thumbs':
             require_once 'lib/thumbs/regenerate-thumbnails.php';

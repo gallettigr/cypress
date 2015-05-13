@@ -1,21 +1,4 @@
-#wpadminbar {
-  .ab-top-menu {
-    .cypress-logo {
-      &:hover {
-        .ab-item {
-          background-color: transparent;
-        }
-      }
-      .cypress-icon {
-        background-color: #fff;
-        color: $light-green;
-        padding: 3px 5px;
-        border-radius: 100%;
-        vertical-align: initial;
-        &:before {
-          font-size: 15px;
-        }
-      }
-    }
-  }
-}
+@import "components/colors";
+@import "components/fonts";
+@import "components/elements";
+@import "components/variables";
