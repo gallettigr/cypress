@@ -28,16 +28,16 @@
 		        <span class="icon-bar"></span>
 		        <span class="icon-bar"></span>
 		      </button>
-          <a class="navbar-brand" rel="home" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php bloginfo( 'name' ); ?></a>
+          <a class="navbar-brand" rel="home" href="<?php echo esc_url( home_url( '/' ) ); ?>"><span id="logo" class="logo mela"><span class="brand"><i class="icon-icon" icon></i></span><span class="lettering"><i class="icon-brand-bold" icon></i><i class="icon-brand-light" icon></i></span></span></a>
     		</div>
 
   			<div class="navbar-collapse collapse" id="menu" role="menu">
-          <?php wp_nav_menu( array( 'menu' => 'primary', 'theme_location' => 'primary', 'menu_class' => 'nav navbar-nav navbar-left') ); ?>
-      		<form class="navbar-form navbar-right" role="search" method="get" id="searchform" action="<?php echo esc_url( home_url( '/' ) ); ?>">
-      			<div class="form-control-wrapper">
-              	<input name="s" id="s" type="text" class="form-control col-lg-8" placeholder="<?php  _e('Search','cypress'); ?>">
+          <form class="navbar-form navbar-right" role="search" method="get" id="searchform" action="<?php echo esc_url( home_url( '/' ) ); ?>">
+            <div class="form-control-wrapper">
+                <input name="s" id="s" type="text" class="form-control col-lg-8" placeholder="<?php  _e('Search','cypress'); ?>">
               </div>
           </form>
+          <?php wp_nav_menu( array( 'menu' => 'primary', 'theme_location' => 'primary', 'menu_class' => 'nav navbar-nav navbar-right') ); ?>
     		</div> <!-- #menu -->
     	</div><!-- .container -->
 		</nav><!-- .navbar -->

@@ -73,7 +73,7 @@ add_action( 'widgets_init', 'materialwp_widgets_init' );
 /**
  * Enqueue scripts and styles.
  */
-function materialwp_scripts() {
+function cypress_scripts() {
   wp_register_style('app', get_template_directory_uri() . '/assets/css/app.css' );
 
   wp_register_script('app', get_template_directory_uri() . '/assets/js/app.min.js', array('jquery'), null, true );
@@ -83,36 +83,10 @@ function materialwp_scripts() {
   wp_enqueue_script('app');
   wp_enqueue_script('lazy');
 }
-add_action( 'wp_enqueue_scripts', 'materialwp_scripts' );
+add_action( 'wp_enqueue_scripts', 'cypress_scripts' );
 
 function redirect_home() {
   echo json_encode(array('data' => home_url()));
   exit;
 }
 add_action('ajax_redirect', 'redirect_home');
-
-
-/**
- * Implement the Custom Header feature.
- */
-//require get_template_directory() . '/inc/custom-header.php';
-
-/**
- * Custom functions that act independently of the theme templates.
- */
-require get_template_directory() . '/inc/extras.php';
-
-/**
- * Customizer additions.
- */
-//require get_template_directory() . '/inc/customizer.php';
-
-/**
- * Load Jetpack compatibility file.
- */
-require get_template_directory() . '/inc/jetpack.php';
-
-/**
- * Comments Callback.
- */
-require get_template_directory() . '/inc/comments-callback.php';
