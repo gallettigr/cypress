@@ -38,8 +38,6 @@ get_header(); ?>
 
         <?php endwhile; ?>
 
-        <?php materialwp_paging_nav(); ?>
-
       <?php else : ?>
 
         <?php get_template_part( 'content', 'none' ); ?>

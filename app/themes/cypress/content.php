@@ -30,14 +30,14 @@
         <?php
           /* translators: %s: Name of current post */
           the_content( sprintf(
-            __( 'Continue reading %s <span class="meta-nav">&rarr;</span>', 'materialwp' ),
+            __( 'Continue reading %s <span class="meta-nav">&rarr;</span>', 'cypress-theme' ),
             the_title( '<span class="screen-reader-text">"', '"</span>', false )
           ) );
         ?>
 
         <?php
           wp_link_pages( array(
-            'before' => '<div class="page-links">' . __( 'Pages:', 'materialwp' ),
+            'before' => '<div class="page-links">' . __( 'Pages:', 'cypress-theme' ),
             'after'  => '</div>',
           ) );
         ?>

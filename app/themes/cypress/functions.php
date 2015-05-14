@@ -1,6 +1,6 @@
 <?php
 /**
- * materialwp functions and definitions
+ * Cypress theme functions and definitions
  *
  * @package Cypress
  * @author gallettigr
@@ -58,7 +58,7 @@ add_action( 'after_setup_theme', 'cypress_setup' );
  *
  * @link http://codex.wordpress.org/Function_Reference/register_sidebar
  */
-function materialwp_widgets_init() {
+function cypress_widgets_init() {
 	register_sidebar( array(
 		'name'          => __( 'Sidebar', 'cypress-theme' ),
 		'id'            => 'sidebar-1',
@@ -69,7 +69,7 @@ function materialwp_widgets_init() {
 		'after_title'   => '</h3></div>',
 	) );
 }
-add_action( 'widgets_init', 'materialwp_widgets_init' );
+add_action( 'widgets_init', 'cypress_widgets_init' );
 
 /**
  * Enqueue scripts and styles.

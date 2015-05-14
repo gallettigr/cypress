@@ -26,7 +26,7 @@
         <?php the_content(); ?>
         <?php
           wp_link_pages( array(
-            'before' => '<div class="page-links">' . __( 'Pages:', 'materialwp' ),
+            'before' => '<div class="page-links">' . __( 'Pages:', 'cypress-theme' ),
             'after'  => '</div>',
           ) );
         ?>

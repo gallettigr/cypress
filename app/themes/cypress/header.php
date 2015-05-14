@@ -17,7 +17,7 @@
 </head>
 <body <?php body_class(); ?>>
   <div id="canvas">
-	<a class="skip-link screen-reader-text" href="#content"><?php _e('Skip to content', 'cypress'); ?></a>
+	<a class="skip-link screen-reader-text" href="#content"><?php _e('Skip to content', 'cypress-theme'); ?></a>
 	<header id="menu-bar" class="site-header" role="banner">
 		<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
 		  <div class="container">
@@ -28,13 +28,13 @@
 		        <span class="icon-bar"></span>
 		        <span class="icon-bar"></span>
 		      </button>
-          <a class="navbar-brand" rel="home" href="<?php echo esc_url( home_url( '/' ) ); ?>"><span id="logo" class="logo mela"><span class="brand"><i class="icon-icon" icon></i></span><span class="lettering"><i class="icon-brand-bold" icon></i><i class="icon-brand-light" icon></i></span></span></a>
+          <a class="navbar-brand" rel="home" href="<?php echo esc_url( home_url( '/' ) ); ?>"><span id="logo" class="logo mela"><span class="icon"><i class="icon-icon" icon></i></span><span class="brand"><i class="icon-brand-bold" icon></i></span><span class="lettering"><i class="icon-brand-light" icon></i></span></a>
     		</div>
 
   			<div class="navbar-collapse collapse" id="menu" role="menu">
           <form class="navbar-form navbar-right" role="search" method="get" id="searchform" action="<?php echo esc_url( home_url( '/' ) ); ?>">
             <div class="form-control-wrapper">
-                <input name="s" id="s" type="text" class="form-control col-lg-8" placeholder="<?php  _e('Search','cypress'); ?>">
+                <input name="s" id="s" type="text" class="form-control col-lg-8" placeholder="<?php  _e('Search','cypress-theme'); ?>">
               </div>
           </form>
           <?php wp_nav_menu( array( 'menu' => 'primary', 'theme_location' => 'primary', 'menu_class' => 'nav navbar-nav navbar-right') ); ?>

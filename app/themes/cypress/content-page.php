@@ -20,14 +20,14 @@
         <?php the_content(); ?>
         <?php
           wp_link_pages( array(
-            'before' => '<div class="page-links">' . __( 'Pages:', 'materialwp' ),
+            'before' => '<div class="page-links">' . __( 'Pages:', 'cypress-theme' ),
             'after'  => '</div>',
           ) );
         ?>
       </div><!-- .entry-content -->
 
       <footer class="entry-footer">
-        <?php edit_post_link( __( 'Edit', 'materialwp' ), '<span class="edit-link">', '</span>' ); ?>
+        <?php edit_post_link( __( 'Edit', 'cypress-theme' ), '<span class="edit-link">', '</span>' ); ?>
       </footer><!-- .entry-footer -->
     </div> <!-- .entry-container -->
   </div> <!-- .card -->
