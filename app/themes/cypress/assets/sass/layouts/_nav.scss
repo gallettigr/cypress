@@ -7,14 +7,14 @@
     }
 
     &.detached {
-      background-color: rgba($thunder, .7);
+      background-color: rgba($secondary, .7);
       height: 40px;
       min-height: 40px;
       overflow: hidden;
 
       .logo .icon {
         font-size: 0.6em;
-        color: $manz;
+        color: $main;
       }
 
       a {

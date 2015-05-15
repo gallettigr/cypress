@@ -32,7 +32,7 @@
 
 // Buttons ====================================================================
 
-@mixin btn($class,$bg){
+@mixin btn($class,$bg) {
   .btn-#{$class} {
     background-size: 200%;
     background-position: 50%;

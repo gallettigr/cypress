@@ -313,6 +313,7 @@ function cypress_metaboxes() {
       ),
     )
   );
+
 $pages_metabox = array(
     'id'          => 'pages_metas',
     'title'       => __( 'Page customization', 'cypress-theme' ),
@@ -329,7 +330,70 @@ $pages_metabox = array(
     )
   );
 
+$posts_metabox = array(
+    'id'          => 'post_metas',
+    'title'       => __( 'Article details', 'cypress-theme' ),
+    'desc'        => '',
+    'pages'       => array( 'post' ),
+    'context'     => 'normal',
+    'priority'    => 'high',
+    'fields'      => array(
+      array(
+        'label'       => __( 'Press release', 'cypress-theme' ),
+        'id'          => 'press_tab',
+        'type'        => 'tab'
+      ),
+      array(
+        'label'       => __( 'Press release module', 'cypress-theme' ),
+        'id'          => 'press_check',
+        'type'        => 'on-off',
+        'std'         => 'off'
+      ),
+      array(
+        'label'       => '<small>' . __( 'Source Author', 'cypress-theme' ) . '</small>',
+        'id'          => 'press_author',
+        'type'        => 'text',
+        'condition'   => 'press_check:is(on)'
+      ),
+      array(
+        'label'       => '<small>' . __( 'Source URL', 'cypress-theme' ) . '</small>',
+        'id'          => 'press_url',
+        'type'        => 'text',
+        'condition'   => 'press_check:is(on)'
+      )
+    )
+  );
+
+$services_metabox = array(
+    'id'          => 'services_metas',
+    'title'       => __( 'Service details', 'cypress-theme' ),
+    'desc'        => '',
+    'pages'       => array( 'services' ),
+    'context'     => 'normal',
+    'priority'    => 'high',
+    'fields'      => array(
+      array(
+        'label'       => __( 'Long title', 'cypress-theme' ),
+        'id'          => 'service_title',
+        'type'        => 'text',
+      ),
+      array(
+        'label'       => __( 'Short description', 'cypress-theme' ),
+        'id'          => 'service_description',
+        'type'        => 'textarea-simple',
+        'row'         => '3'
+      ),
+      array(
+        'label'       => __( 'Icon class', 'cypress-theme' ),
+        'id'          => 'service_icon',
+        'type'        => 'text',
+      ),
+    )
+  );
+
   if ( function_exists( 'ot_register_meta_box' ) )
     ot_register_meta_box( $projects_metabox );
     ot_register_meta_box( $pages_metabox );
+    ot_register_meta_box( $posts_metabox );
+    ot_register_meta_box( $services_metabox );
 }

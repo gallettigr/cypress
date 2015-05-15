@@ -361,10 +361,10 @@ class Cypress {
   Callbacks
    */
   public function Callbacks() {
-    add_action( 'cypress_get_option', array($this, 'get_ot_option'), 20, 2 );
-    add_action( 'cypress_echo_option', array($this, 'echo_ot_option'), 20, 2 );
-    add_action( 'cypress_get_meta', array($this, 'get_cypress_post_meta'), 20, 2 );
-    add_action( 'cypress_echo_meta', array($this, 'echo_cypress_post_meta'), 20, 2 );
+    add_action( 'cypress_get_option', array($this, 'get_ot_option'), 20, 3 );
+    add_action( 'cypress_echo_option', array($this, 'echo_ot_option'), 20, 3 );
+    add_action( 'cypress_get_meta', array($this, 'get_cypress_post_meta'), 20, 3 );
+    add_action( 'cypress_echo_meta', array($this, 'echo_cypress_post_meta'), 20, 3 );
   }
 
 
@@ -391,9 +391,8 @@ class Cypress {
     echo $this->get_ot_option($id, $default);
   }
 
-  public function get_cypress_post_meta($id, $default = 'Cypress') {
-    global $post;
-    $meta = get_post_meta( $post->ID, $id );
+  public function get_cypress_post_meta($post_id, $meta_id, $default = 'Cypress') {
+    $meta = get_post_meta( $post_id, $meta_id );
     if( !empty($meta) ) :
       if( count($meta) == 1 ) return $meta[0];
       else return $meta;
@@ -402,8 +401,8 @@ class Cypress {
     endif;
   }
 
-  public function echo_cypress_post_meta($id, $default = 'Cypress') {
-    echo $this->get_cypress_post_meta($id, $default);
+  public function echo_cypress_post_meta($post_id, $meta_id, $default = 'Cypress') {
+    echo $this->get_cypress_post_meta($post_id, $meta_id, $default);
   }
 
 

@@ -8,11 +8,13 @@
 
 .logo.mela {
   display: inline-block;
+
   i {
     position: relative;
     vertical-align: bottom;
     display: inline-block;
   }
+
   .icon {
     display: inline-block;
     margin-right: .4em;
@@ -20,6 +22,7 @@
       font-size: 2.5em;
     }
   }
+
   .brand {
     display: inline-block;
     font-size: 4em;
@@ -28,12 +31,14 @@
       top: 5px;
     }
   }
+
   .lettering {
     display: block;
     font-size: 6.5em;
     margin-left: 8px;
   }
 }
+
 .shader {
   position: absolute;
   width: 100%;
@@ -41,6 +46,52 @@
   background-color: rgba(#333, .6);
   z-index: 2;
 }
+
 img.parallax {
   position: relative;
+}
+
+.bkg-main {
+  background-color: $main;
+}
+
+.cyslider {
+  overflow: hidden;
+  position: relative;
+
+  ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+  }
+
+  li {
+    position: relative;
+    padding: 2rem 0;
+
+    &.active {
+      display: block;
+    }
+  }
+
+  .heading {
+    display: inline-block;
+  }
+
+  .icon {
+    color: #fff;
+    display: inline-block;
+    float: left;
+    font-size: 5rem;
+    margin-right: 4rem;
+    line-height: 1;
+  }
+
+  .title {
+    display: block;
+    font-size: 3rem;
+    margin: 0;
+    color: #fff;
+  }
 }
