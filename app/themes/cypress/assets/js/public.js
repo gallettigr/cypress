@@ -1,6 +1,6 @@
 // @codekit-prepend "libs/jquery.lazyload.js";
+// @codekit-prepend "libs/cypress.js";
 $(function() {
-
   // SHRINK NAV
   $(document).on('scroll resize touchmove', function() {
     var brand = $('#logo .lettering, #logo .brand'),
@@ -30,23 +30,11 @@ $(function() {
   });
 
   //CYSLIDER
-  function cyslider(object) {
-    setInterval(function(){
-      $('ul li:nth-child(3)', object).addClass('active');
-      $('ul li:nth-child(2)', object).removeClass('active');
-      $('ul', object).animate( { top: - $('ul li', object).outerHeight() }, 500, function(){
-        $('ul li:first-child', object).appendTo( $('ul', object) );
-        $('ul', object).css({top: ''});
-      });
-    }, object.data('speed'));
-  }
+  $('.cyslider').cyslider();
 
-  $('.cyslider').each(function(){
-    var sliderH = $('ul li', this).outerHeight();
-    $(this).css({height: sliderH});
-    $('ul', this).css({marginTop: -sliderH});
-    $('ul li:last-child', this).prependTo($('ul', this));
-    cyslider($(this));
-  });
-
+  //CYROUSEL
+  $('.cyrousel').cyrousel();
 });
+
+
+
