@@ -14,6 +14,8 @@ if ( ! function_exists( 'cypress_setup' ) ) :
 
   	add_theme_support( 'post-thumbnails' );
       add_image_size('intro', 1280);
+      add_image_size('preview', 700, 700, true);
+
     add_theme_support( 'web-app', array(
       'name' => 'Cypress', // App name
       'standalone' => true, // Is it a standalone app?
@@ -22,23 +24,21 @@ if ( ! function_exists( 'cypress_setup' ) ) :
       'icons' => 'app/icons',
       'theme_color' => MAIN_COLOR
     ) );
+
+    add_theme_support( 'cypress', array( 'secure', 'hidden', 'lazy-load', 'js' ) );
+
     add_theme_support( 'open-graph', array(
       'tw_username' => 'gallettigr',
       'fb_appid' => '1611715415714285',
       'copyright' => 'Cypress Framework',
       'developer' => 'Giammarco Galletti <gallettigr@mail.ru>'
     ) );
-    add_theme_support( 'cypress', array(
-      'secure' => true,
-      'hidden' => true,
-      'plugins' => array('options', 'cache', 'api'),
-      'lazy-load' => true
-    ) );
 
     add_theme_support( 'title-tag' );
   	add_theme_support( 'html5', array(
   		'search-form', 'comment-form', 'comment-list', 'gallery', 'caption',
   	) );
+    add_theme_support( 'post-formats', array( 'aside', 'link', 'image', 'quote', 'status', 'video', 'audio' ) );
 
     register_nav_menus( array(
       'primary' => __( 'Primary Menu', 'cypress-theme' ),
@@ -53,11 +53,6 @@ add_action( 'after_setup_theme', 'cypress_setup' );
 
 
 
-/**
- * Register widget area.
- *
- * @link http://codex.wordpress.org/Function_Reference/register_sidebar
- */
 function cypress_widgets_init() {
 	register_sidebar( array(
 		'name'          => __( 'Sidebar', 'cypress-theme' ),
@@ -71,9 +66,6 @@ function cypress_widgets_init() {
 }
 add_action( 'widgets_init', 'cypress_widgets_init' );
 
-/**
- * Enqueue scripts and styles.
- */
 function cypress_scripts() {
   wp_register_style('app', get_template_directory_uri() . '/assets/css/app.css' );
   wp_register_style('font-awesome', '//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css' );
@@ -83,13 +75,9 @@ function cypress_scripts() {
 
   wp_enqueue_style('app');
   wp_enqueue_script('app');
-  wp_enqueue_script('public');
 }
 add_action( 'wp_enqueue_scripts', 'cypress_scripts' );
 
-/**
- * Register post types.
- */
 function cypress_post_types() {
   // SERVICES
   register_post_type( 'services', array(
@@ -212,6 +200,46 @@ function cypress_post_types() {
       'pages'         => false
       )
   ) );
+  // CAREERS
+  register_post_type( 'jobs', array(
+    'label'               => __( 'Jobs', 'cypress-theme' ),
+    'description'         => __( 'Careers opportunities', 'cypress-theme' ),
+    'labels'              => array(
+      'name'                => _x( 'Job', 'Portfolio project', 'cypress-theme' ),
+      'singular_name'       => _x( 'Jobs', 'Portfolio projects', 'cypress-theme' ),
+      'menu_name'           => __( 'Careers', 'cypress-theme' ),
+      'parent_item_colon'   => __( 'Parent Job:', 'cypress-theme' ),
+      'all_items'           => __( 'All Jobs', 'cypress-theme' ),
+      'add_new_item'        => __( 'Add New Job', 'cypress-theme' ),
+      'add_new'             => __( 'Add New', 'cypress-theme' ),
+      'new_item'            => __( 'New Job', 'cypress-theme' ),
+      'edit_item'           => __( 'Edit Job', 'cypress-theme' ),
+      'update_item'         => __( 'Update Job', 'cypress-theme' ),
+      'view_item'           => __( 'View Job', 'cypress-theme' ),
+      'search_items'        => __( 'Search Job', 'cypress-theme' ),
+      'not_found'           => __( 'Not found', 'cypress-theme' ),
+      'not_found_in_trash'  => __( 'Not found in Trash', 'cypress-theme' ),
+    ),
+    'supports'            => array( 'title', 'editor' ),
+    'hierarchical'        => true,
+    'public'              => false,
+    'show_ui'             => true,
+    'show_in_menu'        => true,
+    'show_in_admin_bar'   => false,
+    'show_in_nav_menus'   => false,
+    'can_export'          => true,
+    'menu_position'       => 26,
+    'menu_icon'           => 'dashicons-megaphone',
+    'has_archive'         => false,
+    'exclude_from_search' => true,
+    'publicly_queryable'  => false,
+    'capability_type'     => 'post',
+    'rewrite'             => array(
+      'slug'          => 'jobs',
+      'with_front'    => false,
+      'pages'         => false
+      )
+  ) );
   // PROJECT TYPES
   register_taxonomy( 'project-type', array( 'projects' ), array(
     'labels'                     => array(
@@ -244,10 +272,28 @@ function cypress_post_types() {
       'with_front'  => true
       )
   ) );
-
 }
 add_action( 'init', 'cypress_post_types', 0 );
 
+function cypress_project_services() {
+  global $post;
+  $metas = get_post_meta( $post->ID, 'project_services' );
+  if( empty($metas) ) return false;
+  $services = array();
+  sort($metas[0]); reset($metas[0]);
+  foreach ($metas[0] as $meta) : switch ($meta) :
+    case 'creativity':    $services[] = 'Creativity'; break;
+    case 'branding':      $services[] = 'Brand Identity'; break;
+    case 'copy':          $services[] = 'Copy-writing'; break;
+    case 'advertising':   $services[] = 'Advertising'; break;
+    case 'ux':            $services[] = 'UX & Web Design'; break;
+    case 'development':   $services[] = 'Web Development'; break;
+  endswitch; endforeach;
+
+  echo implode(' / ', $services);
+
+}
+add_action( 'cypress_echo_services', 'cypress_project_services' );
 
 // THEME OPTIONS AND METABOXES
 require_once( trailingslashit(get_template_directory()) . 'includes/metaboxes.php' );

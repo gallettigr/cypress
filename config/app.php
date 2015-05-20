@@ -26,12 +26,14 @@ define('WP_URL', WP_SITEURL);
 define('APP_PATH', CP_PATH . '/' . getenv('APP_DIR'));
 define('APP_RPATH', CP_DIR . '/' . getenv('APP_DIR'));
 define('APP_URL', WP_HOME . '/' . CP_DIR . '/' . getenv('APP_DIR'));
+define('CORE_RPATH', CP_DIR . '/core');
+define('CORE_PATH', CP_PATH . '/core');
 
 
 define('WP_CONTENT_DIR', APP_PATH);
 define('WP_CONTENT_URL', APP_URL);
-define('WPMU_PLUGIN_DIR', CP_PATH . '/core');
-define('WPMU_PLUGIN_URL', WP_HOME . '/' . CP_DIR . '/core');
+define('WPMU_PLUGIN_DIR', CORE_PATH);
+define('WPMU_PLUGIN_URL', WP_HOME . '/' . CORE_RPATH);
 
 define('WP_USE_THEMES', true);
 

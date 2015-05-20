@@ -42,4 +42,4 @@
     	</div><!-- .container -->
 		</nav><!-- .navbar -->
 	</header><!-- #menu-bar -->
-  <?php get_template_part( 'views/header', 'intro' ); ?>
+  <?php get_template_part( 'layout/header', 'intro' ); ?>

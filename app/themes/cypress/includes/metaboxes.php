@@ -26,6 +26,41 @@ function cypress_metaboxes() {
         'type'        => 'text',
       ),
       array(
+        'label'       => __( 'Project services', 'cypress-theme' ),
+        'id'          => 'project_services',
+        'type'        => 'checkbox',
+        'choices'     => array(
+          array(
+            'value'   => 'creativity',
+            'label'   => __('Creativity', 'cypress-theme')
+            ),
+          array(
+            'value'   => 'branding',
+            'label'   => __('Brand Identity', 'cypress-theme')
+            ),
+          array(
+            'value'   => 'copy',
+            'label'   => __('Copy-writing', 'cypress-theme')
+            ),
+          array(
+            'value'   => 'advertising',
+            'label'   => __('Advertising', 'cypress-theme')
+            ),
+          array(
+            'value'   => 'marketing',
+            'label'   => __('Marketing', 'cypress-theme')
+            ),
+          array(
+            'value'   => 'ux',
+            'label'   => __('UX & Web Design', 'cypress-theme')
+            ),
+          array(
+            'value'   => 'development',
+            'label'   => __('Web Development', 'cypress-theme')
+            ),
+          )
+      ),
+      array(
         'label'       => __( 'Client', 'cypress-theme' ),
         'id'          => 'project_client',
         'type'        => 'custom-post-type-select',
@@ -391,9 +426,10 @@ $services_metabox = array(
     )
   );
 
-  if ( function_exists( 'ot_register_meta_box' ) )
+  if ( function_exists( 'ot_register_meta_box' ) ) :
     ot_register_meta_box( $projects_metabox );
     ot_register_meta_box( $pages_metabox );
     ot_register_meta_box( $posts_metabox );
     ot_register_meta_box( $services_metabox );
+  endif;
 }
