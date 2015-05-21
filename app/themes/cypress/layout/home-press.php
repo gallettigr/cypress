@@ -15,7 +15,7 @@
         <p><?php the_excerpt() ?></p>
         <a class="light" href="<?php do_action( 'cypress_echo_meta', 'press_url', '#' ); ?>" rel="nofollow"><?php _e('Published by', 'cypress-theme') ?> <?php do_action( 'cypress_echo_meta', 'press_author', 'Source author' ); ?></a>. <span class="date"><?php echo get_the_date('l, d F Y') ?>.</span>
       </li>
-    <?php endforeach; ?>
+    <?php endforeach; wp_reset_query(); ?>
     </ul>
   </div>
 </section>

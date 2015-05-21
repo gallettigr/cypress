@@ -22,7 +22,6 @@ Dotenv::required(array('DB_NAME', 'DB_USER', 'DB_PASSWORD'));
 /**
  * Define app constants.
  */
-define('ROOT_PATH', dirname(__DIR__));
 define('CP_PATH', __DIR__ );
 define('CP_DIR', basename(CP_PATH));
 if ( getenv('WP_DIR') ) {

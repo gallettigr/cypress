@@ -5,14 +5,14 @@
 
  ?>
 <?php do_action( 'cypress_query', 'services', array( 'posts_per_page' => -1, 'post_type' => 'services', 'order_by' => 'title', 'order' => 'ASC' ), 60*60*48 ); ?>
-<section id="services" class="bkg-main">
+<section id="services" class="bkg-main hidden-xs">
   <div class="container">
     <div class="cyslider">
       <ul>
         <?php global $cyposts; foreach ($cyposts as $post) : setup_postdata( $post ); ?>
         <li>
           <div class="row">
-            <div class="col-md-4 col-sm-12 heading">
+            <div class="col-xs-12 col-md-4 col-sm-12 heading">
               <i class="icon icon-lg <?php do_action( 'cypress_echo_meta', 'service_icon', 'cycon-development' ); ?>"></i>
               <h2 class="title"><?php do_action( 'cypress_echo_meta', 'service_title', 'Our great service' ); ?></h2>
             </div>
@@ -21,7 +21,7 @@
             </div>
           </div>
         </li>
-        <?php endforeach; ?>
+        <?php endforeach; wp_reset_query(); ?>
       </ul>
     </div>
   </div>

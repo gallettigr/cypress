@@ -1,5 +1,4 @@
-// CYPRESS LOADER. CREDITS HUBSPOT PACE.JS
-(function () {
+jQuery.cyloader = function() {
   var a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X = [].slice,
     Y = {}.hasOwnProperty,
     Z = function (a, b) {
@@ -369,5 +368,4 @@
     }, "function" == typeof define && define.amd ? define(function () {
       return j
     }) : "object" == typeof exports ? module.exports = j : D.startOnPageLoad && j.start()
-})
-.call(this);
+}

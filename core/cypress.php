@@ -1,10 +1,11 @@
 <?php
 /**
- * Cypress core and WordPress mu-plugin.
+ * Cypress core plugin.
+ *
  * @package Cypress
  * @author gallettigr
  * @version 0.8
- * @date    2015-04-09
+ *
  * Plugin Name: Cypress
  * Contributors: gallettigr
  * Plugin URI: http://github.com/gallettigr/cypress
@@ -14,18 +15,66 @@
  * Author URI: http://twitter.com/gallettigr
  * Textdomain: cypress
  */
-namespace Cypress;
 use \DateTime;
 
-if( !is_blog_installed() ) :
-  return;
-endif;
+/** Exit if accessed directly */
+defined( 'ABSPATH' ) || exit;
 
+/** Run only after WordPress installation */
+if( !is_blog_installed() ) return;
+
+if( !class_exists('Cypress') ) :
+
+/**
+ * Main class
+ */
 class Cypress {
 
-  public static $plugins;
+  private $data;
 
-  public function __construct() {
+  /** Cypress magic methods  */
+  private function __construct() {}
+  public function __clone() { _doing_it_wrong( __FUNCTION__, __('Nice try!', 'cypress'), '0.8' ); }
+  public function __wakeup() { _doing_it_wrong( __FUNCTION__, __('Nice try!', 'cypress'), '0.8' ); }
+  public function __isset( $key ) { return isset( $this->data[$key] ); }
+  public function __get( $key ) { return isset( $this->data[$key] ) ? $this->data[$key] : null; }
+  public function __set( $key, $value ) { $this->data[$key] = $value; }
+  public function __unset( $key ) { if( isset( $this->data[$key] ) ) unset( $this->data[$key] ); }
+  public function __call( $name = '', $args = array() ) { unset( $name, $args ); return null; }
+
+  /** Cypress instance */
+  public static function instance() {
+    static $instance = null;
+    if( is_null($instance) ) :
+      $instance = new Cypress;
+      $instance->actions();
+      $instance->constants();
+      $instance->globals();
+      $instance->includes();
+    endif;
+    return $instance;
+  }
+
+  /** Constants */
+  private function constants() {
+    $this->define_constant( 'CP_PATH', trailingslashit(dirname(__DIR__)), 'cypress_root_path' );
+    $this->define_constant( 'CP_DIR', trailingslashit(dirname(constant('CP_PATH'))) );
+    $this->define_constant( 'WP_DIR', trailingslashit('wp'), 'cypress_wp_dir' );
+  }
+
+  /** Globals */
+  private function globals() {
+    $this->version = '0.8';
+  }
+
+  /** Required files */
+  private function includes() {
+    require( CP_PATH . '/core/cypress/functions.php' );
+  }
+
+
+  /** Set up the plugin hooks and actions */
+  private function actions() {
     add_action( 'init', array( $this, 'Init' ) );
     add_action( 'muplugins_loaded', array( $this, 'Loaded' ) );
     add_action( 'muplugins_loaded', array( $this, 'Libraries' ) );
@@ -43,6 +92,14 @@ class Cypress {
       add_action( 'wp_loaded', array( $this, 'Security' ) );
     endif;
     $this->Callbacks();
+  }
+
+
+
+  /** Private methods */
+  private function define_constant( $constant, $value, $filter = false ) {
+    if($filter) $value = apply_filters($filter, $value);
+    if( ! defined( strtoupper($constant) ) ) define( strtoupper($constant) , $value);
   }
 
   /*
@@ -369,10 +426,10 @@ class Cypress {
   Callbacks
    */
   public function Callbacks() {
-    add_action( 'cypress_get_option', array($this, 'get_ot_option'), 20, 2 );
-    add_action( 'cypress_echo_option', array($this, 'echo_ot_option'), 20, 2 );
-    add_action( 'cypress_get_meta', array($this, 'get_cypress_post_meta'), 20, 2 );
-    add_action( 'cypress_echo_meta', array($this, 'echo_cypress_post_meta'), 20, 2 );
+    add_action( 'cypress_get_option', array($this, 'get_ot_option'), 10, 2 );
+    add_action( 'cypress_echo_option', array($this, 'echo_ot_option'), 10, 2 );
+    add_action( 'cypress_get_meta', array($this, 'get_cypress_post_meta'), 10, 2 );
+    add_action( 'cypress_echo_meta', array($this, 'echo_cypress_post_meta'), 10, 2 );
     add_action( 'cypress_query', array($this, 'cypress_transient_query'), 10, 4 );
   }
 
@@ -402,13 +459,14 @@ class Cypress {
 
   public function get_cypress_post_meta($meta, $default = 'Cypress') {
     global $post;
-    $values = get_post_meta( $post->ID, $meta );
-    if( !empty($values) ) :
-      if( count($values) == 1 ) return $values[0];
-      else return $values;
+    static $metas = false;
+    $metas = get_post_meta( $post->ID, $meta );
+    if( !empty($metas) ) :
+      if( count($metas) == 1 ) : $metas = $metas[0]; endif;
     else:
-      return $default;
+      $metas = $default;
     endif;
+    return $metas;
   }
 
   public function echo_cypress_post_meta($meta, $default = 'Cypress') {
@@ -533,10 +591,6 @@ class Cypress {
     die();
   }
 
-  private function define_constant( $constant, $value ) {
-    if( ! defined($constant) ) define($constant, $value);
-  }
-
   public function edit_cypress_option($options, $key, $value) {
     $new_options = get_option($options);
     $new_options[$key] = $value;
@@ -615,10 +669,21 @@ class Cypress {
       }
     endif;
   }
-
 }
 
-$Cypress = new Cypress();
+/** Cypress init function */
+  function cypress() {
+    return Cypress::instance();
+  }
+  if( defined( 'LOAD_CYPRESS_LATER' ) ) :
+    add_action( 'plugins_loaded', 'cypress', (int) LOAD_CYPRESS_LATER );
+  else :
+    $GLOBALS['cp'] = cypress();
+  endif;
+
+endif;
+
+
 
 /**
  * Cypress Walker Menu for WordPress.

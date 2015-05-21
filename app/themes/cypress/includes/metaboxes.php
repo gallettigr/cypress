@@ -75,6 +75,7 @@ function cypress_metaboxes() {
         'label'       => __( 'Section background', 'cypress-theme' ),
         'id'          => 'project_preview_bg',
         'type'        => 'upload',
+        'class'       => 'ot-upload-attachment-id',
       ),
       array(
         'label'       => __( 'Section text tone', 'cypress-theme' ),
@@ -159,12 +160,14 @@ function cypress_metaboxes() {
         'label'       => '<small>' . __( 'SVG Logo', 'cypress-theme' ) . '</small>',
         'id'          => 'project_brand_logo',
         'type'        => 'upload',
+        'class'       => 'ot-upload-attachment-id',
         'condition'   => 'project_brand_check:is(on)'
       ),
       array(
         'label'       => '<small>' . __( 'Side image', 'cypress-theme' ) . '</small>',
         'id'          => 'project_brand_image',
         'type'        => 'upload',
+        'class'       => 'ot-upload-attachment-id',
         'condition'   => 'project_brand_check:is(on)'
       ),
       array(
@@ -221,6 +224,7 @@ function cypress_metaboxes() {
         'label'       => '<small>' . __( 'Section background', 'cypress-theme' ) . '</small>',
         'id'          => 'project_print_background',
         'type'        => 'upload',
+        'class'       => 'ot-upload-attachment-id',
         'condition'   => 'project_print_check:is(on)'
       ),
       array(
@@ -312,6 +316,7 @@ function cypress_metaboxes() {
         'label'       => '<small>' . __( 'Section background', 'cypress-theme' ) . '</small>',
         'id'          => 'project_app_background',
         'type'        => 'upload',
+        'class'       => 'ot-upload-attachment-id',
         'condition'   => 'project_app_check:is(on)'
       ),
       array(
@@ -426,10 +431,32 @@ $services_metabox = array(
     )
   );
 
+$home_metabox = array(
+    'id'          => 'home_metas',
+    'title'       => __( 'Front page extras', 'cypress-theme' ),
+    'desc'        => '',
+    'pages'       => array( 'page' ),
+    'context'     => 'normal',
+    'priority'    => 'high',
+    'fields'      => array(
+      array(
+        'label'       => __( 'Openings background', 'cypress-theme' ),
+        'id'          => 'home_openings',
+        'type'        => 'upload',
+        'class'       => 'ot-upload-attachment-id',
+      ),
+    )
+  );
+
+  $id = ( isset($_GET['post']) ) ? $_GET['post'] : ( isset($_POST['post_ID'] ) ? $_POST['post_ID'] : false);
+  $home = get_page_template_slug($id) == 'layout/home.php';
   if ( function_exists( 'ot_register_meta_box' ) ) :
     ot_register_meta_box( $projects_metabox );
     ot_register_meta_box( $pages_metabox );
     ot_register_meta_box( $posts_metabox );
     ot_register_meta_box( $services_metabox );
+    if( $id && $home ) :
+      ot_register_meta_box( $home_metabox );
+    endif;
   endif;
 }
