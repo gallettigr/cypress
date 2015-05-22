@@ -6,20 +6,33 @@
  * @subpackage Functions
  */
 
-/** Output or return current Cypress version */
-function cypress_version() {
-  echo cypress_get_version();
-}
-    function cypress_get_version() {
-      return cypress()->version;
-    }
+/**
+ * Outputs a given post meta value.
+ *
+ * @uses cypress_get_meta() To get post meta value
+ * @param string $meta The post meta key ID
+ * @param string $default Fallback text if no value is found. Default: false (default Cypress value)
+ * @param int $id The target post ID. Default: false (current post ID)
+ * @return mixed Returns string value or array if it's a group of values.
+ */
 
-/** Output or return current post meta */
 function cypress_meta($meta, $default, $id) {
   echo cypress_get_meta($meta, $default, $id);
 }
-    function cypress_get_meta($meta, $default = 'Dummy post meta by Cypress', $id = false ) {
-      global $post; if( !$id ) $id = $post->ID;
+
+    /**
+     * Returns a given post meta value.
+     *
+     * @uses apply_filter() Filter 'cypress_meta_default' to change the default fallback value.
+     * @uses get_post_meta() Wordpress function to return post meta value given post ID and meta key.
+     * @param string $meta The post meta key ID
+     * @param string $default Fallback text if no value is found. Default: false (default Cypress value)
+     * @param int $id The target post ID. Default: false (current post ID)
+     * @return mixed Returns string value or array if it's a group of values.
+     */
+
+    function cypress_get_meta($meta, $default = false, $id = false ) {
+      global $post; if( !$id ) $id = $post->ID; if( !$default ) $default = apply_filters( 'cypress_meta_default', 'Default dummy meta value by Cypress' );
       $metas = get_post_meta( $post->ID, $meta );
       if( !empty($metas) ) :
         if( count($metas) == 1 ) $metas = $metas[0];
@@ -28,3 +41,39 @@ function cypress_meta($meta, $default, $id) {
         return $default;
       endif;
     }
+
+/**
+ * Returns a cached transient post query. This boosts overall performance.
+ *
+ * @uses wp_parse_args() WordPress function to merge query parameters with default values.
+ * @uses get_transient() WordPress function to retrieve cached query from database
+ * @uses get_posts() WordPress function to retrieve array of posts
+ * @uses set_transient() WordPress function to set a cached query to database
+ * @param string $id Custom query name
+ * @param array $params WP_Query parameters
+ * @param int $hours Expiration time in hours. Default: 24 (one day)
+ * @param bool $cache Whether the data should be added to WordPress cache. Default: false
+ * @return object Returns $posts, an object with query results
+ */
+
+function cypress_query($id, $params, $hours = 24, $cache = false) {
+  $default = array( 'no_found_rows' => true, 'cache_results' => $cache );
+  $query = wp_parse_args($default, $params);
+  $posts = get_transient($id);
+  if( !$posts ) :
+    $posts = get_posts( $query );
+    set_transient( $id, $posts, $hours*60*60 );
+    $posts = get_transient($id);
+  endif;
+  return $posts;
+}
+
+/** Output or return current Cypress version */
+function cypress_version() {
+  echo cypress_get_version();
+}
+    function cypress_get_version() {
+      return cypress()->version;
+    }
+
+

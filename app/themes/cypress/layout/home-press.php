@@ -4,12 +4,12 @@
  */
 
  ?>
-<?php do_action( 'cypress_query', 'press', array( 'posts_per_page' => 5, 'post_type' => 'post', 'cat' => 6 ) ); ?>
+<?php $posts = cypress_query( 'press', array( 'posts_per_page' => 5, 'post_type' => 'post', 'cat' => 6 ) ); if($posts) : ?>
 <section id="press" class="press">
   <div class="container">
     <h3>Press Releases</h3>
     <ul class="cyrousel">
-    <?php global $cyposts; foreach ($cyposts as $post) : setup_postdata( $post ); ?>
+    <?php foreach ($posts as $post) : setup_postdata( $post ); ?>
       <li class="item">
         <h4><a href="<?php the_permalink() ?>" class="dark"><?php the_title() ?></a></h4>
         <p><?php the_excerpt() ?></p>
@@ -19,3 +19,4 @@
     </ul>
   </div>
 </section>
+<?php endif; ?>

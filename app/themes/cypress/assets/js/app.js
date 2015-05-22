@@ -1,7 +1,7 @@
+// @codekit-append "gui.js";
+// @codekit-append "libs/swiper.jquery.min.js";
 // @codekit-append "libs/jquery.lazyload.js";
 // @codekit-append "libs/bootstrap.js";
-// @codekit-append "gui.js";
-// @codekit-append "libs/boxslider.js";
 $(function() {
   // SHRINK NAV
   $(document).on('scroll resize touchmove', function() {
