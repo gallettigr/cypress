@@ -36,6 +36,7 @@ $(function() {
 
   //CYROUSEL
   $('.cyrousel').cyrousel();
+  $('img.svg').svgifer();
 
   $.cookies({policy: '/policy', confirm: 'Read'});
   $.cyloader();

@@ -106,36 +106,92 @@
 
   ul {
     list-style-type: none;
-    padding-left: 0;
     margin: 0;
+    padding-left: 0;
     text-align: center;
   }
 
   .single {
     color: $gray;
     display: block;
+  }
 
-    span {
+  span {
+    background-color: $main;
+    font-size: 2em;
+    line-height: 2.5em;
+    max-width: 300px;
+    padding: .4em;
+    text-transform: uppercase;
+
+    &:after {
+      content: '\a';
+      white-space: pre-line;
+    }
+
+    &:nth-child(odd) {
+      padding-left: 2em;
+    }
+
+    &:nth-child(even) {
+      padding-right: 2em;
+    }
+
+  }
+}
+
+.careers {
+  min-height: 400px;
+  position: relative;
+
+  .background {
+    left: 0;
+    max-height: 400px;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 0;
+
+    img {
+      min-height: 200%;
+      min-width: 100%;
+    }
+  }
+
+  .blocks {
+    margin-top: 6em;
+    position: relative;
+    z-index: 3;
+
+    .item {
+      background-color: $gray;
+      color: $main;
+      padding: 3em;
+
+      h3 {
+        border-bottom: solid $main 1px;
+        color: inherit;
+        margin: 0 0 .5em;
+        padding-bottom: .5em;
+      }
+
+      p {
+        font-size: 2em;
+        line-height: 1em;
+        margin: 0;
+        text-transform: uppercase;
+      }
+    }
+
+    .item:last-child {
       background-color: $main;
-      padding: .4em;
-      font-size: 2em;
-      text-transform: uppercase;
-      line-height: 2.5em;
-      max-width: 300px;
+      color: $gray;
+      margin-left: 1em;
 
-      &:after {
-        content: '\a';
-        white-space: pre-line;
+      h3 {
+        border-bottom-color: $gray;
       }
-
-      &:nth-child(odd) {
-        padding-left: 2em;
-      }
-
-      &:nth-child(even) {
-        padding-right: 2em;
-      }
-
     }
   }
 }

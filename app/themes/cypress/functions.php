@@ -293,7 +293,7 @@ function cypress_project_services() {
   echo implode(' / ', $services);
 
 }
-add_action( 'cypress_echo_services', 'cypress_project_services' );
+add_action( 'cypress_project_services', 'cypress_project_services' );
 
 // THEME OPTIONS AND METABOXES
 require_once( trailingslashit(get_template_directory()) . 'includes/metaboxes.php' );

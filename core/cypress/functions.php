@@ -13,10 +13,9 @@
  * @param string $meta The post meta key ID
  * @param string $default Fallback text if no value is found. Default: false (default Cypress value)
  * @param int $id The target post ID. Default: false (current post ID)
- * @return mixed Returns string value or array if it's a group of values.
  */
 
-function cypress_meta($meta, $default, $id) {
+function cypress_meta($meta, $default = false, $id = false) {
   echo cypress_get_meta($meta, $default, $id);
 }
 
@@ -24,15 +23,15 @@ function cypress_meta($meta, $default, $id) {
      * Returns a given post meta value.
      *
      * @uses apply_filter() Filter 'cypress_meta_default' to change the default fallback value.
-     * @uses get_post_meta() Wordpress function to return post meta value given post ID and meta key.
+     * @uses get_post_meta() WordPress function to return post meta value given post ID and meta key.
      * @param string $meta The post meta key ID
      * @param string $default Fallback text if no value is found. Default: false (default Cypress value)
      * @param int $id The target post ID. Default: false (current post ID)
-     * @return mixed Returns string value or array if it's a group of values.
+     * @return mixed String value or array if it's a group of values.
      */
 
     function cypress_get_meta($meta, $default = false, $id = false ) {
-      global $post; if( !$id ) $id = $post->ID; if( !$default ) $default = apply_filters( 'cypress_meta_default', 'Default dummy meta value by Cypress' );
+      global $post; if( !$id ) $id = $post->ID; if( !$default ) $default = apply_filters( 'cypress_meta_default', __('Default dummy meta value by Cypress') );
       $metas = get_post_meta( $post->ID, $meta );
       if( !empty($metas) ) :
         if( count($metas) == 1 ) $metas = $metas[0];
@@ -53,7 +52,7 @@ function cypress_meta($meta, $default, $id) {
  * @param array $params WP_Query parameters
  * @param int $hours Expiration time in hours. Default: 24 (one day)
  * @param bool $cache Whether the data should be added to WordPress cache. Default: false
- * @return object Returns $posts, an object with query results
+ * @return object Cached query result object
  */
 
 function cypress_query($id, $params, $hours = 24, $cache = false) {
@@ -68,10 +67,33 @@ function cypress_query($id, $params, $hours = 24, $cache = false) {
   return $posts;
 }
 
-/** Output or return current Cypress version */
+
+
+function cypress_option($id, $default = false) {
+  echo $this->get_ot_option($id, $default);
+}
+
+    function cypress_get_option($id, $default = false) {
+      if( function_exists('ot_get_option') )
+        if( !$default ) $default = apply_filters( 'cypress_options_default', __('Default dummy option value by Cypress') );
+        return ot_get_option( $id, $default );
+    }
+
+/**
+ * Outputs current Cypress version.
+ *
+ * @uses cypress_get_version() To get Cypress version.
+ */
+
 function cypress_version() {
   echo cypress_get_version();
 }
+    /**
+     * Returns current Cypress version.
+     *
+     * @return string Cypress version.
+     */
+
     function cypress_get_version() {
       return cypress()->version;
     }

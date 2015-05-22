@@ -64,5 +64,21 @@ jQuery.fn.extend({
     function resetProgress() {
       progress.css({transition: 'none', width: '0%'});
     }
+  },
+  svgifer: function() {
+    $(this).each(function(){
+      var $img = { 'sel': $(this), 'id': $(this).attr('id'), 'class': $(this).attr('class'), 'src': $(this).attr('src') };
+      $.get($img.src, function(data){
+        var $svg = $(data).find('svg');
+        if(typeof $img.id !== 'undefined') {
+          $svg = $svg.attr('id', $img.id);
+        }
+        if(typeof $img.class !== 'undefined') {
+          $svg = $svg.attr('class', $img.class + ' svgifer');
+        }
+        $svg = $svg.removeAttr('xmlns:a');
+        $img.sel.replaceWith($svg);
+      }, 'xml');
+    });
   }
 });

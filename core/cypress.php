@@ -426,11 +426,6 @@ class Cypress {
   Callbacks
    */
   public function Callbacks() {
-    add_action( 'cypress_get_option', array($this, 'get_ot_option'), 10, 2 );
-    add_action( 'cypress_echo_option', array($this, 'echo_ot_option'), 10, 2 );
-    add_action( 'cypress_get_meta', array($this, 'get_cypress_post_meta'), 10, 2 );
-    add_action( 'cypress_echo_meta', array($this, 'echo_cypress_post_meta'), 10, 2 );
-    add_action( 'cypress_query', array($this, 'cypress_transient_query'), 10, 4 );
   }
 
 
@@ -447,45 +442,6 @@ class Cypress {
     $html .= "<blockquote>Thanks for using Cypress. Documentation coming soon. Visit <a href='https://github.com/gallettigr/cypress'>our repo</a> to read more about it.</blockquote>";
     echo $html;
   }
-
-  public function get_ot_option($id, $default = 'Cypress') {
-    if( function_exists('ot_get_option') )
-      return ot_get_option( $id, $default );
-  }
-
-  public function echo_ot_option($id, $default = 'Cypress') {
-    echo $this->get_ot_option($id, $default);
-  }
-
-  public function get_cypress_post_meta($meta, $default = 'Cypress') {
-    global $post;
-    static $metas = false;
-    $metas = get_post_meta( $post->ID, $meta );
-    if( !empty($metas) ) :
-      if( count($metas) == 1 ) : $metas = $metas[0]; endif;
-    else:
-      $metas = $default;
-    endif;
-    return $metas;
-  }
-
-  public function echo_cypress_post_meta($meta, $default = 'Cypress') {
-    echo $this->get_cypress_post_meta($meta, $default);
-  }
-
-  public function cypress_transient_query($id, $params, $time = 60*60*24, $cache = true) {
-    global $cyposts;
-    $default = array( 'no_found_rows' => true ); if(!$cache) $default['cache_results'] = false;
-    $query = wp_parse_args($default, $params);
-    $cyposts = get_transient($id);
-    if( !$cyposts ) :
-      $posts = get_posts( $query );
-      set_transient( $id, $posts, $time );
-      $cyposts = get_transient($id);
-    endif;
-    return $cyposts;
-  }
-
 
   private function uri_cleaner($src) {
     $src = remove_query_arg( array('ver','version'), $src );
