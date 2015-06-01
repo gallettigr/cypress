@@ -195,3 +195,25 @@
     }
   }
 }
+
+.clients {
+  background-color: lighten($gray, 65%);
+  padding: 3em inherit;
+
+  h4 {
+    color: $gray;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .preview {
+    background-color: transparent;
+    border: 0;
+    filter: grayscale(100%);
+    min-height: 160px;
+    padding: 2em;
+    pointer-events: none;
+    user-select: none;
+    width: 100%;
+  }
+}
