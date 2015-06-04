@@ -52,6 +52,7 @@ function cypress_meta($meta, $default = false, $id = false) {
  * @param array $params WP_Query parameters
  * @param int $hours Expiration time in hours. Default: 24 (one day)
  * @param bool $cache Whether the data should be added to WordPress cache. Default: false
+ * @param int|bool $random Number of random elements to return from query. If set to true returns all elements in random order. Default: false (show all elements)
  * @return object Cached query result object
  */
 
@@ -70,29 +71,6 @@ function cypress_query($id, $params, $hours = 24, $cache = false, $random = fals
   endif;
   return $posts;
 }
-
-/**
- * Returns a randomized array of objects.
- *
- * @uses wp_parse_args() WordPress function to merge query parameters with default values.
- * @uses get_transient() WordPress function to retrieve cached query from database
- * @uses get_posts() WordPress function to retrieve array of posts
- * @uses set_transient() WordPress function to set a cached query to database
- * @param string $id Custom query name
- * @param array $params WP_Query parameters
- * @param int $hours Expiration time in hours. Default: 24 (one day)
- * @param bool $cache Whether the data should be added to WordPress cache. Default: false
- * @return object Cached query result object
- */
-
-function cypress_rand($posts, $limit = false) {
-  if( !is_numeric($limit) ) $limit = count($posts);
-  shuffle($posts); $posts = array_slice($posts, 0, $limit);
-  return $posts;
-}
-
-
-
 
 function cypress_option($id, $default = false) {
   echo $this->get_ot_option($id, $default);

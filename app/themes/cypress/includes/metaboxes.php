@@ -157,13 +157,6 @@ function cypress_metaboxes() {
         'condition'   => 'project_brand_check:is(on)'
       ),
       array(
-        'label'       => '<small>' . __( 'SVG Logo', 'cypress-theme' ) . '</small>',
-        'id'          => 'project_brand_logo',
-        'type'        => 'upload',
-        'class'       => 'ot-upload-attachment-id',
-        'condition'   => 'project_brand_check:is(on)'
-      ),
-      array(
         'label'       => '<small>' . __( 'Side image', 'cypress-theme' ) . '</small>',
         'id'          => 'project_brand_image',
         'type'        => 'upload',

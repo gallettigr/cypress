@@ -15,6 +15,7 @@ if ( ! function_exists( 'cypress_setup' ) ) :
   	add_theme_support( 'post-thumbnails' );
       add_image_size('intro', 1280);
       add_image_size('preview', 700, 700, true);
+      add_image_size('screenshot', 640 , 480, true);
 
     add_theme_support( 'web-app', array(
       'name' => 'Cypress', // App name
@@ -28,9 +29,9 @@ if ( ! function_exists( 'cypress_setup' ) ) :
     add_theme_support( 'cypress', array( 'secure', 'hidden', 'lazy-load', 'js' ) );
 
     add_theme_support( 'open-graph', array(
-      'tw_username' => 'gallettigr',
-      'fb_appid' => '1611715415714285',
-      'copyright' => 'Cypress Framework',
+      'twitter:site' => '@gallettigr',
+      'fb:app_id' => '1611715415714285',
+      'copyright' => '&copy; 2015 Cypress',
       'developer' => 'Giammarco Galletti <gallettigr@mail.ru>'
     ) );
 
@@ -50,7 +51,6 @@ if ( ! function_exists( 'cypress_setup' ) ) :
   }
 endif;
 add_action( 'after_setup_theme', 'cypress_setup' );
-
 
 
 function cypress_widgets_init() {
