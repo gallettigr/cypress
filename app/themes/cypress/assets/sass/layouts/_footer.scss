@@ -1,0 +1,41 @@
+[role="site-footer"] {
+  background-color: $secondary;
+  color: #fff;
+  padding-top: 3em;
+
+  h3 {
+    color: $main;
+    font-size: 1.4em;
+    margin: 0 0 1em;
+    text-transform: uppercase;
+  }
+
+  .logo {
+    margin-bottom: 3em;
+  }
+
+  ul {
+    list-style-type: none;
+    padding-left: 0;
+  }
+
+  .navigation li {
+    display: inline-flex;
+    width: 50%;
+  }
+
+  .navigation a {
+    color: #fff;
+    padding: .2em 0;
+    text-decoration: none;
+  }
+
+  .active a {
+    border-bottom: 1px solid $main;
+    color: $main;
+  }
+
+  .icons li {
+    display: inline-flex;
+  }
+}

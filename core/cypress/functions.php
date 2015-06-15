@@ -82,6 +82,16 @@ function cypress_option($id, $default = false) {
         return ot_get_option( $id, $default );
     }
 
+function cypress_is_older($target, $current = false) {
+  global $post;
+  if( !$current ) $current = $post;
+  if( $current->ID > $target->ID ) :
+    return true;
+  else:
+    return false;
+  endif;
+}
+
 /**
  * Outputs current Cypress version.
  *

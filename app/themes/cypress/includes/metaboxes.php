@@ -441,8 +441,41 @@ $home_metabox = array(
     )
   );
 
+$about_metabox = array(
+  'id'          => 'about_metas',
+  'title'       => __( 'About Page', 'cypress-theme' ),
+  'desc'        => '',
+  'pages'       => array( 'page' ),
+  'context'     => 'normal',
+  'priority'    => 'high',
+  'fields'      => array(
+    array(
+      'id'          => 'about_sections',
+      'label'       => __( 'Sections', 'cypress-theme' ),
+      'type'        => 'list-item',
+      'operator'    => 'and',
+      'settings'    => array(
+        array(
+          'label'       => __( 'Contenuto', 'cypress-theme' ),
+          'id'          => 'section_body',
+          'type'        => 'textarea',
+          'operator'    => 'and'
+        ),
+        array(
+          'label'       => __( 'Immagine', 'cypress-theme' ),
+          'id'          => 'section_image',
+          'type'        => 'upload',
+          'class'       => 'ot-upload-attachment-id',
+          'operator'    => 'and'
+        ),
+      )
+    )
+  )
+);
+
   $id = ( isset($_GET['post']) ) ? $_GET['post'] : ( isset($_POST['post_ID'] ) ? $_POST['post_ID'] : false);
   $home = get_page_template_slug($id) == 'layout/home.php';
+  $about = get_page_template_slug($id) == 'layout/about.php';
   if ( function_exists( 'ot_register_meta_box' ) ) :
     ot_register_meta_box( $projects_metabox );
     ot_register_meta_box( $pages_metabox );
@@ -450,6 +483,9 @@ $home_metabox = array(
     ot_register_meta_box( $services_metabox );
     if( $id && $home ) :
       ot_register_meta_box( $home_metabox );
+    endif;
+    if( $id && $about ) :
+      ot_register_meta_box( $about_metabox );
     endif;
   endif;
 }

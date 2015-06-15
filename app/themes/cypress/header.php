@@ -18,7 +18,7 @@
 <body <?php body_class(); ?>>
   <div id="canvas">
 	<a class="skip-link screen-reader-text" href="#content"><?php _e('Skip to content', 'cypress-theme'); ?></a>
-	<header id="menu-bar" class="site-header" role="banner">
+	<header id="menu-bar" class="site-header" role="header">
 		<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
 		  <div class="container">
 		    <div class="navbar-header">
@@ -32,14 +32,9 @@
     		</div>
 
   			<div class="navbar-collapse collapse" id="menu" role="menu">
-          <form class="navbar-form navbar-right" role="search" method="get" id="searchform" action="<?php echo esc_url( home_url( '/' ) ); ?>">
-            <div class="form-control-wrapper">
-                <input name="s" id="s" type="text" class="form-control col-lg-8" placeholder="<?php  _e('Search','cypress-theme'); ?>">
-              </div>
-          </form>
           <?php wp_nav_menu( array( 'menu' => 'primary', 'theme_location' => 'primary', 'menu_class' => 'nav navbar-nav navbar-right') ); ?>
-    		</div> <!-- #menu -->
-    	</div><!-- .container -->
-		</nav><!-- .navbar -->
-	</header><!-- #menu-bar -->
+    		</div>
+    	</div>
+		</nav>
+	</header>
   <?php get_template_part( 'layout/header', 'intro' ); ?>

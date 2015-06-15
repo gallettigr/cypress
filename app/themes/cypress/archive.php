@@ -10,42 +10,57 @@
 
 get_header(); ?>
 
-<div class="container">
-  <div class="row">
-
-  <div id="primary" class="col-md-8 col-lg-8">
-    <main id="main" class="site-main" role="main">
-
-      <?php if ( have_posts() ) : ?>
-
-        <header>
-          <?php
-            the_archive_title( '<h1 class="page-title">', '</h1>' );
-            the_archive_description( '<div class="taxonomy-description">', '</div>' );
-          ?>
-        </header><!-- .page-header -->
-
-        <?php /* Start the Loop */ ?>
-        <?php while ( have_posts() ) : the_post(); ?>
-
-          <?php
-            /* Include the Post-Format-specific template for the content.
-             * If you want to override this in a child theme, then include a file
-             * called content-___.php (where ___ is the Post Format name) and that will be used instead.
-             */
-            get_template_part( 'content', get_post_format() );
-          ?>
-
-        <?php endwhile; ?>
-
-      <?php else : ?>
-
-        <?php get_template_part( 'content', 'none' ); ?>
-
+<section class="archive blog index" role="blog">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 content" role="content">
+      <?php if ( have_posts() ) :  while ( have_posts() ) : the_post(); $type = get_post_type($post); ?>
+        <?php if( in_array($type, array('post') ) ) : $cat = get_the_category()[0]; ?>
+        <div class="item <?php echo $cat->slug ?>">
+          <div role="post-head">
+            <div class="info">
+              <span class="date"><?php the_time('d F Y'); ?></span>
+              <span class="category"><?php echo $cat->name ?></span>
+            </div>
+            <a class="read-more" href="<?php the_permalink() ?>" title="<?php the_title(); echo ' in ' . $cat->name; ?>"><?php _e('Leggi articolo', 'cypress-theme') ?></a>
+            <div class="shader"></div>
+            <?php the_post_thumbnail('screenshot', array( 'class' => 'img-responsive' ) ); ?>
+          </div>
+          <div role="post-summary">
+            <h3><a href="<?php the_permalink() ?>" title="<?php the_title() ?>"><?php the_title() ?></a></h3>
+            <p><?php the_excerpt() ?></p>
+          </div>
+        </div>
+        <?php elseif( in_array($type, array('page') ) ) : ?>
+        <div class="item">
+          <div role="post-head">
+            <div class="info">
+              <span class="category">Page</span>
+            </div>
+            <a class="read-more" href="<?php the_permalink() ?>" title="<?php the_title(); ?>"><?php _e('Visualizza', 'cypress-theme') ?></a>
+            <div class="shader"></div>
+            <?php the_post_thumbnail('screenshot', array( 'class' => 'img-responsive' ) ); ?>
+          </div>
+          <div role="post-summary">
+            <h3><a href="<?php the_permalink() ?>" title="<?php the_title() ?>"><?php the_title() ?></a></h3>
+          </div>
+        </div>
+      <?php else: ?>
+        <div class="notice">
+          <h3><?php _e('Woah, non così di fretta!') ?></h3>
+          <p>Ci hai beccato... Quello che cercavi non possiamo ancora fartelo vedere. Ci stiamo lavorando, quindi non metterci fretta!</p>
+        </div>
+      <?php endif; endwhile; else: ?>
+        <div class="notice">
+          <h3><?php _e('Spiacenti, non ci sono risultati!') ?></h3>
+          <p>La ricerca non ha prodotto risultati. Prova con un altra parola o clicca qui per tornare alla homepage.</p>
+        </div>
       <?php endif; ?>
-
-    </main><!-- #main -->
-  </div><!-- #primary -->
-
-<?php get_sidebar(); ?>
+      </div>
+      <div id="sidebar" class="col-md-4 sidebar" role="sidebar">
+        <?php get_sidebar('blog') ?>
+      </div>
+    </div>
+  </div>
+</section>
 <?php get_footer(); ?>

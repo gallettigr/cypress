@@ -1,0 +1,155 @@
+$categories: ("features": $yellow, "news": $main, "trending": $blue);
+
+[role="blog"] {
+  margin-top: 3em;
+
+  // MAIN
+  @each $cat, $color in $categories {
+    .#{$cat} {
+      h3 {
+        border-bottom-color: $color;
+      }
+
+      [role="post-head"] {
+        .category {
+          background-color: $color;
+        }
+      }
+
+      [role="post-content"] {
+        a {
+          color: $color;
+        }
+
+        blockquote {
+          border-left-color: $color;
+        }
+      }
+    }
+  }
+
+  h3 {
+    border-bottom: 1px solid $main;
+    font-size: 1.8em;
+    margin: 0 0 .5em;
+    padding-bottom: .5em;
+    text-transform: uppercase;
+
+    a {
+      color: $secondary;
+      text-decoration: none;
+    }
+  }
+
+  [role="post-head"] {
+    position: relative;
+
+    .info {
+      display: flex;
+      margin-bottom: 2em;
+
+      div,
+      span {
+        cursor: default;
+        padding: 1em 2em;
+        user-select: none;
+      }
+    }
+
+    .category {
+      background-color: $secondary;
+      color: #fff;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .date {
+      background-color: lighten($light, 5%);
+    }
+
+  }
+
+  .read-more {
+    @extend %btn-outline;
+  }
+
+  [role="post-summary"] {
+    padding: 2em;
+  }
+
+  [role="post-content"] {
+    .inner {
+      background-color: lighten($light, 5%);
+      padding: 1em 2em;
+    }
+
+    blockquote {
+      em {
+        display: block;
+        text-align: right;
+      }
+    }
+  }
+
+  // BLOG INDEX
+  &.index [role="post-head"] {
+    img {
+      border: 0;
+      border-radius: 0;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+    }
+
+    .info {
+      display: inline-flex;
+      position: absolute;
+      right: 0;
+      top: 0;
+      z-index: 5;
+    }
+  }
+
+  .item {
+    background-color: lighten($light, 5%);
+    margin-bottom: 6em;
+    position: relative;
+  }
+
+  &.post {
+    margin-bottom: 3em;
+
+    .category {
+      text-align: right;
+    }
+
+    [role="post-content"] p {
+      font-size: 1.2em;
+    }
+
+    img {
+      border: 10px solid $light;
+      display: flex;
+      margin: 1em auto;
+    }
+  }
+}
+
+.reader {
+  margin-bottom: 3em;
+
+  .item {
+    padding: 0;
+
+    span {
+      @extend %btn-outline;
+    }
+  }
+
+  img {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+}

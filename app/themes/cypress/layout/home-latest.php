@@ -18,9 +18,9 @@
       </div>
       <div class="col-sm-5 col-md-4 col-lg-6 details">
         <h4 class="heading"><?php _e('Latest work', 'cypress-theme') ?></h4>
-        <h5 class="client"><?php _e('Client', 'cypress-theme') ?></h5>
+        <h5 class="client"><?php _e('Cliente', 'cypress-theme') ?></h5>
           <p><?php echo get_the_title( cypress_get_meta( 'project_client', 'Cypress' ) ); ?></p>
-        <h5 class="services"><?php _e('Services') ?></h5>
+        <h5 class="services"><?php _e('Servizi') ?></h5>
           <p><?php do_action('cypress_project_services'); ?></p>
         <p class="peek"><?php the_excerpt() ?></p>
       </div>

@@ -3,6 +3,7 @@
 // @codekit-append "libs/jquery.lazyload.js";
 // @codekit-append "libs/bootstrap.js";
 $(function() {
+
   // SHRINK NAV
   $(document).on('scroll resize touchmove', function() {
     var brand = $('#logo .lettering, #logo .brand'),

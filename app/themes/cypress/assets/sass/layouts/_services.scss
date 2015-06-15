@@ -1,0 +1,40 @@
+.services {
+  .summary {
+    background-color: $main;
+    padding: 4em inherit;
+  }
+
+  .services {
+    h5 {
+      font-weight: 900;
+    }
+
+    i {
+      font-size: 2em;
+      margin-right: .5em;
+    }
+
+    img {
+      border: 0;
+      margin: 0;
+    }
+  }
+
+  .core.services {
+    margin-bottom: 4em;
+
+    .item {
+      margin-top: 4em;
+    }
+
+    .item:not(:last-child) {
+      border-bottom: 1px solid $light;
+      padding-bottom: 4em;
+    }
+  }
+
+  .secondary.services {
+    background-color: $main;
+    padding: 4em inherit;
+  }
+}

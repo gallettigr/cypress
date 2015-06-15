@@ -4,7 +4,7 @@
  */
 
  ?>
-<?php $posts = cypress_query( 'services', array( 'posts_per_page' => -1, 'post_type' => 'services', 'order_by' => 'title', 'order' => 'ASC' ), 48 ); if( $posts ) : ?>
+<?php $posts = cypress_query( 'services', array( 'posts_per_page' => -1, 'post_type' => 'services', 'order' => 'ASC', 'orderby' => 'menu_order' ), 48 ); if( $posts ) : ?>
 <section id="services" class="bkg-main hidden-xs">
   <div class="container">
     <div class="cyslider">

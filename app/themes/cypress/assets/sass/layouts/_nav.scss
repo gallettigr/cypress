@@ -1,33 +1,49 @@
-#menu-bar {
-  nav {
+[role="header"] {
+
+  [role="navigation"] {
     background-color: transparent;
     box-shadow: none;
-    a {
+
+    li a {
       color: #fff;
     }
 
+    .active a {
+      background-color: transparent;
+      border-bottom: 2px solid $main;
+      color: $main;
+      font-weight: 900;
+
+      &:hover {
+        background-color: $main;
+        color: $secondary;
+      }
+    }
+
+    .navbar-brand {
+      color: #fff;
+    }
+
+    .navbar-toggle .icon-bar {
+      background-color: #fff;
+    }
+
+    [role="menu"] {
+      border: 0;
+      box-shadow: none;
+
+      &.in ul,
+      &.collapsing ul {
+        background-color: rgba(#222, .8);
+      }
+    }
+
     &.detached {
-      background-color: rgba($secondary, .7);
-      height: 40px;
-      min-height: 40px;
-      overflow: hidden;
+      background-color: $secondary;
+    }
 
-      .logo .icon {
-        font-size: 0.6em;
-        color: $main;
-      }
-
-      a {
-        padding: 10px;
-      }
-
-      form {
-        display: none;
-      }
-
-      .navbar-brand {
-        padding: 5px 0;
-      }
+    ul {
+      margin-bottom: 0;
     }
   }
 }

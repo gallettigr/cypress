@@ -16,6 +16,8 @@ if ( ! function_exists( 'cypress_setup' ) ) :
       add_image_size('intro', 1280);
       add_image_size('preview', 700, 700, true);
       add_image_size('screenshot', 640 , 480, true);
+      add_image_size('square', 600 , 600, true);
+
 
     add_theme_support( 'web-app', array(
       'name' => 'Cypress', // App name
@@ -74,6 +76,7 @@ function cypress_scripts() {
   wp_register_script('public', get_template_directory_uri() . '/assets/js/public.min.js', array('jquery'), null, true );
 
   wp_enqueue_style('app');
+  wp_enqueue_style('font-awesome');
   wp_enqueue_script('app');
 }
 add_action( 'wp_enqueue_scripts', 'cypress_scripts' );
@@ -297,4 +300,4 @@ add_action( 'cypress_project_services', 'cypress_project_services' );
 
 // THEME OPTIONS AND METABOXES
 require_once( trailingslashit(get_template_directory()) . 'includes/metaboxes.php' );
-require_once( trailingslashit(get_template_directory()) . 'includes/options.php' );
+//require_once( trailingslashit(get_template_directory()) . 'includes/options.php' );

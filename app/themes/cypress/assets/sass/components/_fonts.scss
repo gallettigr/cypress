@@ -1,93 +1,160 @@
 @font-face {
-  font-family: "Mela";
-  src:url("../font/mela/mela.eot");
-  src:url("../font/mela/mela.eot?#iefix") format("embedded-opentype"),
-    url("../font/mela/mela.woff") format("woff"),
-    url("../font/mela/mela.ttf") format("truetype"),
-    url("../font/mela/mela.svg#mela") format("svg");
+  font-family: 'Mela';
+  src: url('../font/mela/mela.eot');
+  src: url('../font/mela/mela.eot?#iefix') format('embedded-opentype'),
+    url('../font/mela/mela.woff') format('woff'),
+    url('../font/mela/mela.ttf') format('truetype'),
+    url('../font/mela/mela.svg#mela') format('svg');
   font-weight: normal;
   font-style: normal;
 
 }
 
 [icon]:before {
-  font-family: "Mela" !important;
-  font-style: normal !important;
-  font-weight: normal !important;
-  font-variant: normal !important;
-  text-transform: none !important;
-  speak: none;
-  line-height: 0;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   display: inline;
+  font-family: 'Mela' !important;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-style: normal !important;
+  font-variant: normal !important;
+  font-weight: normal !important;
+  line-height: 0;
+  speak: none;
   text-align: center;
+  text-transform: none !important;
   vertical-align: middle;
 }
 
 .icon-brand-bold:before {
-  content: "a";
+  content: 'a';
 }
+
 .icon-brand-light:before {
-  content: "b";
+  content: 'b';
 }
+
 .icon-icon:before {
-  content: "c";
+  content: 'c';
 }
 
 // ICONS
 @font-face {
-  font-family: "Cypress Theme";
-  src:url("../font/icons/cypress-theme.eot");
-  src:url("../font/icons/cypress-theme.eot?#iefix") format("embedded-opentype"),
-    url("../font/icons/cypress-theme.woff") format("woff"),
-    url("../font/icons/cypress-theme.ttf") format("truetype"),
-    url("../font/icons/cypress-theme.svg#cypress-theme") format("svg");
+  font-family: 'Cypress Theme';
+  src: url('../font/icons/cypress-theme.eot');
+  src: url('../font/icons/cypress-theme.eot?#iefix') format('embedded-opentype'),
+    url('../font/icons/cypress-theme.woff') format('woff'),
+    url('../font/icons/cypress-theme.ttf') format('truetype'),
+    url('../font/icons/cypress-theme.svg#cypress-theme') format('svg');
   font-weight: normal;
   font-style: normal;
 }
 
-[class^="cycon-"]:before,
-[class*=" cycon-"]:before {
-  font-family: "Cypress Theme" !important;
-  font-style: normal !important;
-  font-weight: normal !important;
-  font-variant: normal !important;
-  text-transform: none !important;
-  speak: none;
-  line-height: 0;
-  -webkit-font-smoothing: antialiased;
+[class^='cycon-']:before,
+[class*=' cycon-']:before {
+  font-family: 'Cypress Theme' !important;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-style: normal !important;
+  font-variant: normal !important;
+  font-weight: normal !important;
+  line-height: 0;
+  speak: none;
+  text-transform: none !important;
   vertical-align: middle;
 }
 
 .cycon-development:before {
-  content: "a";
+  content: 'a';
 }
+
 .cycon-graphic-design:before {
-  content: "b";
+  content: 'b';
 }
+
 .cycon-icon-design:before {
-  content: "c";
+  content: 'c';
 }
+
 .cycon-logo-design:before {
-  content: "d";
+  content: 'd';
 }
+
 .cycon-packaging:before {
-  content: "e";
+  content: 'e';
 }
+
 .cycon-events:before {
-  content: "g";
+  content: 'g';
 }
+
 .cycon-video:before {
-  content: "h";
+  content: 'h';
 }
+
 .cycon-marketing:before {
-  content: "i";
+  content: 'i';
 }
+
 .cycon-atl:before {
-  content: "f";
+  content: 'f';
 }
+
 .cycon-app-dev:before {
-  content: "j";
+  content: 'j';
+}
+
+.cycon-bubble-comment-streamline-talk:before {
+  content: 'k';
+}
+
+.cycon-love-talk:before {
+  content: 'l';
+}
+
+.cycon-clock:before {
+  content: 'm';
+}
+
+.cycon-coffee:before {
+  content: 'n';
+}
+
+.cycon-dashboard:before {
+  content: 'o';
+}
+
+.cycon-email:before {
+  content: 'p';
+}
+
+.cycon-map:before {
+  content: 'q';
+}
+
+.cycon-settings:before {
+  content: 'r';
+}
+
+.cycon-backpack:before {
+  content: 's';
+}
+
+.cycon-notebook:before {
+  content: 't';
+}
+
+.cycon-ink:before {
+  content: 'u';
+}
+
+.cycon-bomb:before {
+  content: 'v';
+}
+
+.cycon-danger:before {
+  content: 'w';
+}
+
+.cycon-factory:before {
+  content: 'x';
 }

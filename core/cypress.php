@@ -169,10 +169,11 @@ class Cypress {
     add_rewrite_rule( 'plugins/(.*)', APP_RPATH . '/plugins/$1', 'top' );
     add_rewrite_rule( 'uploads/(.*)', APP_RPATH . '/uploads/$1', 'top' );
 
-    add_filter( 'mod_rewrite_rules', function($rules){ $append = "\nOptions All -Indexes\n\nRewriteEngine on\nRewriteCond %{HTTP_HOST} !^www(.*)$ [NC]\nRewriteCond %{HTTP_HOST} !^localhost(.*)$ [NC]\nRewriteRule ^(.*)$ http://www.%{HTTP_HOST}/$1 [R=301,L]\n"; return $rules . $append; } );
     add_filter( 'mod_rewrite_rules', function($rules) {$append = "\n<IfModule mod_deflate.c>\nAddOutputFilterByType DEFLATE text/plain\nAddOutputFilterByType DEFLATE text/html\nAddOutputFilterByType DEFLATE text/xml\nAddOutputFilterByType DEFLATE text/css\nAddOutputFilterByType DEFLATE application/xml\nAddOutputFilterByType DEFLATE application/xhtml+xml\nAddOutputFilterByType DEFLATE application/rss+xml\nAddOutputFilterByType DEFLATE application/javascript\nAddOutputFilterByType DEFLATE application/x-javascript\nAddOutputFilterByType DEFLATE application/x-httpd-php\nAddOutputFilterByType DEFLATE application/x-httpd-fastphp\nAddOutputFilterByType DEFLATE image/svg+xml\nBrowserMatch ^Mozilla/4 gzip-only-text/html\nBrowserMatch ^Mozilla/4\.0[678] no-gzip\nBrowserMatch \bMSI[E] !no-gzip !gzip-only-text/html\nHeader append Vary User-Agent env=!dont-vary\n</IfModule>\n"; return $rules . $append; });
-    if (APP_ENV == 'production')
+    if (APP_ENV == 'production') :
+      add_filter( 'mod_rewrite_rules', function($rules){ $append = "\nOptions All -Indexes\n\nRewriteEngine on\nRewriteCond %{HTTP_HOST} !^www(.*)$ [NC]\nRewriteRule ^(.*)$ http://www.%{HTTP_HOST}/$1 [R=301,L]\n"; return $rules . $append; } );
       add_filter( 'mod_rewrite_rules', function($rules) {$append = "\n".'ExpiresActive Off'."\n".'ExpiresByType image/gif "access plus 30 days"'."\n".'ExpiresByType image/jpeg "access plus 30 days"'."\n".'ExpiresByType image/png "access plus 30 days"'."\n".'ExpiresByType text/css "access plus 1 week"'."\n".'ExpiresByType text/javascript "access plus 1 week"'; return $rules . $append; });
+    endif;
   }
 
   /*
@@ -208,7 +209,7 @@ class Cypress {
     add_filter( 'pre_comment_content', 'esc_html' );
     add_filter('style_loader_tag', function($tag, $handler) { return str_replace( " id='$handler-css'", '', $tag ); },10,2);
     add_filter('wp_headers', function($headers) { unset($headers['X-Pingback']); return $headers; });
-    add_action('wp_head', function(){global $wp_the_query; if ($id = $wp_the_query->get_queried_object_id()) : $data = get_post($id); if($data) $type = $data->post_type; if($type && $type == 'page') : echo '<link rel="canonical" href="' . get_permalink( $id ) . '">'; elseif($type && $type == 'post') : $date = new DateTime($data->post_date); $category = get_the_category($id)[0]->slug; $path = 'articles' . $date->format('/d/m/Y/') . $category . '/' . $data->post_name; echo '<link rel="canonical" href="' . home_url($path) . '">'; endif; endif; });
+    add_action('wp_head', function(){global $wp_the_query; if ($id = $wp_the_query->get_queried_object_id()) : $data = get_post($id); $type = ''; if($data) $type = $data->post_type; if($type && $type == 'page') : echo '<link rel="canonical" href="' . get_permalink( $id ) . '">'; elseif($type && $type == 'post') : $date = new DateTime($data->post_date); $category = get_the_category($id)[0]->slug; $path = 'articles' . $date->format('/d/m/Y/') . $category . '/' . $data->post_name; echo '<link rel="canonical" href="' . home_url($path) . '">'; endif; endif; });
 
     add_filter('style_loader_src', function($src) { return $this->uri_cleaner($src); });
     add_filter('script_loader_src', function($src){ return $this->uri_cleaner($src); });

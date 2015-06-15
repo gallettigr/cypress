@@ -1,0 +1,89 @@
+[role="sidebar"] .widget {
+  margin-bottom: 3em;
+
+  .inner {
+    padding: 1em;
+  }
+
+  h4 {
+    background-color: $light;
+    font-size: 1.5em;
+    margin: 0;
+    padding: .5em;
+    text-align: left;
+  }
+
+  &.socialize {
+    ul {
+      background-color: lighten($light, 5%);
+      list-style-type: none;
+      padding: 2em 0;
+      text-align: center;
+    }
+
+    li {
+      display: inline-flex;
+    }
+
+    a {
+      background-color: $light;
+      color: #fff;
+      font-size: 1.4em;
+      padding: .4em .8em;
+    }
+
+    @each $social, $color in ("facebook": #3b5998, "twitter": #00aced, "google": #dd4b39, "linkedin": #007bb6, "instagram": #517fa4, "pinterest": #cb2027, "youtube": #b00, "dribbble": #ea4c89) {
+      .#{$social} {
+        background-color: $color;
+      }
+    }
+  }
+
+  &.categories {
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    li a {
+      color: $secondary;
+      display: block;
+      padding: 1em;
+      text-decoration: none;
+      text-transform: uppercase;
+
+      span {
+        background-color: $secondary;
+        border-radius: 3px;
+        color: #fff;
+        float: right;
+        padding: 0 .5em;
+      }
+    }
+
+    @each $cat, $color in $categories {
+      ##{$cat} a {
+        border-left: 5px solid darken($color, 10%);
+
+        &.active,
+        &:hover {
+          background-color: $color;
+          color: #fff;
+        }
+      }
+    }
+  }
+
+  &.writus {
+    background-color: lighten($light, 5%);
+
+    a {
+      background-color: #fff;
+      color: $secondary;
+      display: block;
+      padding: 1em;
+      text-align: center;
+      text-decoration: none;
+    }
+  }
+}
