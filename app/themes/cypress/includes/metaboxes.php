@@ -459,6 +459,7 @@ $about_metabox = array(
           'label'       => __( 'Contenuto', 'cypress-theme' ),
           'id'          => 'section_body',
           'type'        => 'textarea',
+          'row'         => '3',
           'operator'    => 'and'
         ),
         array(
@@ -473,9 +474,42 @@ $about_metabox = array(
   )
 );
 
+$contacts_metabox = array(
+  'id'          => 'contacts_metas',
+  'title'       => __( 'Contacts Page', 'cypress-theme' ),
+  'desc'        => '',
+  'pages'       => array( 'page' ),
+  'context'     => 'normal',
+  'priority'    => 'high',
+  'fields'      => array(
+    array(
+      'id'          => 'contacts_joinus_tab',
+      'label'       => __( 'Lavora con noi', 'cypress-theme' ),
+      'type'        => 'tab'
+    ),
+    array(
+      'id'          => 'joinus_title',
+      'label'       => __( 'Call to action', 'cypress-theme' ),
+      'type'        => 'text'
+    ),
+    array(
+      'id'          => 'joinus_email',
+      'label'       => __( 'Email', 'cypress-theme' ),
+      'type'        => 'text'
+    ),
+    array(
+      'id'          => 'joinus_text',
+      'label'       => __( 'Descrizione', 'cypress-theme' ),
+      'type'        => 'textarea',
+      'row'         => '3'
+    )
+  )
+);
+
   $id = ( isset($_GET['post']) ) ? $_GET['post'] : ( isset($_POST['post_ID'] ) ? $_POST['post_ID'] : false);
   $home = get_page_template_slug($id) == 'layout/home.php';
   $about = get_page_template_slug($id) == 'layout/about.php';
+  $contacts = get_page_template_slug($id) == 'layout/contacts.php';
   if ( function_exists( 'ot_register_meta_box' ) ) :
     ot_register_meta_box( $projects_metabox );
     ot_register_meta_box( $pages_metabox );
@@ -486,6 +520,9 @@ $about_metabox = array(
     endif;
     if( $id && $about ) :
       ot_register_meta_box( $about_metabox );
+    endif;
+    if( $id && $contacts ) :
+      ot_register_meta_box( $contacts_metabox );
     endif;
   endif;
 }

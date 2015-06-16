@@ -183,7 +183,7 @@ function cypress_post_types() {
       'not_found'           => __( 'Not found', 'cypress-theme' ),
       'not_found_in_trash'  => __( 'Not found in Trash', 'cypress-theme' ),
     ),
-    'supports'            => array( 'title', 'editor', 'thumbnail' ),
+    'supports'            => array( 'title', 'editor', 'thumbnail', 'page-attributes' ),
     'hierarchical'        => true,
     'public'              => false,
     'show_ui'             => true,

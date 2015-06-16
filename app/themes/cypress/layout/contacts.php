@@ -22,6 +22,17 @@ get_header(); ?>
         <p>Abbiamo un team di professionisti pronti ad offrirti consulenza e nuove idee per sviluppare al meglio la tua azienda.</p>
       </div>
     </div>
+    <div class="row">
+      <div id="join-us" class="join-us">
+      <div class="col-md-6">
+          <h4><?php echo cypress_get_meta( 'joinus_title' ) ?></h4>
+          <p><?php echo cypress_get_meta( 'joinus_text' ) ?></p>
+      </div>
+      <div class="col-md-6">
+        <a href="mailto:<?php echo cypress_get_meta( 'joinus_email' ) ?>">Inviaci il tuo CV</a>
+      </div>
+      </div>
+    </div>
   </div>
 </section>
 <section class="map">

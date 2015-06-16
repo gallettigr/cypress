@@ -8,36 +8,6 @@
   }
 
   .content {
-
-
-    a {
-      background-color: $secondary;
-      color: $main;
-      display: block;
-      font-size: 1.4em;
-      margin-top: 1em;
-      max-width: 50%;
-      overflow: hidden;
-      padding: .5em 1em;
-      position: relative;
-      text-decoration: none;
-    }
-
-    a:after {
-      content: 'p';
-      font-family: 'Cypress Theme';
-      font-size: 1.6em;
-      position: absolute;
-      right: -40px;
-      top: 50%;
-      transform: translateY(-50%);
-      transition: all .5s;
-    }
-
-    a:hover:after {
-      right: 20px;
-    }
-
     ul {
       list-style-type: none;
       padding-left: 0;
@@ -48,6 +18,49 @@
     color: $secondary;
     font-weight: 900;
     padding-bottom: 10px;
+  }
+}
+
+.join-us {
+  background-color: lighten($main, 3%);
+  border-top: 2px solid darken($main, 15%);
+  margin-top: 2em;
+  padding: 2em 0;
+
+  @media (min-width: $screen-md-min) {
+    display: flex;
+  }
+
+  h4 {
+    font-weight: 900;
+  }
+
+  a {
+    background-color: $secondary;
+    color: $main;
+    display: block;
+    font-size: 1.5em;
+    margin-top: 1em;
+    overflow: hidden;
+    padding: .5em 1em;
+    position: relative;
+    text-align: center;
+    text-decoration: none;
+  }
+
+  a:after {
+    content: 'p';
+    font-family: 'Cypress Theme';
+    font-size: 1.6em;
+    position: absolute;
+    right: -40px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: all .5s;
+  }
+
+  a:hover:after {
+    right: 20px;
   }
 }
 
@@ -80,8 +93,8 @@
     padding: 1em 2em;
     position: relative;
     text-decoration: none;
-    transition: all 1s;
     top: -150px;
+    transition: all 1s;
   }
 
   .background {

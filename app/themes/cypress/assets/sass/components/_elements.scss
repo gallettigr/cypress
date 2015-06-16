@@ -92,7 +92,7 @@ a {
 
 // LAYOUT
 .shader {
-  background-color: rgba(#333, .6);
+  background-color: rgba(#333, .4);
   height: 100%;
   left: 0;
   position: absolute;
@@ -149,6 +149,11 @@ img.parallax {
     display: block;
     font-size: 3rem;
     margin: 0;
+  }
+
+  p {
+    color: #fff;
+    font-size: 2rem;
   }
 }
 
