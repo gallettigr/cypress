@@ -4,12 +4,16 @@
  */
   global $post;
   $type = get_post_type($post);
+  function line_break($string) {
+    $words = explode(' ', $string); array_unshift( $words, '<span>' ); array_splice( $words, round( count($words) / 2 ), 0, array('</span><span>') ); array_push( $words, '</span>' );
+    return implode(' ', $words);
+  }
  ?>
 
 <?php if( in_array($type, array('page', 'post', 'projects') ) && has_post_thumbnail($post->ID) && !is_search() && !is_404() && !is_archive() ): ?>
   <section id="intro-<?php echo $post->post_name ?>" class="intro <?php echo $type; if( !is_front_page() && !is_page('contacts') ) echo ' secondary'; ?>">
     <?php $title = cypress_get_meta( 'page_title' ); if( in_array( $type, array('post') ) ) $title = get_the_title($post->ID); ?>
-    <div class="tagline"><h4><?php if( !is_front_page() ) echo $title; ?></h4></div>
+    <div class="tagline"><h4><?php if( !is_front_page() ) echo line_break($title); ?></h4></div>
     <div class="shader intro"></div>
     <?php $attrs = array('class' => 'img-responsive parallax', 'data-parallax' => '0.5'); if(is_front_page() || is_page('contacts') ) $attrs['data-parallax'] = '0.2'; the_post_thumbnail('intro', $attrs ); ?>
   </section>

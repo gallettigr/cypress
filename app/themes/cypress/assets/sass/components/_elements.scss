@@ -183,7 +183,7 @@ img.parallax {
     min-height: 200px;
     opacity: 0;
     padding: 2em 0;
-    position: relative;
+    position: absolute;
     top: 0;
     width: 100%;
     z-index: 0;
@@ -192,7 +192,7 @@ img.parallax {
       max-width: 100%;
       opacity: 1;
       pointer-events: auto;
-      position: absolute;
+      position: relative;
       z-index: 4;
     }
 

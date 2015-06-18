@@ -1,33 +1,51 @@
 [id^="intro-"] {
-  position: relative;
   max-height: 600px;
   overflow: hidden;
+  position: relative;
+
   &.secondary {
     max-height: 400px;
+
     .tagline {
-      top: 50%;
+      top: 40%;
     }
   }
+
   .tagline {
-    position: absolute;
-    width: 100%;
-    top: 80%;
     left: 0;
+    position: absolute;
     text-align: center;
+    top: 50%;
+    width: 100%;
     z-index: 3;
+
     h4 {
-      max-width: 400px;
-      margin: auto;
-      color: $light;
-      user-select: none;
+      color: #fff;
       cursor: default;
+      display: inline-block;
+      font-size: 1.5em;
+      margin: auto;
+      text-transform: uppercase;
+      user-select: none;
+    }
+
+    span {
+      background-color: rgba($main, .6);
+      display: table;
+      margin: .2em auto;
+      padding: .2em .8em;
+
+      &:first-child {
+        font-size: 1.5em;
+      }
     }
   }
+
   img {
     border: 0;
     border-radius: 0;
-    padding: 0;
     margin: 0;
     min-width: 100%;
+    padding: 0;
   }
 }
