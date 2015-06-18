@@ -24,13 +24,13 @@ get_header(); ?>
     </div>
     <div class="row">
       <div id="join-us" class="join-us">
-      <div class="col-md-6">
-          <h4><?php echo cypress_get_meta( 'joinus_title' ) ?></h4>
-          <p><?php echo cypress_get_meta( 'joinus_text' ) ?></p>
-      </div>
-      <div class="col-md-6">
-        <a href="mailto:<?php echo cypress_get_meta( 'joinus_email' ) ?>">Inviaci il tuo CV</a>
-      </div>
+        <div class="col-md-6">
+            <h4><?php echo cypress_get_meta( 'joinus_title' ) ?></h4>
+            <p><?php echo cypress_get_meta( 'joinus_text' ) ?></p>
+        </div>
+        <div class="col-md-6">
+          <a href="mailto:<?php echo cypress_get_meta( 'joinus_email' ) ?>">Inviaci il tuo CV</a>
+        </div>
       </div>
     </div>
   </div>

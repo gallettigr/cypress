@@ -36,5 +36,9 @@
   .secondary.services {
     background-color: $main;
     padding: 4em inherit;
+
+    .item:nth-child(4n) {
+      clear: both;
+    }
   }
 }

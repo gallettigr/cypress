@@ -16,7 +16,7 @@ jQuery.cookies = function(options) {
   });
 
   function notice(){
-      $('body').prepend('<div id="cookies"></div>').addClass(' notice');
+      $('body').prepend('<div id="cookies"></div>').addClass(' cookies-notice');
       $('#cookies').append('<p>' + settings.warning + '</p>');
       if( settings.confirm !== false ) {
         if(settings.policy == false) settings.policy = '#';

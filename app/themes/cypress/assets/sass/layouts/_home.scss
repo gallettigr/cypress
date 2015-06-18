@@ -138,6 +138,10 @@
     &:nth-child(even) {
       left: 2em;
       padding-right: 5em;
+      @media (max-width: $screen-md-max) {
+        left: 0;
+        padding-right: 0;
+      }
     }
 
   }

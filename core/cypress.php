@@ -252,7 +252,7 @@ class Cypress {
       if( $this->cypress_supports('hidden') ):
         if( !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' ) :
             return;
-        elseif( preg_match( '#wp-admin#', strtolower($_SERVER['REQUEST_URI']) ) && !current_user_can('manage_options') ) :
+        elseif( preg_match( '#wp-admin#', strtolower($_SERVER['REQUEST_URI']) ) && !current_user_can('edit_posts') ) :
             wp_redirect( home_url( '/404' ) );
             exit();
         elseif( preg_match( '#wp-login#', strtolower($_SERVER['REQUEST_URI']) ) && $_SERVER['REQUEST_METHOD'] !== "POST") :

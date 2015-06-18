@@ -21,7 +21,7 @@
 <section id="secondary" class="secondary services">
   <div class="container">
     <div class="row">
-      <?php $i = 0; foreach ($posts as $post) : setup_postdata($post); if( $i > 3 ) : ?>
+      <?php $i = 0; foreach ($posts as $post) : setup_postdata($post); if( $i > 2 ) : ?>
       <div class="col-md-4 item">
         <h5><i class="<?php cypress_meta( 'service_icon', 'fa fa-diamond' ); ?>"></i><?php cypress_meta( 'service_title', 'Our great service' ); ?></h5>
         <p><?php the_content(); ?></p>

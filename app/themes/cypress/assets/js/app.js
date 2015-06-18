@@ -39,7 +39,7 @@ $(function() {
   $('.cyrousel').cyrousel();
   $('img.svg').svgifer();
 
-  $.cookies({policy: '/policy', confirm: 'Read'});
+  $.cookies({warning: 'Questo sito o gli strumenti terzi da questo utilizzati si avvalgono del utilizzo dei cookies in quanto necessari per il funzionamento dello stesso e per finalità illustrate nella cookie policy. Chiudendo questa notifica acconsenti all\'uso dei cookies.', close: 'Chiudi'});
   $.cyloader();
 });
 

@@ -14,7 +14,7 @@
           <div class="row">
             <div class="col-xs-12 col-md-4 col-sm-12 heading">
               <i class="icon icon-lg <?php cypress_meta( 'service_icon', 'cycon-development' ); ?>"></i>
-              <h2 class="title"><?php cypress_meta( 'service_title', 'Our great service' ); ?></h2>
+              <h2 class="title"><?php the_title() ?></h2>
             </div>
             <div class="col-md-8 content hidden-xs hidden-sm">
               <p><?php cypress_meta( 'service_description', 'Lorem ipsum Occaecat cillum dolor culpa officia in ad eu ullamco cupidatat fugiat.' ); ?></p>
