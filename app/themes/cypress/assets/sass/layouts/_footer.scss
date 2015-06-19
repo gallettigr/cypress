@@ -4,10 +4,9 @@
   padding-top: 3em;
 
   h3 {
+    @extend %small-title;
     color: $main;
     font-size: 1.4em;
-    margin: 0 0 1em;
-    text-transform: uppercase;
   }
 
   .logo {

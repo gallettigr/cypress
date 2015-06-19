@@ -11,11 +11,11 @@
  ?>
 
 <?php if( in_array($type, array('page', 'post', 'projects') ) && has_post_thumbnail($post->ID) && !is_search() && !is_404() && !is_archive() ): ?>
-  <section id="intro-<?php echo $post->post_name ?>" class="intro <?php echo $type; if( !is_front_page() && !is_page('contacts') ) echo ' secondary'; ?>">
-    <?php $title = cypress_get_meta( 'page_title' ); if( in_array( $type, array('post') ) ) $title = get_the_title($post->ID); ?>
+  <section id="intro-<?php echo $post->post_name ?>" class="intro <?php echo $type; if( !is_front_page() && !is_page_template( 'layout/contacts.php' ) ) echo ' secondary'; ?>">
+    <?php $title = cypress_get_meta( 'page_title' ); if( is_single() ) $title = 'Comunicare mille volti';  if( is_single() && in_category('press-release') ) $title = 'Qualcosa di cui parlare'; ?>
     <div class="tagline"><h4><?php if( !is_front_page() ) echo line_break($title); ?></h4></div>
     <div class="shader intro"></div>
-    <?php $attrs = array('class' => 'img-responsive parallax', 'data-parallax' => '0.5'); if(is_front_page() || is_page('contacts') ) $attrs['data-parallax'] = '0.2'; the_post_thumbnail('intro', $attrs ); ?>
+    <?php $attrs = array('class' => 'img-responsive parallax', 'data-parallax' => '0.2'); if(is_front_page() || is_page_template( 'layout/contacts.php' ) ) $attrs['data-parallax'] = '0.05'; the_post_thumbnail('intro', $attrs ); ?>
   </section>
 <?php elseif( is_search() || is_404() || is_archive() ): $uri = parse_url($_SERVER['REQUEST_URI'])['path']; $query = urldecode( str_replace( '/search/', '', $uri ) ); ?>
   <section id="intro-search" class="intro secondary">

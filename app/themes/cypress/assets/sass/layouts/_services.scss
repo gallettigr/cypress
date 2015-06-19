@@ -1,7 +1,13 @@
 .services {
   .summary {
     background-color: $main;
-    padding: 4em inherit;
+    padding: 2em inherit;
+  }
+
+  h3 {
+    @extend %small-title;
+    border-color: #fff;
+    color: $secondary;
   }
 
   .services {

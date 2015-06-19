@@ -1,10 +1,12 @@
 [id^="intro-"] {
-  max-height: 600px;
+  max-height: 50vw;
+  min-height: 250px;
   overflow: hidden;
   position: relative;
 
   &.secondary {
-    max-height: 400px;
+    max-height: 500px;
+    min-height: 200px;
 
     .tagline {
       top: 40%;

@@ -20,15 +20,15 @@
 }
 
 #cookies {
-  background-color: rgba(darken($main, 15%), .95);
+  background-color: rgba($secondary, .95);
   bottom: 0;
+  color: #fff;
   padding: .5em 2em;
   position: fixed;
   width: 100%;
   z-index: 2000;
 
   p {
-    color: $secondary;
     font-size: 1em;
     margin: 0;
   }
@@ -36,7 +36,12 @@
   button {
     border: 0;
     box-shadow: none;
+    color: #fff;
     float: right;
+  }
+
+  span {
+    color: #fff;
   }
 }
 

@@ -14,9 +14,9 @@
     <div class="row">
       <div class="credits col-sm-4">
         <img class="logo" width="100" src="<?php echo get_template_directory_uri() . '/assets/images/logo.svg' ?>" alt="Mela Communication">
-        <p>Acinus conciliarismus squalidus picturatus erga legatarius corresupinatus torques subduco crucifer attribulo inscitia.</p>
-        <p>P.IVA 1212121221</p>
-        <p>&copy; <?php echo date('Y') ?> Mela Communication </p>
+        <p>Mela Communication è un'agenzia pubblicitaria di Roma specializzata in advertising, BTL, digital e applicazioni mobile.</p>
+        <p>P.IVA 11982381003</p>
+        <p>&copy; <?php echo date('Y') ?> Mela Communication s.r.l.</p>
       </div>
       <div class="navigation col-sm-4">
         <h3>Navigazione</h3>
