@@ -590,6 +590,9 @@ class Cypress {
             add_filter( 'simple_history_show_settings_page', '__return_false');
             add_filter( 'simple_history/page_pager_size', function(){return 100;});
             break;
+          case 'translate':
+            require_once 'lib/translate/qtranslate.php';
+            break;
           case 'oauth':
             require_once 'lib/oauth1/oauth-server.php';
             break;
