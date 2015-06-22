@@ -21,3 +21,6 @@
 [submodule "core/lib/thumbs"]
 	path = core/lib/thumbs
 	url = git@github.com:Viper007Bond/regenerate-thumbnails.git
+[submodule "core/lib/translate"]
+	path = core/lib/translate
+	url = git@github.com:qTranslate-Team/qtranslate-x.git
