@@ -7,3 +7,5 @@ app/uploads/*
 !app/uploads/.gitkeep
 .logs/
 !.logs/.gitkeep
+app/themes/*
+!app/themes/.gitkeep
