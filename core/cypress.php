@@ -408,7 +408,6 @@ class Plugins {
             break;
           case 'sqlite':
             require_once 'lib/sqlite/sqlite-integration.php';
-            define('DB_DIR', CP_PATH . '/config/database/');
             define('DB_FILE', 'db.sqlite');
             break;
         endswitch;
