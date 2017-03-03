@@ -71,11 +71,16 @@ class Cypress {
   }
 
   /*
-  Cypress vendors libraries.
+  Cypress third-party plugins.
    */
   public function Libraries() {
     $plugins = new Plugins();
-    $plugins->add( array('options', 'api', 'history') );
+    $plugins->add(array('options'));
+    if(in_array(APP_ENV, $prod_envs = array('production', 'prod'))) {
+      $plugins->add(array('history', 'cache'));
+    } else {
+      $plugins->add(array('sqlite'));
+    }
   }
 
   /*
@@ -85,7 +90,7 @@ class Cypress {
     load_muplugin_textdomain( 'cypress', basename( dirname(__FILE__) ) . '/languages' );
     if (!defined('WP_DEFAULT_THEME'))
       register_theme_directory(ABSPATH . 'wp-content/themes');
-    if (APP_ENV !== 'production')
+    if (!in_array(APP_ENV, $prod_envs))
       add_action('pre_option_blog_public', '__return_zero');
     $this->define_constant('CP_ASSETS', trailingslashit(home_url()) . 'cypress/core/assets/');
   }
@@ -103,10 +108,11 @@ class Cypress {
     add_rewrite_rule( 'plugins/(.*)', APP_BASE_URL . '/plugins/$1', 'top' );
     add_rewrite_rule( 'uploads/(.*)', APP_BASE_URL . '/uploads/$1', 'top' );
 
-    add_filter( 'mod_rewrite_rules', function($rules){ $append = "\nOptions All -Indexes\n\nRewriteEngine on\nRewriteCond %{HTTP_HOST} !^www(.*)$ [NC]\nRewriteCond %{HTTP_HOST} !^localhost(.*)$ [NC]\nRewriteRule ^(.*)$ http://www.%{HTTP_HOST}/$1 [R=301,L]\n"; return $rules . $append; } );
-    add_filter( 'mod_rewrite_rules', function($rules) {$append = "\n<IfModule mod_deflate.c>\nAddOutputFilterByType DEFLATE text/plain\nAddOutputFilterByType DEFLATE text/html\nAddOutputFilterByType DEFLATE text/xml\nAddOutputFilterByType DEFLATE text/css\nAddOutputFilterByType DEFLATE application/xml\nAddOutputFilterByType DEFLATE application/xhtml+xml\nAddOutputFilterByType DEFLATE application/rss+xml\nAddOutputFilterByType DEFLATE application/javascript\nAddOutputFilterByType DEFLATE application/x-javascript\nAddOutputFilterByType DEFLATE application/x-httpd-php\nAddOutputFilterByType DEFLATE application/x-httpd-fastphp\nAddOutputFilterByType DEFLATE image/svg+xml\nBrowserMatch ^Mozilla/4 gzip-only-text/html\nBrowserMatch ^Mozilla/4\.0[678] no-gzip\nBrowserMatch \bMSI[E] !no-gzip !gzip-only-text/html\nHeader append Vary User-Agent env=!dont-vary\n</IfModule>\n"; return $rules . $append; });
-    if (APP_ENV == 'production')
-      add_filter( 'mod_rewrite_rules', function($rules) {$append = "\n".'ExpiresActive Off'."\n".'ExpiresByType image/gif "access plus 30 days"'."\n".'ExpiresByType image/jpeg "access plus 30 days"'."\n".'ExpiresByType image/png "access plus 30 days"'."\n".'ExpiresByType text/css "access plus 1 week"'."\n".'ExpiresByType text/javascript "access plus 1 week"'; return $rules . $append; });
+    add_filter( 'mod_rewrite_rules', function($rules) { $append = "\nOptions All -Indexes\n\nRewriteEngine on\nRewriteCond %{HTTP_HOST} !^www(.*)$ [NC]\nRewriteCond %{HTTP_HOST} !^localhost(.*)$ [NC]\nRewriteRule ^(.*)$ http://www.%{HTTP_HOST}/$1 [R=301,L]\n"; return $rules . $append; } );
+    add_filter( 'mod_rewrite_rules', function($rules) { $append = "\n<IfModule mod_deflate.c>\nAddOutputFilterByType DEFLATE text/plain\nAddOutputFilterByType DEFLATE text/html\nAddOutputFilterByType DEFLATE text/xml\nAddOutputFilterByType DEFLATE text/css\nAddOutputFilterByType DEFLATE application/xml\nAddOutputFilterByType DEFLATE application/xhtml+xml\nAddOutputFilterByType DEFLATE application/rss+xml\nAddOutputFilterByType DEFLATE application/javascript\nAddOutputFilterByType DEFLATE application/x-javascript\nAddOutputFilterByType DEFLATE application/x-httpd-php\nAddOutputFilterByType DEFLATE application/x-httpd-fastphp\nAddOutputFilterByType DEFLATE image/svg+xml\nBrowserMatch ^Mozilla/4 gzip-only-text/html\nBrowserMatch ^Mozilla/4\.0[678] no-gzip\nBrowserMatch \bMSI[E] !no-gzip !gzip-only-text/html\nHeader append Vary User-Agent env=!dont-vary\n</IfModule>\n"; return $rules . $append; });
+    if (in_array(APP_ENV, $prod_envs ))
+      add_filter( 'mod_rewrite_rules', function($rules) { $append = "\n".'ExpiresActive Off'."\n".'ExpiresByType image/gif "access plus 30 days"'."\n".'ExpiresByType image/jpeg "access plus 30 days"'."\n".'ExpiresByType image/png "access plus 30 days"'."\n".'ExpiresByType text/css "access plus 1 week"'."\n".'ExpiresByType text/javascript "access plus 1 week"'; return $rules . $append; });
+
   }
 
   /*
@@ -116,6 +122,9 @@ class Cypress {
     add_filter( 'xmlrpc_enabled', '__return_false' );
     add_action( 'xmlrpc_call', function() {wp_die( 'XMLRPC disabled by Cypress.', array( 'response' => 403 ) ); });
     add_filter('xmlrpc_methods', function($methods) { unset( $methods['pingback.ping'] ); unset( $methods['pingback.extensions.getPingbacks'] ); unset( $methods['wp.getUsersBlogs'] ); return $methods; });
+    add_filter( 'rest_url_prefix', function(){ return 'api/v1'; } );
+    remove_action( 'wp_head', 'rest_output_link_wp_head' );
+
   }
 
   /*
@@ -152,9 +161,9 @@ class Cypress {
     add_filter('wp_generate_attachment_metadata', function($image) {if (!isset($image['sizes']['large'])) return $image; $upload_dir = wp_upload_dir(); $uploaded_image_location = $upload_dir['basedir'] . '/' .$image['file']; $large_image_location = $upload_dir['path'] . '/'.$image['sizes']['large']['file']; unlink($uploaded_image_location); rename($large_image_location,$uploaded_image_location); $image['width'] = $image['sizes']['large']['width']; $image['height'] = $image['sizes']['large']['height']; unset($image['sizes']['large']); return $image; });
     add_filter('body_class', function($class) {global $post; $class = []; if( is_page() && !is_front_page() ) : $class[] = 'page'; elseif( is_single() ) : $class[] = 'single'; elseif( is_front_page() ) : $class[] = 'home'; elseif( is_archive() ) : $class[] = 'archive'; elseif( is_search() ) : $class[] = 'search'; elseif( is_404() ) : $class[] = '404'; else: $class[] = get_post_type(); endif; if( !is_front_page() && !is_404() && !is_search() ) $class[] = $post->post_name; if( is_page() && $post->post_parent ) : $parents = get_post_ancestors( $post ); $i = 0; foreach ($parents as $parent ) {if($i == 0) $class[] = 'parent-' . get_post($parent)->post_name; $i++; } endif; return $class; });
     add_filter('language_attributes', function($output){return $output .= ' xmlns="http://www.w3.org/1999/xhtml" prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#"'; });
-    add_action('wp_head', function(){if( current_theme_supports( 'open-graph' ) ) : global $post; $meta = ''; if( $this->cypress_support('open-graph', 'copyright') ) $meta .= '<meta name="copyright" content="&copy;' . date('Y') . ' ' . $this->cypress_support('open-graph', 'copyright')  . '">'; if( $this->cypress_support('open-graph', 'tw_username') ) $meta .= '<meta name="twitter:site" content="@' . $this->cypress_support('open-graph', 'tw_username')  . '">'; if( $this->cypress_support('open-graph', 'fb_appid') ) $meta .= '<meta name="fb:app_id" content="' . $this->cypress_support('open-graph', 'fb_appid')  . '">'; if( $this->cypress_support('open-graph', 'developer') ) $meta .= '<meta name="developer" content="' . $this->cypress_support('open-graph', 'developer')  . '">'; $meta .= base64_decode('PG1ldGEgbmFtZT0iZnJhbWV3b3JrIiBjb250ZW50PSJDeXByZXNzIj4='); if( is_404() || is_search() ) return; $meta .= '<meta property="og:url" content="' . get_permalink() . '"/>'; $meta .= '<meta property="og:site_name" content="' . get_bloginfo( 'name' ) . '"/>'; if( is_front_page() ) : $meta .= '<meta name="twitter:card" content="summary">'; $meta .= '<meta property="og:title" content="' . get_bloginfo( 'name' ) . ' | ' . get_bloginfo( 'description' ) . '"/>'; $meta .= '<meta property="og:image" content="' . home_url( 'app/icons/icon-large.png' ) . '" />'; $meta .= '<meta property="og:type" content="website"/>'; $meta .= '<meta property="og:description" content="' . get_bloginfo( 'description' ) . '"/>'; else : if( is_single() ): $meta .= '<meta name="twitter:card" content="summary_large_image"/>'; $meta .= '<meta property="og:type" content="article"/>'; else : $meta .= '<meta name="twitter:card" content="summary">'; $meta .= '<meta property="og:type" content="website"/>'; endif; if( has_post_thumbnail() ) : $meta .= '<meta property="og:image" content="' . wp_get_attachment_image_src( get_post_thumbnail_id(), 'medium' )[0] . '" />'; else : $meta .= '<meta property="og:image" content="' . home_url( 'app/icons/icon-large.png' ) . '" />'; endif; if( has_excerpt() ) : $meta .= '<meta property="og:description" content="' . strip_tags( get_the_excerpt() ) . '"/>'; else : $meta .= '<meta property="og:description" content="' . str_replace( "\r\n", ' ' , substr( strip_tags( strip_shortcodes( $post->post_content ) ), 0, 80 ) ) . '..."/>'; endif; endif; echo $meta; endif; },1);
+    add_action('wp_head', function(){ if( current_theme_supports( 'open-graph' ) ) : global $post; $meta = ''; if( $this->cypress_support('open-graph', 'copyright') ) $meta .= '<meta name="copyright" content="&copy;' . date('Y') . ' ' . $this->cypress_support('open-graph', 'copyright')  . '">'; if( $this->cypress_support('open-graph', 'tw_username') ) $meta .= '<meta name="twitter:site" content="@' . $this->cypress_support('open-graph', 'tw_username')  . '">'; if( $this->cypress_support('open-graph', 'fb_appid') ) $meta .= '<meta name="fb:app_id" content="' . $this->cypress_support('open-graph', 'fb_appid')  . '">'; if( $this->cypress_support('open-graph', 'developer') ) $meta .= '<meta name="developer" content="' . $this->cypress_support('open-graph', 'developer')  . '">'; $meta .= base64_decode('PG1ldGEgbmFtZT0iZnJhbWV3b3JrIiBjb250ZW50PSJDeXByZXNzIj4='); if( is_404() || is_search() ) return; $meta .= '<meta property="og:url" content="' . get_permalink() . '"/>'; $meta .= '<meta property="og:site_name" content="' . get_bloginfo( 'name' ) . '"/>'; if( is_front_page() ) : $meta .= '<meta name="twitter:card" content="summary">'; $meta .= '<meta property="og:title" content="' . get_bloginfo( 'name' ) . ' | ' . get_bloginfo( 'description' ) . '"/>'; $meta .= '<meta property="og:image" content="' . home_url( 'app/icons/icon-large.png' ) . '" />'; $meta .= '<meta property="og:type" content="website"/>'; $meta .= '<meta property="og:description" content="' . get_bloginfo( 'description' ) . '"/>'; else : if( is_single() ): $meta .= '<meta name="twitter:card" content="summary_large_image"/>'; $meta .= '<meta property="og:type" content="article"/>'; else : $meta .= '<meta name="twitter:card" content="summary">'; $meta .= '<meta property="og:type" content="website"/>'; endif; if( has_post_thumbnail() ) : $meta .= '<meta property="og:image" content="' . wp_get_attachment_image_src( get_post_thumbnail_id(), 'medium' )[0] . '" />'; else : $meta .= '<meta property="og:image" content="' . home_url( 'app/icons/icon-large.png' ) . '" />'; endif; if( has_excerpt() ) : $meta .= '<meta property="og:description" content="' . strip_tags( get_the_excerpt() ) . '"/>'; else : $meta .= '<meta property="og:description" content="' . str_replace( "\r\n", ' ' , substr( strip_tags( strip_shortcodes( $post->post_content ) ), 0, 80 ) ) . '..."/>'; endif; endif; echo $meta; endif; },1);
 
-    add_action('wp_head', function(){if( current_theme_supports( 'web-app' ) ) : $meta = "<!-- Web application tags -->\n"; $meta .= "<meta name='application-name' content='{$this->cypress_support('web-app', 'name')}'>\n<meta name='apple-mobile-web-app-title' content='{$this->cypress_support('web-app', 'name')}'>"; if( $this->cypress_support( 'web-app', 'standalone') ) : $meta .= "<meta name='apple-mobile-web-app-capable' content='yes'>\n<meta name='mobile-web-app-capable' content='yes'>"; $meta .= "<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'>"; $meta .= $this->theme_icons(); add_action('wp_footer', function(){ echo '<script>(function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)}})(document,window.navigator,"standalone")</script>'; }); endif; echo $meta; endif; });
+    add_action('wp_head', function(){ if( current_theme_supports( 'web-app' ) ) :$meta = "<!-- Web application tags -->\n"; $meta .= "<meta name='application-name' content='{$this->cypress_support('web-app', 'name')}'>\n<meta name='apple-mobile-web-app-title' content='{$this->cypress_support('web-app', 'name')}'>"; if( $this->cypress_support( 'web-app', 'standalone') ) : $meta .= "<meta name='apple-mobile-web-app-capable' content='yes'>\n<meta name='mobile-web-app-capable' content='yes'>"; $meta .= "<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'>"; $meta .= $this->theme_icons(); add_action('wp_footer', function(){ echo '<script>(function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)}})(document,window.navigator,"standalone")</script>'; }); endif; echo $meta; endif; });
     show_admin_bar(false);
   }
 
@@ -387,11 +396,6 @@ class Plugins {
     if( is_array($plugins) ) :
       foreach ($plugins as $plugins) {
         switch ($plugins) :
-          case 'api':
-            require_once 'lib/api/plugin.php';
-            add_filter( 'rest_url_prefix', function(){ return 'api/v1'; } );
-            remove_action( 'wp_head', 'rest_output_link_wp_head' );
-            break;
           case 'cache':
             require_once 'lib/cache/wp-cache.php';
             break;
@@ -399,11 +403,13 @@ class Plugins {
             require_once 'lib/history/index.php';
             add_filter( 'plugins_url', function($url, $path, $plugin){if( preg_match('#history#', $plugin) ) : $url = str_replace('app/plugins', 'core', $url); endif; return $url; }, 1, 3);
             break;
-          case 'oauth':
-            require_once 'lib/oauth1/oauth-server.php';
-            break;
           case 'options':
             require_once 'lib/options/ot-loader.php';
+            break;
+          case 'sqlite':
+            require_once 'lib/sqlite/sqlite-integration.php';
+            define('DB_DIR', CP_PATH . '/config/database/');
+            define('DB_FILE', 'db.sqlite');
             break;
         endswitch;
       }
