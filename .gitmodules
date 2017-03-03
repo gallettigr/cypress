@@ -10,3 +10,6 @@
 [submodule "wp"]
 	path = wp
 	url = git@github.com:WordPress/WordPress.git
+[submodule "core/lib/sqlite"]
+	path = core/lib/sqlite
+	url = git@github.com:gallettigr/sqlite-integration.git
