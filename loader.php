@@ -7,22 +7,16 @@
  */
 
 /**
- * Require composer vendors. Install them first using PHP Composer from the Cypress folder.
- */
-require_once 'vendor/autoload.php';
-
-/**
  * Load environment variables.
  */
-if ( file_exists( __DIR__ . '/.env') ) {
-  Dotenv::load( __DIR__ );
+if ( file_exists( $dotenv = __DIR__ . '/.env') ) {
+  require_once $dotenv;
 }
-Dotenv::required(array('DB_NAME', 'DB_USER', 'DB_PASSWORD'));
+if (!( getenv('DB_NAME') && getenv('DB_USER') && getenv('DB_PASSWORD') )) throw new RuntimeException("One or more environment variables failed assertions.");
 
 /**
  * Define app constants.
  */
-define('ROOT_PATH', dirname(__DIR__));
 define('CP_PATH', __DIR__ );
 define('CP_DIR', basename(CP_PATH));
 if ( getenv('WP_DIR') ) {
@@ -33,5 +27,3 @@ if ( getenv('WP_DIR') ) {
  * Require configurations.
  */
 require_once 'config/app.php';
-
-?>

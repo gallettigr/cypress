@@ -94,14 +94,14 @@ class Cypress {
   Apache custom rewrite rules and output compression.
    */
   public function Apache() {
-    add_rewrite_rule( 'login/?$', WP_RPATH . '/wp-login.php', 'top' );
-    add_rewrite_rule( 'register/?$', WP_RPATH . '/wp-login.php?action=register', 'top' );
-    add_rewrite_rule( 'retrieve/?$', WP_RPATH . '/wp-login.php?action=lostpassword', 'top' );
-    add_rewrite_rule( 'views/(.*)', trailingslashit(APP_RPATH) . 'themes/' . basename(get_stylesheet_directory()) . '/$1', 'top' );
-    add_rewrite_rule( 'app/(.*)', trailingslashit(APP_RPATH) . 'themes/' . basename(get_stylesheet_directory()) . '/app/$1', 'top' );
-    add_rewrite_rule( 'includes/(.*)', WP_RPATH . '/wp-includes/$1', 'top' );
-    add_rewrite_rule( 'plugins/(.*)', APP_RPATH . '/plugins/$1', 'top' );
-    add_rewrite_rule( 'uploads/(.*)', APP_RPATH . '/uploads/$1', 'top' );
+    add_rewrite_rule( 'login/?$', WP_BASE_URL . '/wp-login.php', 'top' );
+    add_rewrite_rule( 'register/?$', WP_BASE_URL . '/wp-login.php?action=register', 'top' );
+    add_rewrite_rule( 'retrieve/?$', WP_BASE_URL . '/wp-login.php?action=lostpassword', 'top' );
+    add_rewrite_rule( 'views/(.*)', trailingslashit(APP_BASE_URL) . 'themes/' . basename(get_stylesheet_directory()) . '/$1', 'top' );
+    add_rewrite_rule( 'app/(.*)', trailingslashit(APP_BASE_URL) . 'themes/' . basename(get_stylesheet_directory()) . '/app/$1', 'top' );
+    add_rewrite_rule( 'includes/(.*)', WP_BASE_URL . '/wp-includes/$1', 'top' );
+    add_rewrite_rule( 'plugins/(.*)', APP_BASE_URL . '/plugins/$1', 'top' );
+    add_rewrite_rule( 'uploads/(.*)', APP_BASE_URL . '/uploads/$1', 'top' );
 
     add_filter( 'mod_rewrite_rules', function($rules){ $append = "\nOptions All -Indexes\n\nRewriteEngine on\nRewriteCond %{HTTP_HOST} !^www(.*)$ [NC]\nRewriteCond %{HTTP_HOST} !^localhost(.*)$ [NC]\nRewriteRule ^(.*)$ http://www.%{HTTP_HOST}/$1 [R=301,L]\n"; return $rules . $append; } );
     add_filter( 'mod_rewrite_rules', function($rules) {$append = "\n<IfModule mod_deflate.c>\nAddOutputFilterByType DEFLATE text/plain\nAddOutputFilterByType DEFLATE text/html\nAddOutputFilterByType DEFLATE text/xml\nAddOutputFilterByType DEFLATE text/css\nAddOutputFilterByType DEFLATE application/xml\nAddOutputFilterByType DEFLATE application/xhtml+xml\nAddOutputFilterByType DEFLATE application/rss+xml\nAddOutputFilterByType DEFLATE application/javascript\nAddOutputFilterByType DEFLATE application/x-javascript\nAddOutputFilterByType DEFLATE application/x-httpd-php\nAddOutputFilterByType DEFLATE application/x-httpd-fastphp\nAddOutputFilterByType DEFLATE image/svg+xml\nBrowserMatch ^Mozilla/4 gzip-only-text/html\nBrowserMatch ^Mozilla/4\.0[678] no-gzip\nBrowserMatch \bMSI[E] !no-gzip !gzip-only-text/html\nHeader append Vary User-Agent env=!dont-vary\n</IfModule>\n"; return $rules . $append; });
@@ -340,7 +340,7 @@ class Cypress {
    * Signup: Cypress AJAX signup function. Used by Cypress Auth.
    */
 
-  private function uri_cleaner($src) {$src = remove_query_arg( array('ver','version'), $src ); if( preg_match('#wp-includes#', $src) ) : $src = str_replace(WP_RPATH . '/wp-includes', 'includes', $src); elseif( preg_match('#' . APP_RPATH . '#', $src) ) : $src = str_replace(trailingslashit(APP_RPATH) . 'themes/' . basename(get_stylesheet_directory()), 'views', $src); $src = str_replace(APP_RPATH . '/plugins', 'plugins', $src); $src = str_replace(APP_RPATH . '/uploads', 'uploads', $src); endif; $async = strpos($src, '?async'); $defer = strpos($src, '?defer'); if ( !$async && $defer ) : echo '<script type="text/javascript" defer src="' . str_replace('?defer', '', $src) . '"></script>'; elseif ( $async && !$defer ) : echo '<script type="text/javascript" async src="' . str_replace('?async', '', $src) . '"></script>'; elseif ( $async && $defer ) : echo '<script type="text/javascript" async defer src="' . str_replace(array('?async','?defer'), '', $src) . '"></script>'; else : return $src; endif; }
+  private function uri_cleaner($src) {$src = remove_query_arg( array('ver','version'), $src ); if( preg_match('#wp-includes#', $src) ) : $src = str_replace(WP_BASE_URL . '/wp-includes', 'includes', $src); elseif( preg_match('#' . APP_BASE_URL . '#', $src) ) : $src = str_replace(trailingslashit(APP_BASE_URL) . 'themes/' . basename(get_stylesheet_directory()), 'views', $src); $src = str_replace(APP_BASE_URL . '/plugins', 'plugins', $src); $src = str_replace(APP_BASE_URL . '/uploads', 'uploads', $src); endif; $async = strpos($src, '?async'); $defer = strpos($src, '?defer'); if ( !$async && $defer ) : echo '<script type="text/javascript" defer src="' . str_replace('?defer', '', $src) . '"></script>'; elseif ( $async && !$defer ) : echo '<script type="text/javascript" async src="' . str_replace('?async', '', $src) . '"></script>'; elseif ( $async && $defer ) : echo '<script type="text/javascript" async defer src="' . str_replace(array('?async','?defer'), '', $src) . '"></script>'; else : return $src; endif; }
   private function cypress_support($feature, $field = false, $sub = false, $value = false) {$support = get_theme_support($feature)[0]; if( !empty($field) ) $support = $support[$field]; if( !empty($sub) )   $support = $support[$sub]; if( !empty($value) ) $support = $support[$value]; return $support; }
   private function theme_icons(){
     $dir = $this->cypress_support('web-app', 'icons');

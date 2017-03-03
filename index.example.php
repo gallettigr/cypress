@@ -1,3 +1,3 @@
 <?php
 
-require( dirname( __FILE__ ) . 'cypress/wp/wp-blog-header.php' );
+require( dirname( __FILE__ ) . 'wp/wp-blog-header.php' );

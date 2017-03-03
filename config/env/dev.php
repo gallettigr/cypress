@@ -20,7 +20,7 @@ $table_prefix  = 'app_';
 /**
  * Host and URL constants.
  */
-define('WP_SITEURL', 'http://' . $_SERVER['SERVER_NAME'] . '/' . CP_DIR . '/' . getenv('WP_DIR'));
+define('WP_SITEURL', 'http://' . $_SERVER['SERVER_NAME'] . '/' . basename(CP_PATH) . '/' . WP_DIR);
 define('WP_HOME', 'http://' . $_SERVER['SERVER_NAME']);
 
 /**
