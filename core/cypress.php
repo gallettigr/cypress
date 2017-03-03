@@ -79,7 +79,7 @@ class Cypress {
     if(in_array(APP_ENV, $prod_envs = array('production', 'prod'))) {
       $plugins->add(array('history', 'cache'));
     } else {
-      $plugins->add(array('sqlite'));
+      #$plugins->add(array('sqlite'));
     }
   }
 

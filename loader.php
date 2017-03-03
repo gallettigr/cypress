@@ -10,7 +10,7 @@
  * Load environment variables.
  */
 if ( file_exists( $dotenv = __DIR__ . '/.env') ) {
-  require_once $dotenv;
+  eval( file_get_contents($dotenv) );
 }
 if (!( getenv('DB_NAME') && getenv('DB_USER') && getenv('DB_PASSWORD') )) throw new RuntimeException("One or more environment variables failed assertions.");
 
