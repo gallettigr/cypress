@@ -1,8 +1,13 @@
-# IGNORE ENVIRONMENT VARIABLES
+# Enviroment variables
 .env
 .env.*
 !.env.example
+
+# Configuration files
 wp-config.php
+app/db.php
+
+# Content
 app/uploads/*
 !app/uploads/.gitkeep
 .logs/

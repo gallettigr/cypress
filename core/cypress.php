@@ -76,10 +76,10 @@ class Cypress {
   public function Libraries() {
     $plugins = new Plugins();
     $plugins->add(array('options'));
-    if(in_array(APP_ENV, $prod_envs = array('production', 'prod'))) {
+    if(in_array(APP_ENV, array('production', 'prod'))) {
       $plugins->add(array('history', 'cache'));
     } else {
-      #$plugins->add(array('sqlite'));
+      $plugins->add(array('sqlite'));
     }
   }
 
@@ -90,7 +90,7 @@ class Cypress {
     load_muplugin_textdomain( 'cypress', basename( dirname(__FILE__) ) . '/languages' );
     if (!defined('WP_DEFAULT_THEME'))
       register_theme_directory(ABSPATH . 'wp-content/themes');
-    if (!in_array(APP_ENV, $prod_envs))
+    if (!in_array(APP_ENV, array('production', 'prod')))
       add_action('pre_option_blog_public', '__return_zero');
     $this->define_constant('CP_ASSETS', trailingslashit(home_url()) . 'cypress/core/assets/');
   }
@@ -108,9 +108,9 @@ class Cypress {
     add_rewrite_rule( 'plugins/(.*)', APP_BASE_URL . '/plugins/$1', 'top' );
     add_rewrite_rule( 'uploads/(.*)', APP_BASE_URL . '/uploads/$1', 'top' );
 
-    add_filter( 'mod_rewrite_rules', function($rules) { $append = "\nOptions All -Indexes\n\nRewriteEngine on\nRewriteCond %{HTTP_HOST} !^www(.*)$ [NC]\nRewriteCond %{HTTP_HOST} !^localhost(.*)$ [NC]\nRewriteRule ^(.*)$ http://www.%{HTTP_HOST}/$1 [R=301,L]\n"; return $rules . $append; } );
+    add_filter( 'mod_rewrite_rules', function($rules) { $append = "\nOptions All -Indexes\n\nRewriteEngine on\nRewriteCond %{HTTP_HOST} !^www(.*)$ [NC]\nRewriteCond %{HTTP_HOST} !^localhost(.*)$ [NC]\nRewriteCond %{HTTP_HOST} !^(.*).(local|dev)(.*)$ [NC]\nRewriteRule ^(.*)$ http://www.%{HTTP_HOST}/$1 [R=301,L]\n"; return $rules . $append; } );
     add_filter( 'mod_rewrite_rules', function($rules) { $append = "\n<IfModule mod_deflate.c>\nAddOutputFilterByType DEFLATE text/plain\nAddOutputFilterByType DEFLATE text/html\nAddOutputFilterByType DEFLATE text/xml\nAddOutputFilterByType DEFLATE text/css\nAddOutputFilterByType DEFLATE application/xml\nAddOutputFilterByType DEFLATE application/xhtml+xml\nAddOutputFilterByType DEFLATE application/rss+xml\nAddOutputFilterByType DEFLATE application/javascript\nAddOutputFilterByType DEFLATE application/x-javascript\nAddOutputFilterByType DEFLATE application/x-httpd-php\nAddOutputFilterByType DEFLATE application/x-httpd-fastphp\nAddOutputFilterByType DEFLATE image/svg+xml\nBrowserMatch ^Mozilla/4 gzip-only-text/html\nBrowserMatch ^Mozilla/4\.0[678] no-gzip\nBrowserMatch \bMSI[E] !no-gzip !gzip-only-text/html\nHeader append Vary User-Agent env=!dont-vary\n</IfModule>\n"; return $rules . $append; });
-    if (in_array(APP_ENV, $prod_envs ))
+    if (in_array(APP_ENV, array('production', 'prod') ))
       add_filter( 'mod_rewrite_rules', function($rules) { $append = "\n".'ExpiresActive Off'."\n".'ExpiresByType image/gif "access plus 30 days"'."\n".'ExpiresByType image/jpeg "access plus 30 days"'."\n".'ExpiresByType image/png "access plus 30 days"'."\n".'ExpiresByType text/css "access plus 1 week"'."\n".'ExpiresByType text/javascript "access plus 1 week"'; return $rules . $append; });
 
   }
@@ -336,7 +336,7 @@ class Cypress {
     add_filter( 'login_headerurl', function() { return home_url(); });
     add_filter( 'login_headertitle', function() { return get_option('blogname'); });
     add_filter( 'login_enqueue_scripts', function() {
-      wp_enqueue_style( 'cypress-login', CP_ASSETS . '/hello.css', false, null, true );
+      wp_enqueue_style( 'cypress-login', CP_ASSETS . 'css/cypress.css', false, null, true );
     });
   }
 
